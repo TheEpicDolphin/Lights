@@ -28,7 +28,7 @@ public class LightRay
         state = LightRayState.Initial;
     }
 
-    public float[] Cast(Vector3 origin, Vector3 dir, List<Obstacle> movingObstacles, List<Obstacle> staticObstacles)
+    public Vector3[] Cast(Vector3 origin, Vector3 dir, List<Obstacle> movingObstacles, List<Obstacle> staticObstacles)
     {
         Ray lray = new Ray(origin, dir);
         RaycastHit hit;
@@ -123,7 +123,9 @@ public class LightRay
         }
 
         Debug.DrawRay(origin, t * dir, Color.cyan);
-        return new float[] { t };
+
+        //Multiple intersection points would signify reflections/filters/refractions
+        return new Vector3[] { t };
     }
 }
 
@@ -149,16 +151,19 @@ public class Beam : MonoBehaviour
     const float HEIGHT = 2.0f;
     LightRay[,] lightRays = new LightRay[NUM_RAYS_Y, NUM_RAYS_X];
 
+    MeshFilter meshFilt;
     // Start is called before the first frame update
     void Start()
     {
 
-        MeshFilter meshFilt = gameObject.AddComponent<MeshFilter>();
-        meshFilt.mesh = CreateBeamMesh();
+        meshFilt = gameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRend = gameObject.AddComponent<MeshRenderer>();
         meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
         meshRend.material.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
 
+        meshFilt.mesh = new Mesh();
+        meshFilt.mesh.vertices = new Vector3[NUM_RAYS_X * NUM_RAYS_Y * 4];
+        meshFilt.mesh.triangles = new int[NUM_RAYS_X * NUM_RAYS_Y * 2 * 5];
         
 
         Debug.DrawRay(transform.position, 10.0f * transform.forward, Color.magenta, 5.0f);
@@ -192,17 +197,44 @@ public class Beam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Debug.Log(transform.forward);
-        //Debug.Log(transform.InverseTransformDirection(transform.forward));
+        meshFilt.mesh.Clear();
+        Vector3[] verts = new Vector3[2 * (NUM_RAYS_X + 1) * (NUM_RAYS_Y + 1)];
+        int offset = (NUM_RAYS_X + 1) * (NUM_RAYS_Y + 1);
+
+        for (int i = 0; i < NUM_RAYS_Y + 1; i++)
+        {
+            for (int j = 0; j < NUM_RAYS_X + 1; j++)
+            {
+                float dy = (HEIGHT / NUM_RAYS_Y) * (i - NUM_RAYS_Y / 2.0f);
+                float dx = (WIDTH / NUM_RAYS_X) * (j - NUM_RAYS_X / 2.0f);
+                verts[j + i * NUM_RAYS_X] = new Vector3(dx, dy, 0.0f);
+                verts[(j + i * NUM_RAYS_X) + offset] = new Vector3(dx, dy, 50.0f);
+            }
+        }
 
         for (int i = 0; i < NUM_RAYS_Y; i++)
         {
             for(int j = 0; j < NUM_RAYS_X; j++)
             {
-                float dy = (HEIGHT / NUM_RAYS_Y) * (i - (NUM_RAYS_Y - 1) / 2.0f);
-                float dx = (WIDTH / NUM_RAYS_X) * (j - (NUM_RAYS_X - 1) / 2.0f);
-                lightRays[i, j].Cast(transform.position + dy * transform.up + dx * transform.right, transform.forward, 
+                float dy_c = (HEIGHT / NUM_RAYS_Y) * (i - (NUM_RAYS_Y - 1) / 2.0f);
+                float dx_c = (WIDTH / NUM_RAYS_X) * (j - (NUM_RAYS_X - 1) / 2.0f);
+                float[] depths = lightRays[i, j].Cast(transform.position + dy_c * transform.up + dx_c * transform.right, transform.forward, 
                                     movingDetector.obstacles, staticDetector.obstacles);
+
+                verts[(j + i * NUM_RAYS_X) + offset].z = depths[0];
+
+
+                float z_current = verts[(j + i * NUM_RAYS_X) + offset].z;
+                if (i > 0)
+                {
+                    float z_below = verts[(j + (i - 1) * NUM_RAYS_X) + offset].z;
+                    if (z_below > )
+                }
+
+                if(j > 0)
+                {
+                    float z_left = verts[(j + i * NUM_RAYS_X) + offset].z;
+                }
             }
         }
         
