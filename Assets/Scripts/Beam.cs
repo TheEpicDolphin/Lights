@@ -165,11 +165,22 @@ public class Beam : MonoBehaviour
 
             if (vertNode.Next != null)
             {
+                Debug.Log("NOT END");
                 //This is not an end node
                 Vector2 vs = vertNode.Value;
-                activeEdges.Add(vertNode);
 
-                Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
+                if(vertNode.Previous == null)
+                {
+                    activeEdges.Add(vertNode);
+                }
+                else
+                {
+                    int j = activeEdges.IndexOf(vertNode.Previous);
+                    activeEdges[j] = vertNode;
+                }
+                
+
+                Vector2 closestVert = vs;
                 foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
                 {
                     Vector2 activeEdgeVert = activeEdge.Value;
@@ -182,11 +193,14 @@ public class Beam : MonoBehaviour
             }
             else
             {
+                Debug.Log("END");
                 //This is an end node
                 Vector2 ve = vertNode.Value;
+                beamBounds.Add(ve);
                 activeEdges.Remove(vertNode.Previous);
 
                 Vector2 nextClosestVert = new Vector2(ve.x, Mathf.Infinity);
+                //Vector2 nextClosestVert = new Vector2(ve.x, 50.0f);
                 foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
                 {
                     Vector2 activeEdgeStart = activeEdge.Value;
@@ -198,10 +212,10 @@ public class Beam : MonoBehaviour
                         nextClosestVert = proj;
                     }
                 }
-
                 beamBounds.Add(nextClosestVert);
             }
         }
+        
 
         beamBounds.Add(xLims[1] * Vector2.right);
 
