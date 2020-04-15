@@ -29,23 +29,24 @@ public class Beam : MonoBehaviour
     Vector3 topRightOrigin;
     Vector3 bottomRightOrigin;
 
-    public List<Obstacle> obstacles;
+    public List<Obstacle> obstacles = new List<Obstacle>();
 
-    public ObstacleDetector obstacleDetector;
+    ObstacleDetector obstacleDetector;
 
     MeshFilter meshFilt;
     // Start is called before the first frame update
     void Start()
     {
+        obstacleDetector = GetComponentInChildren<ObstacleDetector>();
 
         meshFilt = gameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRend = gameObject.AddComponent<MeshRenderer>();
         meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
         meshRend.material.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
 
-
         Debug.DrawRay(transform.position, 10.0f * transform.forward, Color.magenta, 5.0f);
     }
+
 
     private Mesh CreateBeamMesh()
     {
@@ -67,24 +68,39 @@ public class Beam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        List<Vector2>[] beamBoundSections = Cast();
+        List<Vector2> beamBounds = beamBoundSections[0];
+        for(int i = 1; i < beamBounds.Count; i++)
+        {
+            Vector2 v1 = beamBounds[i - 1];
+            Vector2 v2 = beamBounds[i];
+            Debug.DrawLine(v1, v2, Color.red);
+        }
 
     }
 
-    private void Cast()
+    //Each array element is a separate beam bound. The array has length > 1 when there are color filters, mirrors,
+    //or refractive crystals in the path of the light beam
+    private List<Vector2>[] Cast()
     {
         List<Tuple<float, LinkedListNode<Vector2>>> sortedKeyVertices = new List<Tuple<float, LinkedListNode<Vector2>>>();
+        Debug.Log(obstacles.Count);
         foreach (Obstacle obstacle in obstacles)
         {
             Vector2[] obstacleBoundVerts = obstacle.GetBoundVerts();
 
+            for(int j = 1; j < obstacleBoundVerts.Length; j++)
+            {
+                Debug.DrawLine(obstacleBoundVerts[j - 1], obstacleBoundVerts[j], Color.cyan, 0.0f, false);
+            }
+
             bool transitionReady = false;
             int i = 0;
-            int iEnd = 0;
+            int iEnd = obstacleBoundVerts.Length - 1;
             //Wait for first away -> towards transition
             while (i < obstacleBoundVerts.Length)
             {
-                Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i % obstacleBoundVerts.Length]);
+                Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[(i + 1) % obstacleBoundVerts.Length]);
                 if (v1.x < v2.x)
                 {
@@ -92,7 +108,7 @@ public class Beam : MonoBehaviour
                     {
                         iEnd = i - 1;
                         break;
-                    } 
+                    }
                 }
                 else
                 {
@@ -100,11 +116,12 @@ public class Beam : MonoBehaviour
                 }
                 i += 1;
             }
+            i %= obstacleBoundVerts.Length;
 
             LinkedList<Vector2> contiguousVertices = new LinkedList<Vector2>();
-            i = iEnd + 1;
             while (i != iEnd)
             {
+                
                 Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
                 i = (i + 1) % obstacleBoundVerts.Length;
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
@@ -128,8 +145,9 @@ public class Beam : MonoBehaviour
         sortedKeyVertices.Sort();
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
-        List<Vector2> hull = new List<Vector2>();
+        List<Vector2> beamBounds = new List<Vector2>();
 
+        
         foreach (Tuple<float, LinkedListNode<Vector2>> keyVert in sortedKeyVertices)
         {
             LinkedListNode<Vector2> vertNode = keyVert.el2;
@@ -149,7 +167,7 @@ public class Beam : MonoBehaviour
                         closestVert = activeEdgeVert;
                     }
                 }
-                hull.Add(closestVert);
+                beamBounds.Add(closestVert);
             }
             else
             {
@@ -170,9 +188,11 @@ public class Beam : MonoBehaviour
                     }
                 }
 
-                hull.Add(nextClosestVert);
+                beamBounds.Add(nextClosestVert);
             }
         }
+
+        return new List<Vector2>[] { beamBounds };
     }
 
     /*
