@@ -38,6 +38,7 @@ public class Beam : MonoBehaviour
 
     MeshFilter meshFilt;
     const float EPSILON = 1e-5f;
+    const float BEAM_LENGTH = 20.0f;
     // Start is called before the first frame update
     void Start()
     {
@@ -143,7 +144,8 @@ public class Beam : MonoBehaviour
                     {
                         LineSegment ls = new LineSegment(v1, v2);
                         v2 = ls.p1 + ((xLims[1] - ls.p1.x) / ls.dir.x) * ls.dir;
-                        v2 = new Vector2(xLims[1] + EPSILON, v2.y);
+                        //This ensures that beam will end on edges closer to source
+                        v2 = new Vector2(xLims[1] + (1.0f - (v2.y / BEAM_LENGTH)) * EPSILON, v2.y);
                     }
 
                     LinkedListNode<Vector2> vNode = contiguousVertices.AddLast(v2);
@@ -159,8 +161,8 @@ public class Beam : MonoBehaviour
         }
 
         LinkedList<Vector2> topLightBound = new LinkedList<Vector2>();
-        Vector2 vts = new Vector2(xLims[0], 20.0f);
-        Vector2 vte = new Vector2(xLims[1], 20.0f);
+        Vector2 vts = new Vector2(xLims[0], BEAM_LENGTH);
+        Vector2 vte = new Vector2(xLims[1], BEAM_LENGTH);
         LinkedListNode<Vector2> leftBound = topLightBound.AddLast(vts);
         LinkedListNode<Vector2> rightBound = topLightBound.AddLast(vte);
         sortedKeyVertices.Add(leftBound);
