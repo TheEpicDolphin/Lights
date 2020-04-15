@@ -63,6 +63,9 @@ public class LineSegment
         return "(" + p1.ToString(format) + ", " + p2.ToString(format) + ")";
     }
     
+}
+
 
     
-}
+
+
