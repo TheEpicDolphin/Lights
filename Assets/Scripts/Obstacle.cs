@@ -28,7 +28,10 @@ public class Obstacle : MonoBehaviour
     public Vector2[] GetBoundVerts()
     {
         Vector2[] verts = new Vector2[edgeCol.points.Length - 1];
-        System.Array.Copy(edgeCol.points, verts, verts.Length);
+        for(int i = 0; i < edgeCol.points.Length - 1; i++)
+        {
+            verts[i] = transform.TransformPoint(edgeCol.points[i]);
+        }
         return verts;
     }
 

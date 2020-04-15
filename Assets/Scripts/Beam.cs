@@ -124,12 +124,26 @@ public class Beam : MonoBehaviour
             LinkedList<Vector2> contiguousVertices = new LinkedList<Vector2>();
             while (i != iEnd)
             {
-                
                 Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
                 i = (i + 1) % obstacleBoundVerts.Length;
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
+
+                //If v1.x < v2.x, then the edge normal is facing towards the beam
                 if (v1.x < v2.x)
                 {
+                    
+                    //Bound v1.x between xLim[0] and xLim[1]
+                    if (v1.x < xLims[0] && v2.x >= xLims[0])
+                    {
+                        LineSegment ls = new LineSegment(v1, v2);
+                        v1 = ls.p1 + ((xLims[0] - ls.p1.x) / ls.dir.x ) * ls.dir;
+                    }
+                    else if(v1.x < xLims[0] && v2.x < xLims[0])
+                    {
+                        continue;
+                    }
+                    
+
                     LinkedListNode<Vector2> vNode = contiguousVertices.AddLast(v1);
                     sortedKeyVertices.Add(new Tuple<float, LinkedListNode<Vector2>>(v1.x, vNode));
                     transitionReady = true;
@@ -146,26 +160,37 @@ public class Beam : MonoBehaviour
 
         }
 
+        
+        LinkedList<Vector2> topLightBound = new LinkedList<Vector2>();
+        Vector2 vts = new Vector2(xLims[0] - Mathf.Epsilon, 20.0f);
+        Vector2 vte = new Vector2(xLims[1] + Mathf.Epsilon, 20.0f);
+        LinkedListNode<Vector2> vNode1 = topLightBound.AddLast(vts);
+        sortedKeyVertices.Add(new Tuple<float, LinkedListNode<Vector2>>(vts.x, vNode1));
+        vNode1 = topLightBound.AddLast(vte);
+        sortedKeyVertices.Add(new Tuple<float, LinkedListNode<Vector2>>(vte.x, vNode1));
+        
+
         sortedKeyVertices.Sort();
 
         for(int j = 1; j < sortedKeyVertices.Count; j++)
         {
             Vector2 v1 = sortedKeyVertices[j - 1].el2.Value;
             Vector2 v2 = sortedKeyVertices[j].el2.Value;
-            Debug.DrawLine(v1, v2, Color.magenta, 0.0f, false);
+            //Debug.DrawLine(v1, v2, Color.magenta, 0.0f, false);
         }
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
         List<Vector2> beamBounds = new List<Vector2>();
         beamBounds.Add(xLims[0] * Vector2.right);
-        
+
+        LinkedListNode<Vector2> curClosestEdge = sortedKeyVertices[0].el2;
         foreach (Tuple<float, LinkedListNode<Vector2>> keyVert in sortedKeyVertices)
         {
             LinkedListNode<Vector2> vertNode = keyVert.el2;
 
             if (vertNode.Next != null)
             {
-                Debug.Log("NOT END");
+                Debug.Log("Not end");
                 //This is not an end node
                 Vector2 vs = vertNode.Value;
 
@@ -178,41 +203,46 @@ public class Beam : MonoBehaviour
                     int j = activeEdges.IndexOf(vertNode.Previous);
                     activeEdges[j] = vertNode;
                 }
-                
 
-                Vector2 closestVert = vs;
+                Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
                 foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
                 {
                     Vector2 activeEdgeVert = activeEdge.Value;
                     if (activeEdgeVert.y < closestVert.y)
                     {
                         closestVert = activeEdgeVert;
+                        curClosestEdge = activeEdge;
                     }
                 }
                 beamBounds.Add(closestVert);
+
             }
             else
             {
-                Debug.Log("END");
-                //This is an end node
-                Vector2 ve = vertNode.Value;
-                beamBounds.Add(ve);
+                Debug.Log("end");
                 activeEdges.Remove(vertNode.Previous);
-
-                Vector2 nextClosestVert = new Vector2(ve.x, Mathf.Infinity);
-                //Vector2 nextClosestVert = new Vector2(ve.x, 50.0f);
-                foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
+                if(vertNode.Previous == curClosestEdge)
                 {
-                    Vector2 activeEdgeStart = activeEdge.Value;
-                    Vector2 activeEdgeEnd = activeEdge.Next.Value;
-                    LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
-                    Vector2 proj = ls.p1 + (ve.x - ls.p1.x) * ls.dir;
-                    if (proj.y < nextClosestVert.y)
+                    //This is an end node
+                    Vector2 ve = vertNode.Value;
+                    beamBounds.Add(ve);
+                    //Check if this is the end node of the currently closest edge
+                    Vector2 nextClosestVert = new Vector2(ve.x, Mathf.Infinity);
+                    foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
                     {
-                        nextClosestVert = proj;
+                        Vector2 activeEdgeStart = activeEdge.Value;
+                        Vector2 activeEdgeEnd = activeEdge.Next.Value;
+                        LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
+                        Vector2 proj = ls.p1 + ((ve.x - ls.p1.x) / ls.dir.x) * ls.dir;
+                        if (proj.y < nextClosestVert.y)
+                        {
+                            nextClosestVert = proj;
+                            curClosestEdge = activeEdge;
+                        }
                     }
-                }
-                beamBounds.Add(nextClosestVert);
+                    beamBounds.Add(nextClosestVert);
+                }             
+                
             }
         }
         
