@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Tuple<T, V> : System.IComparable<T> where T : System.IComparable<T>
+public class Tuple<T, V> : System.IComparable where T : System.IComparable<T>
 {
     public T el1;
     public V el2;
@@ -14,12 +14,15 @@ public class Tuple<T, V> : System.IComparable<T> where T : System.IComparable<T>
         this.el2 = el2;
     }
 
-    public int CompareTo(T x)
+    public int CompareTo(object x)
     {
-        return this.el1.CompareTo(x);
+        Tuple<T, V> tuple = x as Tuple<T, V>;
+        return this.el1.CompareTo(tuple.el1);
     }
 
 }
+
+//Vector.up is forward in 2D
 
 public class Beam : MonoBehaviour
 {
@@ -44,7 +47,8 @@ public class Beam : MonoBehaviour
         meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
         meshRend.material.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
 
-        Debug.DrawRay(transform.position, 10.0f * transform.forward, Color.magenta, 5.0f);
+        //Debug.DrawRay(transform.position, 10.0f * transform.forward, Color.magenta, 5.0f);
+        Debug.DrawRay(transform.position, 10.0f * transform.up, Color.magenta, 5.0f);
     }
 
 
@@ -68,7 +72,7 @@ public class Beam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        List<Vector2>[] beamBoundSections = Cast();
+        List<Vector2>[] beamBoundSections = Cast(new float[] { -0.5f, 0.5f });
         List<Vector2> beamBounds = beamBoundSections[0];
         for(int i = 1; i < beamBounds.Count; i++)
         {
@@ -81,10 +85,9 @@ public class Beam : MonoBehaviour
 
     //Each array element is a separate beam bound. The array has length > 1 when there are color filters, mirrors,
     //or refractive crystals in the path of the light beam
-    private List<Vector2>[] Cast()
+    private List<Vector2>[] Cast(float[] xLims)
     {
         List<Tuple<float, LinkedListNode<Vector2>>> sortedKeyVertices = new List<Tuple<float, LinkedListNode<Vector2>>>();
-        Debug.Log(obstacles.Count);
         foreach (Obstacle obstacle in obstacles)
         {
             Vector2[] obstacleBoundVerts = obstacle.GetBoundVerts();
@@ -142,11 +145,19 @@ public class Beam : MonoBehaviour
             }
 
         }
+
         sortedKeyVertices.Sort();
+
+        for(int j = 1; j < sortedKeyVertices.Count; j++)
+        {
+            Vector2 v1 = sortedKeyVertices[j - 1].el2.Value;
+            Vector2 v2 = sortedKeyVertices[j].el2.Value;
+            Debug.DrawLine(v1, v2, Color.magenta, 0.0f, false);
+        }
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
         List<Vector2> beamBounds = new List<Vector2>();
-
+        beamBounds.Add(xLims[0] * Vector2.right);
         
         foreach (Tuple<float, LinkedListNode<Vector2>> keyVert in sortedKeyVertices)
         {
@@ -191,6 +202,8 @@ public class Beam : MonoBehaviour
                 beamBounds.Add(nextClosestVert);
             }
         }
+
+        beamBounds.Add(xLims[1] * Vector2.right);
 
         return new List<Vector2>[] { beamBounds };
     }
