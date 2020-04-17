@@ -39,6 +39,8 @@ public class Beam : MonoBehaviour
     MeshFilter meshFilt;
     const float EPSILON = 1e-5f;
     const float BEAM_LENGTH = 20.0f;
+
+    public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
     // Start is called before the first frame update
     void Start()
     {
@@ -46,9 +48,9 @@ public class Beam : MonoBehaviour
 
         meshFilt = gameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRend = gameObject.AddComponent<MeshRenderer>();
-        //meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
-        meshRend.material = new Material(Shader.Find("Standard"));
-        meshRend.material.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
+        meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
+        //meshRend.material = new Material(Shader.Find("Standard"));
+        meshRend.material.color = beamColor;
 
         //Debug.DrawRay(transform.position, 10.0f * transform.up, Color.magenta, 5.0f);
     }
@@ -74,30 +76,23 @@ public class Beam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         List<Vector2>[] beamBoundSections = Cast(new float[] { -0.5f, 0.5f });
         List<Vector2> beamBounds = beamBoundSections[0];
-
-        for(int i = 1; i < beamBounds.Count; i++)
-        {
-            Vector2 v1 = transform.TransformPoint(beamBounds[i - 1]);
-            Vector2 v2 = transform.TransformPoint(beamBounds[i]);
-            Debug.DrawLine(v1, v2, Color.magenta, 0.0f, false);
-        }
 
         // Use the triangulator to get indices for creating triangles
         Triangulator tr = new Triangulator(beamBounds.ToArray());
         int[] indices = tr.Triangulate();
 
-        Debug.Log("START");
+        //Debug.Log("START");
         // Create the Vector3 vertices
         List<Vector3> vertices = new List<Vector3>();
         for (int i = 0; i < beamBounds.Count; i++)
         {
-            Debug.Log(beamBounds[i].ToString("F4"));
+            //Debug.Log(beamBounds[i].ToString("F4"));
             vertices.Add(new Vector3(beamBounds[i].x, beamBounds[i].y, 0));
         }
 
-        
         meshFilt.mesh.Clear();
         meshFilt.mesh.SetVertices(vertices);
         meshFilt.mesh.SetTriangles(indices, 0);
@@ -217,6 +212,7 @@ public class Beam : MonoBehaviour
                     activeEdges[j] = vertNode;
                 }
 
+                
                 //First edge vertex gets added immediately
                 if (curClosestEdge == null)
                 {
