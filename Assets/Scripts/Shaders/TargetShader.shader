@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Custom/BeamShader"
+Shader "Custom/TargetShader"
 {
     Properties
     {
@@ -11,8 +11,11 @@ Shader "Custom/BeamShader"
     SubShader
     {
         Tags { "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
-		//Blend SrcAlpha OneMinusSrcAlpha
+
+		//BlendOp RevSub
+		BlendOp Sub
 		Blend One One
+
 		AlphaTest Greater .01
 		ColorMask RGB
 		Lighting Off 
