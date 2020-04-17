@@ -38,7 +38,8 @@ public class Beam : MonoBehaviour
 
     MeshFilter meshFilt;
     const float EPSILON = 1e-5f;
-    const float BEAM_LENGTH = 20.0f;
+    public float beamLength = 20.0f;
+    public float[] xLims = new float[] { -0.5f, 0.5f };
 
     public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
     // Start is called before the first frame update
@@ -52,6 +53,7 @@ public class Beam : MonoBehaviour
         //meshRend.material = new Material(Shader.Find("Standard"));
         meshRend.material.color = beamColor;
 
+        
         //Debug.DrawRay(transform.position, 10.0f * transform.up, Color.magenta, 5.0f);
     }
 
@@ -77,7 +79,7 @@ public class Beam : MonoBehaviour
     void Update()
     {
 
-        List<Vector2>[] beamBoundSections = Cast(new float[] { -0.5f, 0.5f });
+        List<Vector2>[] beamBoundSections = Cast(xLims);
         List<Vector2> beamBounds = beamBoundSections[0];
 
         // Use the triangulator to get indices for creating triangles
@@ -163,7 +165,7 @@ public class Beam : MonoBehaviour
                         LineSegment ls = new LineSegment(v1, v2);
                         v2 = ls.p1 + ((xLims[1] - ls.p1.x) / ls.dir.x) * ls.dir;
                         //This ensures that beam will end on edges closer to source
-                        v2 = new Vector2(xLims[1] + (1.0f - (v2.y / BEAM_LENGTH)) * EPSILON, v2.y);
+                        v2 = new Vector2(xLims[1] + (1.0f - (v2.y / beamLength)) * EPSILON, v2.y);
                     }
 
                     LinkedListNode<Vector2> vNode = contiguousVertices.AddLast(v2);
@@ -179,8 +181,8 @@ public class Beam : MonoBehaviour
         }
 
         LinkedList<Vector2> topLightBound = new LinkedList<Vector2>();
-        Vector2 vts = new Vector2(xLims[0], BEAM_LENGTH);
-        Vector2 vte = new Vector2(xLims[1], BEAM_LENGTH);
+        Vector2 vts = new Vector2(xLims[0], beamLength);
+        Vector2 vte = new Vector2(xLims[1], beamLength);
         LinkedListNode<Vector2> leftBound = topLightBound.AddLast(vts);
         LinkedListNode<Vector2> rightBound = topLightBound.AddLast(vte);
         sortedKeyVertices.Add(leftBound);
@@ -223,23 +225,26 @@ public class Beam : MonoBehaviour
 
                 LinkedListNode<Vector2> prevClosestEdge = curClosestEdge;
 
-                LineSegment ls = new LineSegment(prevClosestEdge.Value, prevClosestEdge.Next.Value);
-                Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
+                LineSegment lsPrev = new LineSegment(prevClosestEdge.Value, prevClosestEdge.Next.Value);
+                Vector2 clipPrev = lsPrev.p1 + ((vs.x - lsPrev.p1.x) / lsPrev.dir.x) * lsPrev.dir;
 
                 Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
                 foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
                 {
-                    Vector2 activeEdgeVert = activeEdge.Value;
-                    if (activeEdgeVert.y < closestVert.y)
+                    Vector2 activeEdgeStart = activeEdge.Value;
+                    Vector2 activeEdgeEnd = activeEdge.Next.Value;
+                    LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
+                    Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
+                    if (clip.y < closestVert.y)
                     {
-                        closestVert = activeEdgeVert;
+                        closestVert = clip;
                         curClosestEdge = activeEdge;
                     }
                 }
 
                 if(prevClosestEdge.Next != curClosestEdge && vertNode == curClosestEdge)
                 {
-                    beamBounds.Add(clip);
+                    beamBounds.Add(clipPrev);
                 }
                 if(vertNode == curClosestEdge)
                 {
