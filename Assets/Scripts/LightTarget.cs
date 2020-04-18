@@ -44,7 +44,6 @@ public class LightTarget : MonoBehaviour
             System.Array.Reverse(p);
         }
 
-        
         //Points are clockwise
         int j = p.Length - 1;
         bool c = false;
@@ -53,7 +52,6 @@ public class LightTarget : MonoBehaviour
             c ^= p[i].y > v.y ^ p[j].y > v.y && v.x < (p[j].x - p[i].x) * (v.y - p[i].y) / (p[j].y - p[i].y) + p[i].x;
         }
         return c;
-
 
     }
 }

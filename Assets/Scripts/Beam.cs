@@ -110,7 +110,7 @@ public class Beam : MonoBehaviour
         Vector2[] vertAr = new Vector2[meshFilt.mesh.vertexCount];
         for(int i = 0; i < vertAr.Length; i++)
         {
-            vertAr[i] = meshFilt.mesh.vertices[i];
+            vertAr[i] = transform.TransformPoint(meshFilt.mesh.vertices[i]);
         }
         return vertAr;
     } 
