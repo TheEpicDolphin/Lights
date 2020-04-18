@@ -26,12 +26,6 @@ public class Tuple<T, V> : System.IComparable where T : System.IComparable<T>
 
 public class Beam : MonoBehaviour
 {
-
-    Vector3 bottomLeftOrigin;
-    Vector3 topLeftOrigin;
-    Vector3 topRightOrigin;
-    Vector3 bottomRightOrigin;
-
     public List<Obstacle> obstacles = new List<Obstacle>();
 
     ObstacleDetector obstacleDetector;
@@ -55,24 +49,6 @@ public class Beam : MonoBehaviour
 
         
         //Debug.DrawRay(transform.position, 10.0f * transform.up, Color.magenta, 5.0f);
-    }
-
-
-    private Mesh CreateBeamMesh()
-    {
-        Mesh mesh = new Mesh();
-
-        mesh.vertices = new Vector3[]
-        {
-            bottomLeftOrigin, topLeftOrigin, topRightOrigin, bottomRightOrigin,
-            (bottomLeftOrigin + transform.forward), (topLeftOrigin + transform.forward), (topRightOrigin + transform.forward), (bottomRightOrigin + transform.forward)
-        };
-
-        mesh.triangles = new int[] { 4, 1, 0, 5, 2, 1, 6, 3, 2, 7, 0, 3,
-                                     4, 5, 1, 5, 6, 2, 6, 7, 3, 7, 4, 0};
-
-        mesh.RecalculateNormals();
-        return mesh;
     }
 
     // Update is called once per frame
@@ -102,7 +78,44 @@ public class Beam : MonoBehaviour
         meshFilt.mesh.RecalculateBounds();
         
     }
+
+    private void FixedUpdate()
+    {
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, (xLims[1] - xLims[0])/2, transform.up, 
+                                                    beamLength, (1 << 12) | (1 << 13));
+        obstacles = new List<Obstacle>();
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider.GetComponent<Obstacle>())
+            {
+                Obstacle obstacle = hit.collider.GetComponent<Obstacle>();
+
+                //Do reflection in here. Maybe part of Cast code goes in here
+                //obstacle.Reflect(transform.position, transform.up);
+
+                obstacles.Add(obstacle);
+            }
+            else if (hit.collider.GetComponent<LightTarget>())
+            {
+                LightTarget lightTarget = hit.collider.GetComponent<LightTarget>();
+                lightTarget.AddPotentialBeam(this);
+            }
+        }
+        
+    }
+
     
+    public Vector2[] GetBeamPolygon()
+    {
+        Vector2[] vertAr = new Vector2[meshFilt.mesh.vertexCount];
+        for(int i = 0; i < vertAr.Length; i++)
+        {
+            vertAr[i] = meshFilt.mesh.vertices[i];
+        }
+        return vertAr;
+    } 
+    
+
     //Each array element is a separate beam bound. The array has length > 1 when there are color filters, mirrors,
     //or refractive crystals in the path of the light beam
     private List<Vector2>[] Cast(float[] xLims)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Consider using boxcast instead
 public class ObstacleDetector : MonoBehaviour
 {
     Beam beam;
