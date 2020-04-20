@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using GeometryUtils;
 
 public class Tuple<T, V> : System.IComparable where T : System.IComparable<T>
 {
@@ -63,12 +64,12 @@ public class Beam : MonoBehaviour
         Triangulator tr = new Triangulator(beamBounds.ToArray());
         int[] indices = tr.Triangulate();
 
-        Debug.Log("START");
+        //Debug.Log("START");
         // Create the Vector3 vertices
         List<Vector3> vertices = new List<Vector3>();
         for (int i = 0; i < beamBounds.Count; i++)
         {
-            Debug.Log(beamBounds[i].ToString("F4"));
+            //Debug.Log(beamBounds[i].ToString("F4"));
             vertices.Add(new Vector3(beamBounds[i].x, beamBounds[i].y, 0));
         }
 
@@ -116,34 +117,119 @@ public class Beam : MonoBehaviour
         return vertAr;
     }
 
-    static float Det(Vector2 v1, Vector2 v2)
-    {
-        return v1.x * v2.y - v1.y * v2.x;
-    }
 
-    static bool IntersectLines2D(Vector2 p1, Vector2 dir1, Vector2 p2, Vector2 dir2, out float t)
-    {
-        float det = Det(dir2, dir1);
-
-        //Lines are parallel
-        if (det < EPSILON)
-        {
-            t = 0.0f;
-            return false;
-        }
-
-        t = Det(p1 - p2, dir2) / det;
-        return true;
-    }
 
     //Each array element is a separate beam bound. The array has length > 1 when there are color filters, mirrors,
     //or refractive crystals in the path of the light beam
 
     private List<Vector2>[] Cast(Vector2[] lims)
     {
+        
+        List<float> demarcations = new List<float>() { lims[0].x, lims[1].x };
+        Vector2[] limsWorld = new Vector2[] { transform.TransformPoint(lims[0]), transform.TransformPoint(lims[1]) };
+
+        HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
+        foreach (Obstacle obst in obstacles)
+        {
+            if (Geometry.IsInPolygon(lims[0], obst.GetBoundVerts()))
+            {
+                //Get the obstacles that currently contain the leftmost point
+                containingObstacles.Add(obst);
+            }
+        }
+
+        bool contained = containingObstacles.Count > 0;
+        Vector2 left = limsWorld[0];
+        RaycastHit2D hit;
+        while (hit = Physics2D.Linecast(left, limsWorld[1], 1 << 12))
+        {
+            /*
+            if (containingObstacles.Contains(obst))
+            {
+                containingObstacles.Remove(obst);
+            }
+            else
+            {
+                containingObstacles.Add(obst);
+            }
+
+            if (contained && containingObstacles.Count == 0)
+            {
+                contained = false;
+            }
+
+            if (!contained && containingObstacles.Count > 0)
+            {
+                contained = true;
+            }
+            */
+            left = hit.point + EPSILON * (limsWorld[1] - limsWorld[0]).normalized;
+            Debug.Log(left);
+        }
+        /*
+        Vector2[] limsWorld = new Vector2[] { transform.TransformPoint(lims[0]), transform.TransformPoint(lims[1]) };
+        RaycastHit2D[] rightwardHits = Physics2D.LinecastAll(limsWorld[0], limsWorld[1], 1 << 12);
+        //RaycastHit2D[] leftwardHits = Physics2D.LinecastAll(limsWorld[1], limsWorld[0], 1 << 12);
+        Tuple<float, Obstacle>[] intersections = new Tuple<float, Obstacle>[rightwardHits.Length];
+
+        Debug.Log(rightwardHits.Length);
+
+        HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
+        for (int i = 0; i < rightwardHits.Length; i++)
+        {
+            float t = rightwardHits[i].distance;
+            Obstacle obst = rightwardHits[i].collider.GetComponent<Obstacle>();
+            intersections[i] = new Tuple<float, Obstacle>(t, obst);
+
+            if (Geometry.IsInPolygon(lims[0], obst.GetBoundVerts()))
+            {
+                //Get the obstacles that currently contain the leftmost point
+                containingObstacles.Add(obst);
+            }
+        }
+        System.Array.Sort(intersections);
+
+        bool contained = containingObstacles.Count > 0;
+        for (int i = 0; i < intersections.Length; i++)
+        {
+            float t = intersections[i].el1;
+            Obstacle obst = intersections[i].el2;
+
+            if (containingObstacles.Contains(obst))
+            {
+                containingObstacles.Remove(obst);
+            }
+            else
+            {
+                containingObstacles.Add(obst);
+            }
+
+            if(contained && containingObstacles.Count == 0)
+            {
+                contained = false;
+            }
+
+            if(!contained && containingObstacles.Count > 0)
+            {
+                contained = true;
+            }
+            
+        }
+        */
+
+        /*
+        if (rightwardHits.Length > 0)
+        {
+            Obstacle obst = rightwardHits[0].collider.GetComponent<Obstacle>();
+            if(!Geometry.IsInPolygon(limsWorld[0], obst.GetBoundVerts()))
+            {
+                Debug.Log("FUCK 1");
+            }
+            Debug.Log(rightwardHits[0].distance);
+        }
+        */
 
         List<LinkedListNode<Vector2>> sortedKeyVertices = new List<LinkedListNode<Vector2>>();
-        List<Vector2[]> intersectedObstacles = new List<Vector2[]>();
 
         foreach (Obstacle obstacle in obstacles)
         {
@@ -181,7 +267,7 @@ public class Beam : MonoBehaviour
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
 
                 bool outOfBounds = (v1.x < lims[0].x && v2.x < lims[0].x) || (v1.x > lims[1].x && v2.x > lims[1].x) ||
-                    (Det(lims[1] - lims[0], v1 - lims[0]) < 0 && Det(lims[1] - lims[0], v2 - lims[0]) < 0);
+                    (Geometry.Det(lims[1] - lims[0], v1 - lims[0]) < 0 && Geometry.Det(lims[1] - lims[0], v2 - lims[0]) < 0);
                 if (v1.x < v2.x && !outOfBounds)
                 {
                     if (transitionReady)
@@ -227,7 +313,7 @@ public class Beam : MonoBehaviour
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.x).ThenBy(node => node.Value.y).ToList();
 
-        List<float> demarcations = new List<float>() { lims[0].x, lims[1].x };
+        
         bool blocked = true;
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
