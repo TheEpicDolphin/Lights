@@ -21,7 +21,7 @@ public class LightTarget : MonoBehaviour
         {
             if (IsInPolygon(transform.position, beam.GetBeamPolygon(), true))
             {
-                Debug.Log(beam.name);
+                //Debug.Log(beam.name);
             }
         }
 

@@ -33,7 +33,8 @@ public class Beam : MonoBehaviour
     MeshFilter meshFilt;
     const float EPSILON = 1e-5f;
     public float beamLength = 20.0f;
-    public float[] xLims = new float[] { -0.5f, 0.5f };
+    //public float[] xLims = new float[] { -0.5f, 0.5f };
+    public Vector2[] lims = new Vector2[] { new Vector2(-0.5f, 0.0f), new Vector2(0.5f, 0.0f) };
 
     public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
     // Start is called before the first frame update
@@ -55,7 +56,7 @@ public class Beam : MonoBehaviour
     void Update()
     {
 
-        List<Vector2>[] beamBoundSections = Cast(xLims);
+        List<Vector2>[] beamBoundSections = Cast(lims);
         List<Vector2> beamBounds = beamBoundSections[0];
 
         // Use the triangulator to get indices for creating triangles
@@ -81,7 +82,7 @@ public class Beam : MonoBehaviour
 
     private void FixedUpdate()
     {
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, (xLims[1] - xLims[0])/2, transform.up, 
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(transform.position, (lims[1].x - lims[0].x)/2, transform.up, 
                                                     beamLength, (1 << 12) | (1 << 13));
         obstacles = new List<Obstacle>();
         foreach (RaycastHit2D hit in hits)
@@ -113,15 +114,36 @@ public class Beam : MonoBehaviour
             vertAr[i] = transform.TransformPoint(meshFilt.mesh.vertices[i]);
         }
         return vertAr;
-    } 
-    
+    }
+
+    static float Det(Vector2 v1, Vector2 v2)
+    {
+        return v1.x * v2.y - v1.y * v2.x;
+    }
+
+    static bool IntersectLines2D(Vector2 p1, Vector2 dir1, Vector2 p2, Vector2 dir2, out float t)
+    {
+        float det = Det(dir2, dir1);
+
+        //Lines are parallel
+        if (det < EPSILON)
+        {
+            t = 0.0f;
+            return false;
+        }
+
+        t = Det(p1 - p2, dir2) / det;
+        return true;
+    }
 
     //Each array element is a separate beam bound. The array has length > 1 when there are color filters, mirrors,
     //or refractive crystals in the path of the light beam
-    private List<Vector2>[] Cast(float[] xLims)
+    private List<Vector2>[] Cast(Vector2[] lims)
     {
 
         List<LinkedListNode<Vector2>> sortedKeyVertices = new List<LinkedListNode<Vector2>>();
+        List<Vector2[]> intersectedObstacles = new List<Vector2[]>();
+
         foreach (Obstacle obstacle in obstacles)
         {
             Vector2[] obstacleBoundVerts = obstacle.GetBoundVerts();
@@ -157,32 +179,52 @@ public class Beam : MonoBehaviour
                 i = (i + 1) % obstacleBoundVerts.Length;
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
 
-                if (v1.x < v2.x && !((v1.x < xLims[0] && v2.x < xLims[0]) || (v1.x > xLims[1] && v2.x > xLims[1])))
+                bool outOfBounds = (v1.x < lims[0].x && v2.x < lims[0].x) || (v1.x > lims[1].x && v2.x > lims[1].x) ||
+                    (Det(lims[1] - lims[0], v1 - lims[0]) < 0 && Det(lims[1] - lims[0], v2 - lims[0]) < 0);
+                if (v1.x < v2.x && !outOfBounds)
                 {
+                    
+                    float t;
+                    Vector2 dir = (v2 - v1).normalized;
+                    if (IntersectLines2D(v1, dir, lims[0], (lims[1] - lims[0]).normalized, out t) &&
+                        !(Det(lims[1] - lims[0], v1 - lims[0]) > 0 && Det(lims[1] - lims[0], v2 - lims[0]) > 0))
+                    {
+                        if (Det(lims[1] - lims[0], v1 - lims[0]) > 0)
+                        {
+                            v2 = v1 + t * dir;
+                        }
+                        else
+                        {
+                            v1 = v1 + t * dir;
+                        }
+                    }
+                    
+
+                    if (v1.x < lims[0].x && v2.x >= lims[0].x)
+                    {
+                        LineSegment ls = new LineSegment(v1, v2);
+                        v1 = ls.p1 + ((lims[0].x - ls.p1.x) / ls.dir.x) * ls.dir;
+                        v1 = new Vector2(lims[0].x - EPSILON, v1.y);
+                    }
+
+                    if (v1.x < lims[1].x && v2.x >= lims[1].x)
+                    {
+                        LineSegment ls = new LineSegment(v1, v2);
+                        v2 = ls.p1 + ((lims[1].x - ls.p1.x) / ls.dir.x) * ls.dir;
+                        //This ensures that beam will end on edges closer to source
+                        v2 = new Vector2(lims[1].x + (1.0f - (v2.y / beamLength)) * EPSILON, v2.y);
+                    }
+
                     if (transitionReady)
                     {
-                        if (v1.x < xLims[0] && v2.x >= xLims[0])
-                        {
-                            LineSegment ls = new LineSegment(v1, v2);
-                            v1 = ls.p1 + ((xLims[0] - ls.p1.x) / ls.dir.x) * ls.dir;
-                            v1 = new Vector2(xLims[0] - EPSILON, v1.y);
-                        }
-                        
                         contiguousVertices = new LinkedList<Vector2>();
                         sortedKeyVertices.Add(contiguousVertices.AddLast(v1));
                         transitionReady = false;
                     }
 
-                    if (v1.x < xLims[1] && v2.x >= xLims[1])
-                    {
-                        LineSegment ls = new LineSegment(v1, v2);
-                        v2 = ls.p1 + ((xLims[1] - ls.p1.x) / ls.dir.x) * ls.dir;
-                        //This ensures that beam will end on edges closer to source
-                        v2 = new Vector2(xLims[1] + (1.0f - (v2.y / beamLength)) * EPSILON, v2.y);
-                    }
-
                     LinkedListNode<Vector2> vNode = contiguousVertices.AddLast(v2);
                     sortedKeyVertices.Add(vNode);
+                    
                 }
                 else
                 {
@@ -194,8 +236,8 @@ public class Beam : MonoBehaviour
         }
 
         LinkedList<Vector2> topLightBound = new LinkedList<Vector2>();
-        Vector2 vts = new Vector2(xLims[0], beamLength);
-        Vector2 vte = new Vector2(xLims[1], beamLength);
+        Vector2 vts = new Vector2(lims[0].x, beamLength);
+        Vector2 vte = new Vector2(lims[1].x, beamLength);
         LinkedListNode<Vector2> leftBound = topLightBound.AddLast(vts);
         LinkedListNode<Vector2> rightBound = topLightBound.AddLast(vte);
         sortedKeyVertices.Add(leftBound);
@@ -206,7 +248,7 @@ public class Beam : MonoBehaviour
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
         List<Vector2> beamBounds = new List<Vector2>();
-        beamBounds.Add(xLims[0] * Vector2.right);
+        beamBounds.Add(lims[0]);
 
         LinkedListNode<Vector2> curClosestEdge = null;
         
@@ -298,7 +340,7 @@ public class Beam : MonoBehaviour
             }
         }
 
-        beamBounds.Add(xLims[1] * Vector2.right);
+        beamBounds.Add(lims[1]);
 
         return new List<Vector2>[] { beamBounds };
     }

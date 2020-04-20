@@ -11,8 +11,8 @@ public class ObstacleDetector : MonoBehaviour
     {
         beam = GetComponentInParent<Beam>();
         BoxCollider2D col = GetComponent<BoxCollider2D>();
-        col.offset = new Vector2((beam.xLims[1] + beam.xLims[0]) / 2.0f, beam.beamLength / 2.0f);
-        col.size = new Vector2(beam.xLims[1] - beam.xLims[0], beam.beamLength);
+        col.offset = new Vector2((beam.lims[1].x + beam.lims[0].x) / 2.0f, beam.beamLength / 2.0f);
+        col.size = new Vector2(beam.lims[1].x - beam.lims[0].x, beam.beamLength);
     }
 
     private void FixedUpdate()
