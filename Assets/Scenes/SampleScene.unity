@@ -159,7 +159,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   obstacles: []
   beamLength: 20
-  xLims: []
+  lims:
+  - {x: -0.5, y: 0}
+  - {x: 0.5, y: 0}
   beamColor: {r: 1, g: 0, b: 0, a: 0.5}
 --- !u!1 &170076733
 GameObject:
@@ -1292,6 +1294,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Beam (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 232896413665371495, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
