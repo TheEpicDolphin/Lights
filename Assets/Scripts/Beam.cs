@@ -124,111 +124,8 @@ public class Beam : MonoBehaviour
 
     private List<Vector2>[] Cast(Vector2[] lims)
     {
-        
-        List<float> demarcations = new List<float>() { lims[0].x, lims[1].x };
-        Vector2[] limsWorld = new Vector2[] { transform.TransformPoint(lims[0]), transform.TransformPoint(lims[1]) };
 
-        HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
-        foreach (Obstacle obst in obstacles)
-        {
-            if (Geometry.IsInPolygon(lims[0], obst.GetBoundVerts()))
-            {
-                //Get the obstacles that currently contain the leftmost point
-                containingObstacles.Add(obst);
-            }
-        }
-
-        bool contained = containingObstacles.Count > 0;
-        Vector2 left = limsWorld[0];
-        RaycastHit2D hit;
-        while (hit = Physics2D.Linecast(left, limsWorld[1], 1 << 12))
-        {
-            /*
-            if (containingObstacles.Contains(obst))
-            {
-                containingObstacles.Remove(obst);
-            }
-            else
-            {
-                containingObstacles.Add(obst);
-            }
-
-            if (contained && containingObstacles.Count == 0)
-            {
-                contained = false;
-            }
-
-            if (!contained && containingObstacles.Count > 0)
-            {
-                contained = true;
-            }
-            */
-            left = hit.point + EPSILON * (limsWorld[1] - limsWorld[0]).normalized;
-            Debug.Log(left);
-        }
-        /*
-        Vector2[] limsWorld = new Vector2[] { transform.TransformPoint(lims[0]), transform.TransformPoint(lims[1]) };
-        RaycastHit2D[] rightwardHits = Physics2D.LinecastAll(limsWorld[0], limsWorld[1], 1 << 12);
-        //RaycastHit2D[] leftwardHits = Physics2D.LinecastAll(limsWorld[1], limsWorld[0], 1 << 12);
-        Tuple<float, Obstacle>[] intersections = new Tuple<float, Obstacle>[rightwardHits.Length];
-
-        Debug.Log(rightwardHits.Length);
-
-        HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
-        for (int i = 0; i < rightwardHits.Length; i++)
-        {
-            float t = rightwardHits[i].distance;
-            Obstacle obst = rightwardHits[i].collider.GetComponent<Obstacle>();
-            intersections[i] = new Tuple<float, Obstacle>(t, obst);
-
-            if (Geometry.IsInPolygon(lims[0], obst.GetBoundVerts()))
-            {
-                //Get the obstacles that currently contain the leftmost point
-                containingObstacles.Add(obst);
-            }
-        }
-        System.Array.Sort(intersections);
-
-        bool contained = containingObstacles.Count > 0;
-        for (int i = 0; i < intersections.Length; i++)
-        {
-            float t = intersections[i].el1;
-            Obstacle obst = intersections[i].el2;
-
-            if (containingObstacles.Contains(obst))
-            {
-                containingObstacles.Remove(obst);
-            }
-            else
-            {
-                containingObstacles.Add(obst);
-            }
-
-            if(contained && containingObstacles.Count == 0)
-            {
-                contained = false;
-            }
-
-            if(!contained && containingObstacles.Count > 0)
-            {
-                contained = true;
-            }
-            
-        }
-        */
-
-        /*
-        if (rightwardHits.Length > 0)
-        {
-            Obstacle obst = rightwardHits[0].collider.GetComponent<Obstacle>();
-            if(!Geometry.IsInPolygon(limsWorld[0], obst.GetBoundVerts()))
-            {
-                Debug.Log("FUCK 1");
-            }
-            Debug.Log(rightwardHits[0].distance);
-        }
-        */
-
+        List<Tuple<float, Obstacle>> beamSourceIntersections = new List<Tuple<float, Obstacle>>();
         List<LinkedListNode<Vector2>> sortedKeyVertices = new List<LinkedListNode<Vector2>>();
 
         foreach (Obstacle obstacle in obstacles)
@@ -237,7 +134,6 @@ public class Beam : MonoBehaviour
 
             bool transitionReady = false;
             int i = 0;
-            int iEnd = obstacleBoundVerts.Length - 1;
             //Wait for first away -> towards transition
             while (i < obstacleBoundVerts.Length)
             {
@@ -247,7 +143,6 @@ public class Beam : MonoBehaviour
                 {
                     if (transitionReady)
                     {
-                        iEnd = i - 1;
                         break;
                     }
                 }
@@ -260,11 +155,25 @@ public class Beam : MonoBehaviour
             i %= obstacleBoundVerts.Length;
 
             LinkedList<Vector2> contiguousVertices = new LinkedList<Vector2>();
-            while (i != iEnd)
+            for(int t = 0; t < obstacleBoundVerts.Length; t++)
             {
                 Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
                 i = (i + 1) % obstacleBoundVerts.Length;
                 Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
+
+                bool potentialIntersection = (Geometry.Det(lims[1] - lims[0], v1 - lims[0]) > 0) ^ (Geometry.Det(lims[1] - lims[0], v2 - lims[0]) > 0);
+                Vector2 intersection;
+                //Debug.Log(lims[0].ToString("f4") + ", " + lims[1].ToString("f4"));
+                //Debug.Log(v1.ToString("f4") + ", " + v2.ToString("f4"));
+                //Debug.Log(potentialIntersection);
+                //Debug.Log(Geometry.IntersectLines2D(lims[0], lims[1], v1, v2, out intersection));
+                if (potentialIntersection && Geometry.IntersectLines2D(lims[0], lims[1], v1, v2, out intersection))
+                {
+                    if (intersection.x > lims[0].x && intersection.x < lims[1].x)
+                    {
+                        beamSourceIntersections.Add(new Tuple<float, Obstacle>(intersection.x, obstacle));
+                    }
+                }
 
                 bool outOfBounds = (v1.x < lims[0].x && v2.x < lims[0].x) || (v1.x > lims[1].x && v2.x > lims[1].x) ||
                     (Geometry.Det(lims[1] - lims[0], v1 - lims[0]) < 0 && Geometry.Det(lims[1] - lims[0], v2 - lims[0]) < 0);
@@ -285,12 +194,63 @@ public class Beam : MonoBehaviour
                 {
                     transitionReady = true;
                 }
-
             }
 
         }
 
-        
+        beamSourceIntersections.Sort();
+        HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
+        Vector2 lims0World = transform.TransformPoint(lims[0]);
+        foreach (Obstacle obst in obstacles)
+        {
+            if (Geometry.IsInPolygon(lims0World, obst.GetBoundVerts()))
+            {
+                //Get the obstacles that currently contain the leftmost point
+                containingObstacles.Add(obst);
+            }
+        }
+
+        //List<float> demarcations = new List<float>() { lims[0].x, lims[1].x };
+        List<float> demarcations = new List<float>();
+        bool inObstacle = containingObstacles.Count > 0;
+        if (!inObstacle)
+        {
+            demarcations.Add(lims[0].x);
+        }
+
+        foreach(Tuple<float, Obstacle> intersection in beamSourceIntersections)
+        {
+            float t = intersection.el1;
+            Obstacle obst = intersection.el2;
+            
+            if (containingObstacles.Contains(obst))
+            {
+                containingObstacles.Remove(obst);
+            }
+            else
+            {
+                containingObstacles.Add(obst);
+            }
+
+            if (inObstacle && containingObstacles.Count == 0)
+            {
+                inObstacle = false;
+                demarcations.Add(t);
+            }
+            else if (!inObstacle && containingObstacles.Count > 0)
+            {
+                inObstacle = true;
+                demarcations.Add(t);
+            }
+        }
+
+        if (!inObstacle)
+        {
+            demarcations.Add(lims[1].x);
+            inObstacle = true;
+        }
+
+
         LinkedList<Vector2> leftLightBound = new LinkedList<Vector2>();
         Vector2 vls = new Vector2(lims[0].x - EPSILON, -EPSILON);
         Vector2 vle = new Vector2(lims[0].x + EPSILON, EPSILON);
