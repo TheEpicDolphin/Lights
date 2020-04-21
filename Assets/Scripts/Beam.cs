@@ -56,26 +56,33 @@ public class Beam : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        List<Vector2>[] beamBoundSections = Cast(lims);
-        List<Vector2> beamBounds = beamBoundSections[0];
-
-        // Use the triangulator to get indices for creating triangles
-        Triangulator tr = new Triangulator(beamBounds.ToArray());
-        int[] indices = tr.Triangulate();
-
-        //Debug.Log("START");
-        // Create the Vector3 vertices
         List<Vector3> vertices = new List<Vector3>();
-        for (int i = 0; i < beamBounds.Count; i++)
+        List<int> indicesList = new List<int>();
+
+        List<Vector2>[] beamComponents = Cast(lims);
+        foreach(List<Vector2> beamComponent in beamComponents)
         {
-            //Debug.Log(beamBounds[i].ToString("F4"));
-            vertices.Add(new Vector3(beamBounds[i].x, beamBounds[i].y, 0));
+            // Use the triangulator to get indices for creating triangles
+            Triangulator tr = new Triangulator(beamComponent.ToArray());
+            int[] indices = tr.Triangulate();
+            //TODO: adjust indices for larger vertices array
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                indicesList.Add(indices[i] + vertices.Count);
+            }
+
+            for (int i = 0; i < beamComponent.Count; i++)
+            {
+                //Debug.Log(beamBounds[i].ToString("F4"));
+                vertices.Add(new Vector3(beamComponent[i].x, beamComponent[i].y, 0));
+            }
+
         }
 
         meshFilt.mesh.Clear();
         meshFilt.mesh.SetVertices(vertices);
-        meshFilt.mesh.SetTriangles(indices, 0);
+        meshFilt.mesh.SetTriangles(indicesList.ToArray(), 0);
         meshFilt.mesh.RecalculateNormals();
         meshFilt.mesh.RecalculateBounds();
         
