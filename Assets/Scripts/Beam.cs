@@ -277,7 +277,9 @@ public class Beam : MonoBehaviour
         bool blocked = true;
 
         List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
-        List<Vector2> beamBounds = new List<Vector2>();
+        List<Vector2>[] beamComponents = new List<Vector2>[demarcations.Count / 2];
+        int beamIdx = -1;
+
         LinkedListNode<Vector2> curClosestEdge = sortedKeyVertices[0];
 
         foreach (LinkedListNode<Vector2> vertNode in sortedKeyVertices)
@@ -323,7 +325,13 @@ public class Beam : MonoBehaviour
 
                 if (vs.x >= demarcations[0])
                 {
-                    beamBounds.Add(new Vector2(demarcations[0], 0.0f));
+                    if (blocked)
+                    {
+                        beamIdx += 1;
+                        beamComponents[beamIdx] = new List<Vector2>();
+                    }
+                    beamComponents[beamIdx].Add(new Vector2(demarcations[0], 0.0f));
+                    //beamBounds.Add(new Vector2(demarcations[0], 0.0f));
                     blocked = !blocked;
                     demarcations.RemoveAt(0);
                 }
@@ -333,11 +341,13 @@ public class Beam : MonoBehaviour
                     
                     if (prevClosestEdge.Next != curClosestEdge && vertNode == curClosestEdge)
                     {
-                        beamBounds.Add(clipPrev);
+                        //beamBounds.Add(clipPrev);
+                        beamComponents[beamIdx].Add(clipPrev);
                     }
                     if (vertNode == curClosestEdge)
                     {
-                        beamBounds.Add(closestVert);
+                        //beamBounds.Add(closestVert);
+                        beamComponents[beamIdx].Add(closestVert);
                     }
                 }
                 
@@ -367,23 +377,32 @@ public class Beam : MonoBehaviour
 
                     if (ve.x >= demarcations[0])
                     {
-                        beamBounds.Add(new Vector2(demarcations[0], 0.0f));
+                        if (blocked)
+                        {
+                            beamIdx += 1;
+                            beamComponents[beamIdx] = new List<Vector2>();
+                        }
+                        beamComponents[beamIdx].Add(new Vector2(demarcations[0], 0.0f));
+                        //beamBounds.Add(new Vector2(demarcations[0], 0.0f));
                         blocked = !blocked;
                         demarcations.RemoveAt(0);
                     }
 
                     if (!blocked)
                     {
-                        beamBounds.Add(ve);
-                        beamBounds.Add(nextClosestVert);
+                        //beamBounds.Add(ve);
+                        //beamBounds.Add(nextClosestVert);
+                        beamComponents[beamIdx].Add(ve);
+                        beamComponents[beamIdx].Add(nextClosestVert);
                     }
                                       
                 }
 
             }
         }
-        
-        return new List<Vector2>[] { beamBounds };
+
+        //return new List<Vector2>[] { beamBounds };
+        return beamComponents;
     }
 
     /*
