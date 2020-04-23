@@ -6,14 +6,16 @@ namespace AlgorithmUtils
 {
     public enum CompCondition
     {
-        GREATER_THAN,
-        LESS_THAN
+        SMALLEST_GEQUAL,
+        LARGEST_LEQUAL
     }
 
     public class Algorithm
     {
-        //If condition == GREATER_THAN, then value at returned index is GREATER than input val
-        //If condition == LESS_THAN, then value at returned index is LESS than input val
+        //If condition == SMALLEST_GEQUAL, then value at returned index is the smallest number that
+        //              is greater than or equal to input val
+        //If condition == LARGEST_LEQUAL, then value at returned index is the largest number that is 
+        //              less than or equal to input val       
         internal static int BinarySearch(List<float> ar, CompCondition condition, float val)
         {
             int n = ar.Count;
@@ -22,22 +24,49 @@ namespace AlgorithmUtils
             while (e - s > 1)
             {
                 int mid = (s + e) / 2;
-                if (ar[mid] < val)
+                
+                if(Mathf.Abs(ar[mid] - val) < Mathf.Epsilon)
+                {
+                    if (condition == CompCondition.LARGEST_LEQUAL)
+                    {
+                        s = mid + 1;
+                    }
+                    else if(condition == CompCondition.SMALLEST_GEQUAL)
+                    {
+                        e = mid - 1;
+                    }
+                }
+                else if (ar[mid] < val)
                 {
                     s = mid;
                 }
-                else
+                else if(ar[mid] > val)
                 {
                     e = mid;
                 }
             }
-            if(condition == CompCondition.GREATER_THAN)
+            
+            if(condition == CompCondition.LARGEST_LEQUAL)
             {
-                return e;
+                if (Mathf.Abs(ar[e] - val) < Mathf.Epsilon)
+                {
+                    return e;
+                }
+                else
+                {
+                    return e - 1;
+                }
             }
-            else if(condition == CompCondition.LESS_THAN)
+            else if(condition == CompCondition.SMALLEST_GEQUAL)
             {
-                return s;
+                if (Mathf.Abs(ar[s] - val) < Mathf.Epsilon)
+                {
+                    return s;
+                }
+                else
+                {
+                    return s + 1;
+                }
             }
             return s;
         }

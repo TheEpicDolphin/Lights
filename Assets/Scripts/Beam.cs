@@ -26,12 +26,10 @@ public class Beam : MonoBehaviour
     {
         public Vector2 v;
         public Obstacle obsRef;
-        public int priority;
-        public ObstacleVertex(Vector2 v, Obstacle obs, int priority)
+        public ObstacleVertex(Vector2 v, Obstacle obs)
         {
             this.v = v;
             this.obsRef = obs;
-            this.priority = priority;
         }
     }
 
@@ -203,26 +201,12 @@ public class Beam : MonoBehaviour
                     if (transitionReady)
                     {
                         contiguousVertices = new LinkedList<ObstacleVertex>();
-                        sortedKeyVertices.Add(contiguousVertices.AddLast(new ObstacleVertex(v1, obstacle, 0)));
+                        sortedKeyVertices.Add(contiguousVertices.AddLast(new ObstacleVertex(v1, obstacle)));
                         transitionReady = false;
                     }
 
-                    sortedKeyVertices.Add(contiguousVertices.AddLast(new ObstacleVertex(v2, obstacle, 0)));
+                    sortedKeyVertices.Add(contiguousVertices.AddLast(new ObstacleVertex(v2, obstacle)));
                 }
-                /*
-                else if (v1.x >= v2.x && !isOutOfBounds)
-                {
-                    //Normal is facing away from beam
-                    if (transitionReady)
-                    {
-                        contiguousVertices = new LinkedList<ObstacleVertex>();
-                        sortedKeyVertices.Add(contiguousVertices.AddFirst(new ObstacleVertex(v1, obstacle, 1)));
-                        transitionReady = false;
-                    }
-
-                    sortedKeyVertices.Add(contiguousVertices.AddFirst(new ObstacleVertex(v2, obstacle, 1)));
-                }
-                */
                 else
                 {
                     transitionReady = true;
@@ -231,6 +215,8 @@ public class Beam : MonoBehaviour
 
         }
 
+        //List<Vector2> demarcations = new List<Vector2>() { lims[0], lims[1] };
+        
         //Sort intersections with obstacles and beam source by x
         sourceIntersections.OrderBy(intersection => intersection.el1.x);
         HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
@@ -287,19 +273,14 @@ public class Beam : MonoBehaviour
 
 
         LinkedList<ObstacleVertex> topLightBound = new LinkedList<ObstacleVertex>();
-        Vector2 vts = new Vector2(lims[0].x - EPSILON, beamLength);
-        Vector2 vte = new Vector2(lims[1].x + EPSILON, beamLength);
-        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vts, dummy, 0)));
-        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vte, dummy, 0)));
+        Vector2 vts = new Vector2(lims[0].x - 0.1f, beamLength);
+        Vector2 vte = new Vector2(lims[1].x + 0.1f, beamLength);
+        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vts, dummy)));
+        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vte, dummy)));
 
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.v.x).ThenBy(node => node.Value.v.y).ToList();
-
-        //sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.v.x)
-        //                        .ThenBy(node => node.Value.v.y)
-        //                        .ThenBy(node => node.Value.priority).ToList();
-
 
         List<LinkedListNode<ObstacleVertex>> activeEdges = new List<LinkedListNode<ObstacleVertex>>();
         List<Vector2> beamFunction = new List<Vector2>();
@@ -336,7 +317,8 @@ public class Beam : MonoBehaviour
                     Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
                     if (clip.y < closestVert.y)
                     {
-                        closestVert = clip;
+                        //closestVert = clip;
+                        closestVert.y = clip.y;
                         curClosestEdge = activeEdge;
                     }
                 }
@@ -382,6 +364,7 @@ public class Beam : MonoBehaviour
 
         }
 
+        Debug.Log("FUNCTION");
         List<float> beamFunctionXs = new List<float>();
         foreach(Vector2 p in beamFunction)
         {
@@ -390,15 +373,42 @@ public class Beam : MonoBehaviour
         }
 
         List<Vector2>[] beamComponents = new List<Vector2>[demarcations.Count / 2];
+
+        for (int i = 0; i < demarcations.Count; i += 2)
+        {
+            //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
+            int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LARGEST_LEQUAL, demarcations[i].x);
+            int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.SMALLEST_GEQUAL, demarcations[i + 1].x);
+            Vector2 dir1 = (beamFunction[s + 1] - beamFunction[s]).normalized;
+            Vector2 clipStart = beamFunction[s] + ((demarcations[i].x - beamFunction[s].x) / dir1.x) * dir1;
+            //Debug.Log(beamFunction[s].ToString("F4"));
+            //Debug.Log(beamFunction[s + 1].ToString("F4"));
+            Debug.Log(s);
+            Debug.Log(e);
+
+            Vector2 dir2 = (beamFunction[e + 1] - beamFunction[e]).normalized;
+            Vector2 clipEnd = beamFunction[e] + ((demarcations[i + 1].x - beamFunction[e].x) / dir2.x) * dir2;
+            
+            beamComponents[i / 2] = new List<Vector2>() { demarcations[i], clipStart };
+
+            for (int j = s + 1; j <= e; j++)
+            {
+                beamComponents[i / 2].Add(beamFunction[j]);
+            }
+            beamComponents[i / 2].Add(clipEnd);
+            beamComponents[i / 2].Add(demarcations[i + 1]);
+        }
+
+        /*
         for(int i = 0; i < demarcations.Count; i += 2)
         {
             //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
             int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LESS_THAN, demarcations[i].x);
             int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LESS_THAN, demarcations[i + 1].x);
-            Debug.Log(s);
-            Debug.Log(e);
             Vector2 dir1 = (beamFunction[s + 1] - beamFunction[s]).normalized;
             Vector2 clipStart = beamFunction[s] + ((demarcations[i].x - beamFunction[s].x) / dir1.x) * dir1;
+            Debug.Log(beamFunction[s].ToString("F4"));
+            Debug.Log(clipStart.ToString("F4"));
 
             Vector2 dir2 = (beamFunction[e + 1] - beamFunction[e]).normalized;
             Vector2 clipEnd = beamFunction[e] + ((demarcations[i + 1].x - beamFunction[e].x) / dir2.x) * dir2;
@@ -411,6 +421,7 @@ public class Beam : MonoBehaviour
             beamComponents[i / 2].Add(clipEnd);
             beamComponents[i / 2].Add(demarcations[i + 1]);
         }
+        */
 
         return beamComponents;
     }
