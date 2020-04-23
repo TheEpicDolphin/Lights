@@ -70,27 +70,26 @@ public class Beam : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         List<int> indicesList = new List<int>();
 
-        Debug.Log("START");
+        
         List<Vector2>[] beamComponents = Cast(lims);
-        foreach(List<Vector2> beamComponent in beamComponents)
+        //Debug.Log("BEAM");
+        foreach (List<Vector2> beamComponent in beamComponents)
         {
             // Use the triangulator to get indices for creating triangles
             Triangulator tr = new Triangulator(beamComponent.ToArray());
             int[] indices = tr.Triangulate();
-            //TODO: adjust indices for larger vertices array
-
             for (int i = 0; i < indices.Length; i++)
             {
                 indicesList.Add(indices[i] + vertices.Count);
             }
 
+            //Debug.Log("COMPONENT");
             for (int i = 0; i < beamComponent.Count; i++)
             {
-                Debug.Log(beamComponent[i].ToString("F4"));
-                
+                //Debug.Log(beamComponent[i].ToString("F4"));
                 vertices.Add(new Vector3(beamComponent[i].x, beamComponent[i].y, 0));
             }
-            Debug.Log("----------------");
+            //Debug.Log("----------------");
 
         }
 
@@ -215,8 +214,6 @@ public class Beam : MonoBehaviour
 
         }
 
-        //List<Vector2> demarcations = new List<Vector2>() { lims[0], lims[1] };
-        
         //Sort intersections with obstacles and beam source by x
         sourceIntersections.OrderBy(intersection => intersection.el1.x);
         HashSet<Obstacle> containingObstacles = new HashSet<Obstacle>();
@@ -229,7 +226,6 @@ public class Beam : MonoBehaviour
                 containingObstacles.Add(obst);
             }
         }
-
         
         List<Vector2> demarcations = new List<Vector2>();
         bool inObstacle = containingObstacles.Count > 0;
@@ -271,13 +267,11 @@ public class Beam : MonoBehaviour
         }
         
 
-
         LinkedList<ObstacleVertex> topLightBound = new LinkedList<ObstacleVertex>();
         Vector2 vts = new Vector2(lims[0].x - 0.1f, beamLength);
         Vector2 vte = new Vector2(lims[1].x + 0.1f, beamLength);
         sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vts, dummy)));
         sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vte, dummy)));
-
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.v.x).ThenBy(node => node.Value.v.y).ToList();
@@ -317,7 +311,6 @@ public class Beam : MonoBehaviour
                     Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
                     if (clip.y < closestVert.y)
                     {
-                        //closestVert = clip;
                         closestVert.y = clip.y;
                         curClosestEdge = activeEdge;
                     }
@@ -351,7 +344,7 @@ public class Beam : MonoBehaviour
                         Vector2 clip = ls.p1 + ((ve.x - ls.p1.x) / ls.dir.x) * ls.dir;
                         if (clip.y < nextClosestVert.y)
                         {
-                            nextClosestVert = clip;
+                            nextClosestVert.y = clip.y;
                             curClosestEdge = activeEdge;
                         }
                     }
@@ -377,20 +370,37 @@ public class Beam : MonoBehaviour
             //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
             int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LARGEST_LEQUAL, demarcations[i].x);
             int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.SMALLEST_GEQUAL, demarcations[i + 1].x);
+
             Vector2 dir1 = (beamFunction[s + 1] - beamFunction[s]).normalized;
             Vector2 clipStart = beamFunction[s] + ((demarcations[i].x - beamFunction[s].x) / dir1.x) * dir1;
 
             Vector2 dir2 = (beamFunction[e] - beamFunction[e - 1]).normalized;
             Vector2 clipEnd = beamFunction[e - 1] + ((demarcations[i + 1].x - beamFunction[e - 1].x) / dir2.x) * dir2;
-            
-            beamComponents[i / 2] = new List<Vector2>() { demarcations[i], clipStart };
+
+            if(demarcations[i] == clipStart)
+            {
+                beamComponents[i / 2] = new List<Vector2>() { demarcations[i] };
+            }
+            else
+            {
+                beamComponents[i / 2] = new List<Vector2>() { demarcations[i], clipStart };
+            }
 
             for (int j = s + 1; j < e; j++)
             {
                 beamComponents[i / 2].Add(beamFunction[j]);
             }
-            beamComponents[i / 2].Add(clipEnd);
-            beamComponents[i / 2].Add(demarcations[i + 1]);
+
+            if(demarcations[i + 1] == clipEnd)
+            {
+                beamComponents[i / 2].Add(demarcations[i + 1]);
+            }
+            else
+            {
+                beamComponents[i / 2].Add(clipEnd);
+                beamComponents[i / 2].Add(demarcations[i + 1]);
+            }
+            
         }
 
         return beamComponents;
@@ -919,215 +929,6 @@ public class Beam : MonoBehaviour
 
         //return new List<Vector2>[] { beamBounds };
         return beamComponents;
-    }
-    */
-
-    /*
-    private List<Vector2>[] Cast(Vector2[] lims)
-    {
-
-        List<LinkedListNode<Vector2>> sortedKeyVertices = new List<LinkedListNode<Vector2>>();
-        List<Vector2[]> intersectedObstacles = new List<Vector2[]>();
-
-        foreach (Obstacle obstacle in obstacles)
-        {
-            Vector2[] obstacleBoundVerts = obstacle.GetBoundVerts();
-
-            bool transitionReady = false;
-            int i = 0;
-            int iEnd = obstacleBoundVerts.Length - 1;
-            //Wait for first away -> towards transition
-            while (i < obstacleBoundVerts.Length)
-            {
-                Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
-                Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[(i + 1) % obstacleBoundVerts.Length]);
-                if (v1.x < v2.x)
-                {
-                    if (transitionReady)
-                    {
-                        iEnd = i - 1;
-                        break;
-                    }
-                }
-                else
-                {
-                    transitionReady = true;
-                }
-                i += 1;
-            }
-            i %= obstacleBoundVerts.Length;
-
-            LinkedList<Vector2> contiguousVertices = new LinkedList<Vector2>();
-            while (i != iEnd)
-            {
-                Vector2 v1 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
-                i = (i + 1) % obstacleBoundVerts.Length;
-                Vector2 v2 = transform.InverseTransformPoint(obstacleBoundVerts[i]);
-
-                bool outOfBounds = (v1.x < lims[0].x && v2.x < lims[0].x) || (v1.x > lims[1].x && v2.x > lims[1].x) ||
-                    (Det(lims[1] - lims[0], v1 - lims[0]) < 0 && Det(lims[1] - lims[0], v2 - lims[0]) < 0);
-                if (v1.x < v2.x && !outOfBounds)
-                {
-                    
-                    float t;
-                    Vector2 dir = (v2 - v1).normalized;
-                    if (IntersectLines2D(v1, dir, lims[0], (lims[1] - lims[0]).normalized, out t) &&
-                        !(Det(lims[1] - lims[0], v1 - lims[0]) > 0 && Det(lims[1] - lims[0], v2 - lims[0]) > 0))
-                    {
-                        if (Det(lims[1] - lims[0], v1 - lims[0]) > 0)
-                        {
-                            v2 = v1 + t * dir;
-                        }
-                        else
-                        {
-                            v1 = v1 + t * dir;
-                        }
-                    }
-                    
-
-                    if (v1.x < lims[0].x && v2.x >= lims[0].x)
-                    {
-                        LineSegment ls = new LineSegment(v1, v2);
-                        v1 = ls.p1 + ((lims[0].x - ls.p1.x) / ls.dir.x) * ls.dir;
-                        v1 = new Vector2(lims[0].x - EPSILON, v1.y);
-                    }
-
-                    if (v1.x < lims[1].x && v2.x >= lims[1].x)
-                    {
-                        LineSegment ls = new LineSegment(v1, v2);
-                        v2 = ls.p1 + ((lims[1].x - ls.p1.x) / ls.dir.x) * ls.dir;
-                        //This ensures that beam will end on edges closer to source
-                        v2 = new Vector2(lims[1].x + (1.0f - (v2.y / beamLength)) * EPSILON, v2.y);
-                    }
-
-                    if (transitionReady)
-                    {
-                        contiguousVertices = new LinkedList<Vector2>();
-                        sortedKeyVertices.Add(contiguousVertices.AddLast(v1));
-                        transitionReady = false;
-                    }
-
-                    LinkedListNode<Vector2> vNode = contiguousVertices.AddLast(v2);
-                    sortedKeyVertices.Add(vNode);
-                    
-                }
-                else
-                {
-                    transitionReady = true;
-                }
-                
-            }
-
-        }
-
-        LinkedList<Vector2> topLightBound = new LinkedList<Vector2>();
-        Vector2 vts = new Vector2(lims[0].x, beamLength);
-        Vector2 vte = new Vector2(lims[1].x, beamLength);
-        LinkedListNode<Vector2> leftBound = topLightBound.AddLast(vts);
-        LinkedListNode<Vector2> rightBound = topLightBound.AddLast(vte);
-        sortedKeyVertices.Add(leftBound);
-        sortedKeyVertices.Add(rightBound);
-
-        //Order by increasing x and then increasing y
-        sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.x).ThenBy(node => node.Value.y).ToList();
-
-        List<LinkedListNode<Vector2>> activeEdges = new List<LinkedListNode<Vector2>>();
-        List<Vector2> beamBounds = new List<Vector2>();
-        beamBounds.Add(lims[0]);
-
-        LinkedListNode<Vector2> curClosestEdge = null;
-        
-        foreach (LinkedListNode<Vector2> vertNode in sortedKeyVertices)
-        {
-            if (vertNode.Next != null)
-            {
-                //This is not an end node
-                Vector2 vs = vertNode.Value;
-
-                if(vertNode.Previous == null)
-                {
-                    activeEdges.Add(vertNode);
-                }
-                else
-                {
-                    int j = activeEdges.IndexOf(vertNode.Previous);
-                    activeEdges[j] = vertNode;
-                }
-
-                
-                //First edge vertex gets added immediately
-                if (curClosestEdge == null)
-                {
-                    curClosestEdge = vertNode;
-                    beamBounds.Add(vertNode.Value);
-                    continue;
-                }
-
-                LinkedListNode<Vector2> prevClosestEdge = curClosestEdge;
-
-                LineSegment lsPrev = new LineSegment(prevClosestEdge.Value, prevClosestEdge.Next.Value);
-                Vector2 clipPrev = lsPrev.p1 + ((vs.x - lsPrev.p1.x) / lsPrev.dir.x) * lsPrev.dir;
-
-                Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
-                foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
-                {
-                    Vector2 activeEdgeStart = activeEdge.Value;
-                    Vector2 activeEdgeEnd = activeEdge.Next.Value;
-                    LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
-                    Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
-                    if (clip.y < closestVert.y)
-                    {
-                        closestVert = clip;
-                        curClosestEdge = activeEdge;
-                    }
-                }
-
-                if(prevClosestEdge.Next != curClosestEdge && vertNode == curClosestEdge)
-                {
-                    beamBounds.Add(clipPrev);
-                }
-                if(vertNode == curClosestEdge)
-                {
-                    beamBounds.Add(closestVert);
-                }
-            }
-            else
-            {
-                activeEdges.Remove(vertNode.Previous);
-                if(vertNode.Previous == curClosestEdge)
-                {
-                    //This is an end node
-                    Vector2 ve = vertNode.Value;
-                    beamBounds.Add(ve);
-
-                    if (activeEdges.Count == 0)
-                    {
-                        //No more edges
-                        break;
-                    }
-                    //Check if this is the end node of the currently closest edge
-                    Vector2 nextClosestVert = new Vector2(ve.x, Mathf.Infinity);
-                    foreach (LinkedListNode<Vector2> activeEdge in activeEdges)
-                    {
-                        Vector2 activeEdgeStart = activeEdge.Value;
-                        Vector2 activeEdgeEnd = activeEdge.Next.Value;
-                        LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
-                        Vector2 clip = ls.p1 + ((ve.x - ls.p1.x) / ls.dir.x) * ls.dir;
-                        if (clip.y < nextClosestVert.y)
-                        {
-                            nextClosestVert = clip;
-                            curClosestEdge = activeEdge;
-                        }
-                    }
-                    beamBounds.Add(nextClosestVert);
-                }             
-                
-            }
-        }
-
-        beamBounds.Add(lims[1]);
-
-        return new List<Vector2>[] { beamBounds };
     }
     */
 

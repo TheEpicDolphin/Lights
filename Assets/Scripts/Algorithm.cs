@@ -25,15 +25,25 @@ namespace AlgorithmUtils
             {
                 int mid = (s + e) / 2;
                 
-                if(Mathf.Abs(ar[mid] - val) < Mathf.Epsilon)
+                if(ar[mid] == val)
                 {
                     if (condition == CompCondition.LARGEST_LEQUAL)
                     {
-                        s = mid + 1;
+                        int i = mid + 1;
+                        while(i <= e && ar[i] == val)
+                        {
+                            i += 1;
+                        }
+                        return i - 1;
                     }
                     else if(condition == CompCondition.SMALLEST_GEQUAL)
                     {
-                        e = mid - 1;
+                        int i = mid - 1;
+                        while (i >= s && ar[i] == val)
+                        {
+                            i -= 1;
+                        }
+                        return i + 1;
                     }
                 }
                 else if (ar[mid] < val)
@@ -45,30 +55,15 @@ namespace AlgorithmUtils
                     e = mid;
                 }
             }
-            
             if(condition == CompCondition.LARGEST_LEQUAL)
             {
-                if (Mathf.Abs(ar[e] - val) < Mathf.Epsilon)
-                {
-                    return e;
-                }
-                else
-                {
-                    return e - 1;
-                }
+                return s;
             }
             else if(condition == CompCondition.SMALLEST_GEQUAL)
             {
-                if (Mathf.Abs(ar[s] - val) < Mathf.Epsilon)
-                {
-                    return s;
-                }
-                else
-                {
-                    return s + 1;
-                }
+                return e;
             }
-            return s;
+            return -1;
         }
 
     }
