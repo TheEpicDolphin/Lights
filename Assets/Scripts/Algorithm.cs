@@ -19,10 +19,10 @@ namespace AlgorithmUtils
             int n = ar.Count;
             int s = 0;
             int e = n - 1;
-            while (e - s <= 1)
+            while (e - s > 1)
             {
                 int mid = (s + e) / 2;
-                if(ar[mid] < val)
+                if (ar[mid] < val)
                 {
                     s = mid;
                 }
@@ -31,14 +31,13 @@ namespace AlgorithmUtils
                     e = mid;
                 }
             }
-
             if(condition == CompCondition.GREATER_THAN)
             {
-                return s;
+                return e;
             }
             else if(condition == CompCondition.LESS_THAN)
             {
-                return e;
+                return s;
             }
             return s;
         }
