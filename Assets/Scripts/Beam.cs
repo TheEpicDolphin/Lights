@@ -364,11 +364,9 @@ public class Beam : MonoBehaviour
 
         }
 
-        Debug.Log("FUNCTION");
         List<float> beamFunctionXs = new List<float>();
         foreach(Vector2 p in beamFunction)
         {
-            Debug.Log(p);
             beamFunctionXs.Add(p.x);
         }
 
@@ -381,47 +379,19 @@ public class Beam : MonoBehaviour
             int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.SMALLEST_GEQUAL, demarcations[i + 1].x);
             Vector2 dir1 = (beamFunction[s + 1] - beamFunction[s]).normalized;
             Vector2 clipStart = beamFunction[s] + ((demarcations[i].x - beamFunction[s].x) / dir1.x) * dir1;
-            //Debug.Log(beamFunction[s].ToString("F4"));
-            //Debug.Log(beamFunction[s + 1].ToString("F4"));
-            Debug.Log(s);
-            Debug.Log(e);
 
-            Vector2 dir2 = (beamFunction[e + 1] - beamFunction[e]).normalized;
-            Vector2 clipEnd = beamFunction[e] + ((demarcations[i + 1].x - beamFunction[e].x) / dir2.x) * dir2;
+            Vector2 dir2 = (beamFunction[e] - beamFunction[e - 1]).normalized;
+            Vector2 clipEnd = beamFunction[e - 1] + ((demarcations[i + 1].x - beamFunction[e - 1].x) / dir2.x) * dir2;
             
             beamComponents[i / 2] = new List<Vector2>() { demarcations[i], clipStart };
 
-            for (int j = s + 1; j <= e; j++)
+            for (int j = s + 1; j < e; j++)
             {
                 beamComponents[i / 2].Add(beamFunction[j]);
             }
             beamComponents[i / 2].Add(clipEnd);
             beamComponents[i / 2].Add(demarcations[i + 1]);
         }
-
-        /*
-        for(int i = 0; i < demarcations.Count; i += 2)
-        {
-            //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
-            int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LESS_THAN, demarcations[i].x);
-            int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LESS_THAN, demarcations[i + 1].x);
-            Vector2 dir1 = (beamFunction[s + 1] - beamFunction[s]).normalized;
-            Vector2 clipStart = beamFunction[s] + ((demarcations[i].x - beamFunction[s].x) / dir1.x) * dir1;
-            Debug.Log(beamFunction[s].ToString("F4"));
-            Debug.Log(clipStart.ToString("F4"));
-
-            Vector2 dir2 = (beamFunction[e + 1] - beamFunction[e]).normalized;
-            Vector2 clipEnd = beamFunction[e] + ((demarcations[i + 1].x - beamFunction[e].x) / dir2.x) * dir2;
-
-            beamComponents[i / 2] = new List<Vector2>() { demarcations[i], clipStart };
-            for(int j = s + 1; j <= e; j++)
-            {
-                beamComponents[i / 2].Add(beamFunction[j]);
-            }
-            beamComponents[i / 2].Add(clipEnd);
-            beamComponents[i / 2].Add(demarcations[i + 1]);
-        }
-        */
 
         return beamComponents;
     }
