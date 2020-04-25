@@ -60,8 +60,25 @@ public class Beam : MonoBehaviour
 
         gameObject.AddComponent<EdgeCollider2D>();
         dummy = gameObject.AddComponent<Obstacle>();
-        
+
         //Debug.DrawRay(transform.position, 10.0f * transform.up, Color.magenta, 5.0f);
+
+
+        
+
+        Vector3 n = new Vector3(-1, 0, 0).normalized;
+        Vector3 p0 = new Vector3(0, 0, 0);
+
+        Matrix4x4 objectTransform = Matrix4x4.identity;
+        objectTransform.SetColumn(0, new Vector3(1, 0, 0));
+        objectTransform.SetColumn(1, new Vector3(0, 1, 0));
+        objectTransform.SetColumn(2, new Vector3(0, 0, 1));
+        objectTransform.SetColumn(3, new Vector4(-1, 1, 0, 1));
+
+        Debug.Log("REFLECTION");
+        Debug.Log(objectTransform);
+        Debug.Log(Geometry.ReflectTransformAcrossPlane(n, p0, objectTransform));
+
     }
 
     // Update is called once per frame

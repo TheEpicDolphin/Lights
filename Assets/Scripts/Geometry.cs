@@ -61,6 +61,27 @@ namespace GeometryUtils
             return c;
 
         }
+
+        /*  trans must be in the format: (similar to transform.localToWorldMatrix)
+         *  [ right.x    up.x    forward.x   pos.x ]
+         *  [ right.y    up.y    forward.y   pos.y ]
+         *  [ right.z    up.z    forward.z   pos.z ]
+         *  [   0         0         0         1    ]
+         *  
+         *  n is normal of plane. p0 is any arbitrary point on the plane
+         *  
+         *  return transform that is reflected across the plane
+         */
+        internal static Matrix4x4 ReflectTransformAcrossPlane(Vector3 n, Vector3 p0, Matrix4x4 trans)
+        {
+            Matrix4x4 trans_p0 = Matrix4x4.Translate(-p0);
+            Matrix4x4 rotToYAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, -new Vector3(1, 0, 0)));
+            Matrix4x4 reflectYAxis = Matrix4x4.identity;
+            reflectYAxis.SetColumn(0, new Vector4(-1, 0, 0, 0));
+            
+            Matrix4x4 M = trans_p0.inverse * rotToYAxis.inverse * reflectYAxis * rotToYAxis * trans_p0;
+            return M * trans;
+        }
     }
 }
     
