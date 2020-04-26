@@ -18,7 +18,8 @@ public class Reflector : Obstacle
     }
 
     
-    public override List<List<Vector2>> Cast(Beam beam, Vector2[] limsBeamLocal, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse)
+    public override void Cast(Beam beam, Vector2[] limsBeamLocal, Matrix4x4 beamLocalToCur, 
+        float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents)
     {
         Vector2 lims0Cur = beamLocalToCur.MultiplyPoint3x4(limsBeamLocal[0]);
         Vector2 lims1Cur = beamLocalToCur.MultiplyPoint3x4(limsBeamLocal[1]);
@@ -37,12 +38,8 @@ public class Reflector : Obstacle
         Vector2[] limsRefl = new Vector2[] { Mrefl.MultiplyPoint3x4(limsBeamLocal[0]),
                                             Mrefl.MultiplyPoint3x4(limsBeamLocal[1]) };
 
-        //Debug.Log("ZOOWEE");
-        //Debug.Log(limsRefl[0]);
-        //Debug.Log(limsRefl[1]);
-
         //TODO: reverse vertices because of reflection
-        return beam.Cast(limsRefl, obstacles, Mrefl, beamLength, maxRecurse);
+        beam.Cast(limsRefl, obstacles, Mrefl, beamLength, maxRecurse, ref beamComponents);
     }
     
 }

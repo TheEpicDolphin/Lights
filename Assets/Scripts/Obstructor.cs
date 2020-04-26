@@ -16,8 +16,9 @@ public class Obstructor : Obstacle
         
     }
 
-    public override List<List<Vector2>> Cast(Beam beam, Vector2[] lims, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse)
+    public override void Cast(Beam beam, Vector2[] lims, Matrix4x4 beamLocalToCur, 
+                            float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents)
     {
-        return new List<List<Vector2>>();
+        //Do nothing
     }
 }

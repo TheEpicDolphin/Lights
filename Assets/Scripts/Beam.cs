@@ -85,10 +85,10 @@ public class Beam : MonoBehaviour
                 indicesList.Add(indices[i] + vertices.Count);
             }
 
-            Debug.Log("COMPONENT");
+            //Debug.Log("COMPONENT");
             for (int i = 0; i < beamComponent.Count; i++)
             {
-                Debug.Log(beamComponent[i].ToString("F4"));
+                //Debug.Log(beamComponent[i].ToString("F4"));
                 vertices.Add(new Vector3(beamComponent[i].x, beamComponent[i].y, 0));
             }
             //Debug.Log("----------------");
@@ -110,8 +110,8 @@ public class Beam : MonoBehaviour
         Vector2 beamDir = transform.TransformDirection(new Vector2(0, 1));
         List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
-
-        beamComponents = Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 1);
+        beamComponents = new List<List<Vector2>>();
+        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 1, ref beamComponents);
 
     }
     
@@ -145,7 +145,7 @@ public class Beam : MonoBehaviour
     }
 
     //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
-    public List<List<Vector2>> Cast(Vector2[] lims, List<Obstacle> obstacles, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse)
+    public void Cast(Vector2[] lims, List<Obstacle> obstacles, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents)
     {
         Matrix4x4 worldToCur = beamLocalToCur * transform.worldToLocalMatrix;
         Matrix4x4 curToBeamLocal = beamLocalToCur.inverse;
@@ -193,7 +193,7 @@ public class Beam : MonoBehaviour
                 {
                     if (intersection.x > lims[0].x && intersection.x < lims[1].x)
                     {
-                        return new List<List<Vector2>>();
+                        return;
                     }
                     
                 }
@@ -384,34 +384,27 @@ public class Beam : MonoBehaviour
             beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(lims[1]));
         }
 
-        if(maxRecurse > 0)
+        beamComponents.Add(beamComponent);
+
+        if(maxRecurse == 0)
         {
-            //Do reflections/refractions here
-            foreach (Tuple<Obstacle, Vector2[]> illuminatedEdge in illuminatedEdges)
-            {
-                Obstacle obs = illuminatedEdge.el1;
-                Vector2[] newLims = illuminatedEdge.el2;
-                newLims.Reverse();
-                if (obs != null)
-                {
-                    Debug.Log("Subbeams" + maxRecurse.ToString());
-                    List<List<Vector2>> subBeams = obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1);
-
-                    foreach (List<Vector2> subBeam in subBeams)
-                    {
-                        //Debug.Log(subBeam.Count);
-                        foreach (Vector2 pt in subBeam)
-                        {
-                            Debug.Log(pt.ToString("F4"));
-                        }
-                    }
-                    Debug.Log("-------");
-                }
-
-            }
+            return;
         }
 
-        return new List<List<Vector2>>() { beamComponent };
+        //Do reflections/refractions here
+        foreach (Tuple<Obstacle, Vector2[]> illuminatedEdge in illuminatedEdges)
+        {
+            Obstacle obs = illuminatedEdge.el1;
+            Vector2[] newLims = illuminatedEdge.el2;
+            newLims.Reverse();
+            if (obs != null)
+            {
+                obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1, ref beamComponents);
+            }
+
+        }
+
+
     }
 
 }
