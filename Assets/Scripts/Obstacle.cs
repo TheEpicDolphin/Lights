@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Obstacle : MonoBehaviour
+public abstract class Obstacle : MonoBehaviour
 {
     EdgeCollider2D edgeCol;
 
-
     // Start is called before the first frame update
-    void Start()
+    protected void Start()
     {
         edgeCol = GetComponent<EdgeCollider2D>();
     }
@@ -25,7 +24,7 @@ public class Obstacle : MonoBehaviour
 
     }
 
-    public Vector2[] GetBoundVerts()
+    public Vector2[] GetWorldBoundVerts()
     {
         Vector2[] verts = new Vector2[edgeCol.points.Length - 1];
         for(int i = 0; i < edgeCol.points.Length - 1; i++)
@@ -35,5 +34,18 @@ public class Obstacle : MonoBehaviour
         return verts;
     }
 
+    public Vector2[] GetLocalBoundVerts(Matrix4x4 M)
+    {
+        Vector2[] verts = new Vector2[edgeCol.points.Length - 1];
+        for (int i = 0; i < edgeCol.points.Length - 1; i++)
+        {
+            verts[i] = M.MultiplyPoint(transform.TransformPoint(edgeCol.points[i]));
+        }
+        return verts;
+    }
+
+    
+    public abstract List<List<Vector2>> Cast(Beam beam, Vector2[] lims, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse);
+    
 }
 
