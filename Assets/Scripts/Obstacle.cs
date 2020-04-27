@@ -34,12 +34,16 @@ public abstract class Obstacle : MonoBehaviour
         return verts;
     }
 
-    public Vector2[] GetLocalBoundVerts(Matrix4x4 M)
+    public Vector2[] GetLocalBoundVerts(Matrix4x4 M, bool clockwise = false)
     {
         Vector2[] verts = new Vector2[edgeCol.points.Length - 1];
         for (int i = 0; i < edgeCol.points.Length - 1; i++)
         {
             verts[i] = M.MultiplyPoint(transform.TransformPoint(edgeCol.points[i]));
+        }
+        if (clockwise)
+        {
+            System.Array.Reverse(verts);
         }
         return verts;
     }

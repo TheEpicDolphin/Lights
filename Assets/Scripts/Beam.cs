@@ -150,12 +150,17 @@ public class Beam : MonoBehaviour
         Matrix4x4 worldToCur = beamLocalToCur * transform.worldToLocalMatrix;
         Matrix4x4 curToBeamLocal = beamLocalToCur.inverse;
 
+        Vector3 right = beamLocalToCur.GetColumn(0);
+        Vector3 up = beamLocalToCur.GetColumn(1);
+        Vector3 forward = beamLocalToCur.GetColumn(2);
+        bool rightHandedCoords = Vector3.Dot(Vector3.Cross(right, up), forward) < 0;
+
         List<LinkedListNode<ObstacleVertex>> sortedKeyVertices = new List<LinkedListNode<ObstacleVertex>>();
 
         foreach (Obstacle obstacle in obstacles)
         {
 
-            Vector2[] obstacleBoundVerts = obstacle.GetLocalBoundVerts(worldToCur);
+            Vector2[] obstacleBoundVerts = obstacle.GetLocalBoundVerts(worldToCur, rightHandedCoords);
 
             bool transitionReady = false;
             int i = 0;
@@ -221,10 +226,6 @@ public class Beam : MonoBehaviour
 
         }
 
-        Vector3 right = beamLocalToCur.GetColumn(0);
-        Vector3 up = beamLocalToCur.GetColumn(1);
-        Vector3 forward = beamLocalToCur.GetColumn(2);
-        bool rightHandedCoords = Vector3.Dot(Vector3.Cross(right, up), forward) > 0;
 
         LinkedList<ObstacleVertex> topLightBound = new LinkedList<ObstacleVertex>();
         Vector2 vts = new Vector2(lims[0].x - 0.1f, beamLength);
@@ -396,7 +397,6 @@ public class Beam : MonoBehaviour
         {
             Obstacle obs = illuminatedEdge.el1;
             Vector2[] newLims = illuminatedEdge.el2;
-            newLims.Reverse();
             if (obs != null)
             {
                 obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1, ref beamComponents);

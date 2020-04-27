@@ -31,7 +31,7 @@ public class Reflector : Obstacle
         Vector2 lims0World = beam.transform.TransformPoint(limsBeamLocal[0]);
         Vector2 lims1World = beam.transform.TransformPoint(limsBeamLocal[1]);
         Vector2 sourceWorld = (lims0World + lims1World) / 2;
-        Vector2 dirWorld = beam.transform.TransformDirection(Mrefl.inverse.MultiplyVector(Mrefl.GetColumn(1)));
+        Vector2 dirWorld = beam.transform.TransformDirection(Mrefl.inverse.MultiplyVector(new Vector2(0, 1)));
         float beamWidth = (lims1World - lims0World).magnitude / 2;
         List<Obstacle> obstacles = beam.GetObstaclesInBeam(sourceWorld, dirWorld, beamWidth, beamLength, this);
 
