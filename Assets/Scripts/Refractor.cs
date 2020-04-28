@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using GeometryUtils;
 
-public class Reflector : Obstacle
+public class Refractor : Obstacle
 {
+
+    public float n2_n1 = 1.36f;
     // Start is called before the first frame update
     new void Start()
     {
@@ -17,29 +19,25 @@ public class Reflector : Obstacle
         
     }
 
-    
-    public override void Cast(Beam beam, Vector2[] limsBeamLocal, Matrix4x4 beamLocalToCur, 
+    public override void Cast(Beam beam, Vector2[] limsBeamLocal, Matrix4x4 beamLocalToCur,
         float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents)
     {
         Vector2 lims0Cur = beamLocalToCur.MultiplyPoint3x4(limsBeamLocal[0]);
         Vector2 lims1Cur = beamLocalToCur.MultiplyPoint3x4(limsBeamLocal[1]);
-
-        // do transformations...
         Vector2 n = Vector2.Perpendicular(lims1Cur - lims0Cur).normalized;
-        Matrix4x4 Mrefl = Geometry.ReflectTransformAcrossPlane(n, lims0Cur, beamLocalToCur);
+        Matrix4x4 Mrefr = Geometry.RefractTransformWithPlane(n, lims0Cur, n2_n1, beamLocalToCur);
 
         Vector2 lims0World = beam.transform.TransformPoint(limsBeamLocal[0]);
         Vector2 lims1World = beam.transform.TransformPoint(limsBeamLocal[1]);
         Vector2 sourceWorld = (lims0World + lims1World) / 2;
-        Vector2 dirWorld = beam.transform.TransformDirection(Mrefl.inverse.MultiplyVector(new Vector2(0, 1)));
+        Vector2 dirWorld = beam.transform.TransformDirection(Mrefr.inverse.MultiplyVector(new Vector2(0, 1)));
         float beamWidth = (lims1World - lims0World).magnitude / 2;
         List<Obstacle> obstacles = beam.GetObstaclesInBeam(sourceWorld, dirWorld, beamWidth, beamLength, this);
 
-        Vector2[] limsRefl = new Vector2[] { Mrefl.MultiplyPoint3x4(limsBeamLocal[0]),
-                                            Mrefl.MultiplyPoint3x4(limsBeamLocal[1]) };
+        Vector2[] limsRefr = new Vector2[] { Mrefr.MultiplyPoint3x4(limsBeamLocal[0]),
+                                            Mrefr.MultiplyPoint3x4(limsBeamLocal[1]) };
 
-        //Cast reflected beam
-        beam.Cast(limsRefl, obstacles, Mrefl, beamLength, maxRecurse, ref beamComponents);
+        //Cast refracted beam
+        beam.Cast(limsRefr, obstacles, Mrefr, beamLength, maxRecurse, ref beamComponents);
     }
-    
 }
