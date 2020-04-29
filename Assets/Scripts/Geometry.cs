@@ -83,14 +83,25 @@ namespace GeometryUtils
             return M * trans;
         }
 
-        internal static Matrix4x4 RefractTransformWithPlane(Vector3 n, Vector3 p0, float n2_n1, Matrix4x4 trans)
+        internal static Matrix4x4 RefractTransformWithPlane(Vector3 n, Vector3 p0, Vector3 vI, float n2_n1)
         {
+            float dot_vI_n = Vector3.Dot(vI, n);
+            Vector3 vR = (vI - dot_vI_n * n) / n2_n1 + 
+                        Mathf.Sqrt(1 - (1 - dot_vI_n * dot_vI_n) /(n2_n1 * n2_n1)) * n;
+            vR.Normalize();
+            float cos_theta1 = dot_vI_n;
+            float cos_theta2 = Vector3.Dot(vR, n);
+
             Matrix4x4 trans_p0 = Matrix4x4.Translate(-p0);
-            Matrix4x4 rotToYAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, new Vector3(0, 1, 0)));
+            Vector3 nTrans = new Vector3(0, -1, 0);
+            //Vector3 nTrans = new Vector3(-1, 0, 0);
+            Matrix4x4 rotToNegYAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, nTrans));
+
             Matrix4x4 refractXaxis = Matrix4x4.identity;
-            refractXaxis.SetColumn(1, new Vector4(0, n2_n1, 0, 0));
-            Matrix4x4 M = trans_p0.inverse * rotToYAxis.inverse * refractXaxis * rotToYAxis * trans_p0;
-            return M * trans;
+            refractXaxis.SetColumn(1, new Vector4(0, n2_n1 * cos_theta2 / cos_theta1, 0, 0));
+
+            Matrix4x4 M = trans_p0.inverse * rotToNegYAxis.inverse * refractXaxis * rotToNegYAxis * trans_p0;
+            return M;
         }
     }
 }
