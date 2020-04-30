@@ -72,7 +72,7 @@ namespace GeometryUtils
          *  
          *  return transform that is reflected across the plane
          */
-        internal static Matrix4x4 ReflectTransformAcrossPlane(Vector3 n, Vector3 p0, Matrix4x4 trans)
+        internal static Matrix4x4 ReflectionTransformAcrossPlane(Vector3 n, Vector3 p0)
         {
             Matrix4x4 trans_p0 = Matrix4x4.Translate(-p0);
             Matrix4x4 rotToNegXAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, -new Vector3(1, 0, 0)));
@@ -80,10 +80,11 @@ namespace GeometryUtils
             reflectYAxis.SetColumn(0, new Vector4(-1, 0, 0, 0));
             
             Matrix4x4 M = trans_p0.inverse * rotToNegXAxis.inverse * reflectYAxis * rotToNegXAxis * trans_p0;
-            return M * trans;
+            //Maybe invert this for correctness?
+            return M;
         }
 
-        internal static Matrix4x4 RefractTransformWithPlane(Vector3 n, Vector3 p0, Vector3 vI, float n2_n1)
+        internal static Matrix4x4 RefractionTransformWithPlane(Vector3 n, Vector3 p0, Vector3 vI, float n2_n1)
         {
             float dot_vI_n = Vector3.Dot(vI, n);
             //Refracted direction
@@ -99,7 +100,7 @@ namespace GeometryUtils
             Matrix4x4 translate_depth_diff = Matrix4x4.Translate(-(dRefr - d) * n);
 
             Matrix4x4 M = translate_depth_diff * rotToRefrDir;
-            return M;
+            return M.inverse;
         }
 
         /*

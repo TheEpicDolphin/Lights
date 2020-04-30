@@ -111,7 +111,7 @@ public class Beam : MonoBehaviour
         List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
         beamComponents = new List<List<Vector2>>();
-        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 1, ref beamComponents);
+        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
     }
     
@@ -147,15 +147,15 @@ public class Beam : MonoBehaviour
     //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
     public void Cast(Vector2[] lims, List<Obstacle> obstacles, Matrix4x4 beamLocalToCur, float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents)
     {
-        Matrix4x4 worldToCur = beamLocalToCur * transform.worldToLocalMatrix;
         Matrix4x4 curToBeamLocal = beamLocalToCur.inverse;
+        Matrix4x4 worldToCur = beamLocalToCur * transform.worldToLocalMatrix;
 
         //Vector3 o = transform.TransformPoint(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
         //Debug.DrawLine(Vector3.zero, o, Color.cyan);
 
-        Vector3 right = beamLocalToCur.GetColumn(0);
-        Vector3 up = beamLocalToCur.GetColumn(1);
-        Vector3 forward = beamLocalToCur.GetColumn(2);
+        Vector3 right = curToBeamLocal.GetColumn(0);
+        Vector3 up = curToBeamLocal.GetColumn(1);
+        Vector3 forward = curToBeamLocal.GetColumn(2);
         bool rightHandedCoords = Vector3.Dot(Vector3.Cross(right, up), forward) < 0;
 
         List<LinkedListNode<ObstacleVertex>> sortedKeyVertices = new List<LinkedListNode<ObstacleVertex>>();
@@ -362,8 +362,6 @@ public class Beam : MonoBehaviour
         //Debug.DrawLine(Vector3.zero, o, Color.cyan);
         //Vector3 o = transform.TransformPoint(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
         //Debug.DrawLine(Vector3.zero, o, Color.cyan);
-        Vector3 o = transform.localToWorldMatrix.MultiplyPoint3x4(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
-        Debug.DrawLine(Vector3.zero, o, Color.cyan);
 
         if (!(lims[0] == clipStart))
         {
@@ -409,7 +407,7 @@ public class Beam : MonoBehaviour
             Vector2[] newLims = illuminatedEdge.el2;
             if (obs != null)
             {
-                obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1, ref beamComponents);
+                obs.Cast(this, newLims, curToBeamLocal, beamLength, maxRecurse - 1, ref beamComponents);
             }
 
         }
