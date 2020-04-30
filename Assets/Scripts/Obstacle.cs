@@ -49,7 +49,7 @@ public abstract class Obstacle : MonoBehaviour
     }
 
     
-    public abstract void Cast(Beam beam, Vector2[] lims, Matrix4x4 beamLocalToCur, 
+    public abstract void Cast(Beam beam, Vector2[] limsBeamLocal, Matrix4x4 beamLocalToCur, 
                                             float beamLength, int maxRecurse, ref List<List<Vector2>> beamComponents);
     
 }

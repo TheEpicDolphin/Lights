@@ -111,7 +111,7 @@ public class Beam : MonoBehaviour
         List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
         beamComponents = new List<List<Vector2>>();
-        Debug.Log("Casting");
+        
         Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
     }
@@ -358,40 +358,48 @@ public class Beam : MonoBehaviour
 
         if (!(lims[0] == clipStart))
         {
-            beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(lims[0]));
+            beamComponent.Add(lims[0]);
         }
-        beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(clipStart));
+        beamComponent.Add(clipStart);
 
         for (int j = s + 1; j < e; j++)
         {
             Obstacle obs = beamFunction[j].obsRef;
-            Vector2 v = curToBeamLocal.MultiplyPoint3x4(beamFunction[j].v);
+            Vector2 v = beamFunction[j].v;
             Vector2 vLast = beamComponent.Last();
 
             if (!Mathf.Approximately(v.x, vLast.x))
             {
-                illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(obs, new Vector2[] { vLast, v }));
+                illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(obs, 
+                                    new Vector2[] { curToBeamLocal.MultiplyPoint3x4(vLast),
+                                                    curToBeamLocal.MultiplyPoint3x4(v) }));
             }
 
             beamComponent.Add(v);
         }
 
         Obstacle lastObs = beamFunction[e].obsRef;
-        if(!Mathf.Approximately(v.x, vLast.x))
+        if (!Mathf.Approximately(beamComponent.Last().x, clipEnd.x))
         {
             illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(lastObs,
-                            new Vector2[] { beamComponent.Last(), curToBeamLocal.MultiplyPoint3x4(clipEnd) }));
+                            new Vector2[] { curToBeamLocal.MultiplyPoint3x4(beamComponent.Last()),
+                                            curToBeamLocal.MultiplyPoint3x4(clipEnd) }));
         }
         
 
-        beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(clipEnd));
+        beamComponent.Add(clipEnd);
         if (!(lims[1] == clipEnd))
         {
-            beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(lims[1]));
+            beamComponent.Add(lims[1]);
         }
 
+        //Transform every point to beam local coordinates
+        for(int i = 0; i < beamComponent.Count; i++)
+        {
+            beamComponent[i] = curToBeamLocal.MultiplyPoint3x4(beamComponent[i]);
+        }
+        
         beamComponents.Add(beamComponent);
-
         if(maxRecurse == 0)
         {
             return;

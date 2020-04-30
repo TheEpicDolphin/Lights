@@ -29,23 +29,15 @@ public class Reflector : Obstacle
         Matrix4x4 Mrefl = Geometry.ReflectionTransformAcrossPlane(n, lims0Cur) * beamLocalToCur;
 
         //Visualize transformation
-        Vector3 o = beam.transform.TransformPoint(Mrefl.inverse.MultiplyPoint3x4(Vector3.zero));
-        Debug.DrawLine(Vector3.zero, o, Color.cyan);
-        Vector3 right = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.right));
-        Debug.DrawRay(o, right, Color.red);
-        Vector3 up = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.up));
-        Debug.DrawRay(o, up, Color.green);
+        //Vector3 o = beam.transform.TransformPoint(Mrefl.inverse.MultiplyPoint3x4(Vector3.zero));
+        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
+        //Vector3 right = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.right));
+        //Debug.DrawRay(o, right, Color.red);
+        //Vector3 up = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.up));
+        //Debug.DrawRay(o, up, Color.green);
 
         Vector2 lims0World = beam.transform.TransformPoint(limsBeamLocal[0]);
         Vector2 lims1World = beam.transform.TransformPoint(limsBeamLocal[1]);
-
-        Debug.Log("Reflection " + maxRecurse.ToString());
-        Debug.Log(lims0World.ToString("F4"));
-        Debug.Log(lims1World.ToString("F4"));
-        Debug.Log("--------");
-        Debug.Log(lims0Cur.ToString("F4"));
-        Debug.Log(lims1Cur.ToString("F4"));
-        Debug.Log(Mathf.Approximately(lims0Cur.x, lims1Cur.x));
 
         Vector2 sourceWorld = (lims0World + lims1World) / 2;
         Vector2 dirWorld = beam.transform.TransformDirection(Mrefl.inverse.MultiplyVector(new Vector2(0, 1)));
