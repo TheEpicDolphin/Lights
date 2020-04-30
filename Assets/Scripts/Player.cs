@@ -8,14 +8,14 @@ public class Player : MonoBehaviour
     public float radius;
     public Vector3 velocity;
 
-    float playerSpeed = 15.0f;
+    float playerSpeed = 8.0f;
 
     //public Firearm firearm;
     //Item equippedItem;
 
     float moveHorizontal;
     float moveVertical;
-    Vector3 relMousePos;
+    Vector2 relMousePos;
 
     Animator animator;
     Rigidbody rb;
@@ -48,23 +48,13 @@ public class Player : MonoBehaviour
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
-        if (Input.GetMouseButton(1))
-        {
-            //hand.GetChild().GetComponent<MeshRenderer>().enabled = Input.GetMouseButton(1);
-            hand.RotateAround(new Vector3(transform.position.x, 1.0f, transform.position.z), hand.right, -2.0f * Input.GetAxis("Mouse Y"));
-        }
-        else
-        {
-            relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
-            relMousePos = new Vector3(relMousePos.x, relMousePos.y, 0.0f).normalized;
+        relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
+        relMousePos.Normalize();
+        Vector3 relHandDir = new Vector3(relMousePos.x, relMousePos.y, 0.0f);
+        hand.position = transform.position + 1.0f * relHandDir;
+        hand.rotation = Quaternion.LookRotation(relHandDir, Vector3.up);
 
-            //Move hand around body
-            Vector3 relHandDir = new Vector3(relMousePos.x, 0.0f, relMousePos.y);
-            hand.position = new Vector3(transform.position.x, 1.0f, transform.position.z) + 2.0f * relHandDir;
-            hand.rotation = Quaternion.LookRotation(relHandDir, Vector3.up);
-        }
-
-        //Debug.DrawRay(hand.transform.position, hand.transform.up, Color.red);
+        //hand.RotateAround(transform.position, Vector3.forward, ?);
 
         if (Input.GetMouseButton(0))
         {
@@ -73,8 +63,13 @@ public class Player : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            //Attach sword to hand
-            //hand = transform.Find("Hand");
+            Collider2D[] overlapped = Physics2D.OverlapCircleAll(transform.position, 1.0f);
+            foreach(Collider2D overlap in overlapped)
+            {
+                
+            }
+            //Attach item to hand
+            
             //equippedItem.transform.parent = hand;
             //equippedItem.transform.localPosition = Vector3.zero;
             //equippedItem.transform.localRotation = Quaternion.identity;
@@ -96,8 +91,8 @@ public class Player : MonoBehaviour
 
         if (movement.magnitude > 0.25f)
         {
-            Vector3.Normalize(movement);
-            animator.SetFloat("dy", movement.z);
+            movement.Normalize();
+            animator.SetFloat("dy", movement.y);
             animator.SetFloat("dx", movement.x);
             velocity = movement.normalized * playerSpeed;
             transform.Translate(movement.normalized * playerSpeed * Time.fixedDeltaTime, Space.World);
@@ -105,7 +100,7 @@ public class Player : MonoBehaviour
 
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         
     }
