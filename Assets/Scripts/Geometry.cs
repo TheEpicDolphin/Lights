@@ -75,10 +75,10 @@ namespace GeometryUtils
         internal static Matrix4x4 ReflectionTransformAcrossPlane(Vector3 n, Vector3 p0)
         {
             Matrix4x4 trans_p0 = Matrix4x4.Translate(-p0);
-            Matrix4x4 rotToNegXAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, -new Vector3(1, 0, 0)));
+            Matrix4x4 rotToNegXAxis = Matrix4x4.Rotate(Quaternion.FromToRotation(n, new Vector3(-1, 0, 0)));
             Matrix4x4 reflectYAxis = Matrix4x4.identity;
             reflectYAxis.SetColumn(0, new Vector4(-1, 0, 0, 0));
-            
+
             Matrix4x4 M = trans_p0.inverse * rotToNegXAxis.inverse * reflectYAxis * rotToNegXAxis * trans_p0;
             //Maybe invert this for correctness?
             return M;

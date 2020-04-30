@@ -262,6 +262,11 @@ public class Beam : MonoBehaviour
                 }
 
                 LinkedListNode<ObstacleVertex> prevClosestEdge = curClosestEdge;
+
+                if(prevClosestEdge.Next == null)
+                {
+                    Debug.Log("That one issue");
+                }
                 LineSegment lsPrev = new LineSegment(prevClosestEdge.Value.v, prevClosestEdge.Next.Value.v);
                 Vector2 clipPrev = lsPrev.p1 + ((vs.x - lsPrev.p1.x) / lsPrev.dir.x) * lsPrev.dir;
                 clipPrev = new Vector2(vs.x, clipPrev.y);
@@ -400,7 +405,7 @@ public class Beam : MonoBehaviour
             Vector2[] newLims = illuminatedEdge.el2;
             if (obs != null)
             {
-                obs.Cast(this, newLims, curToBeamLocal, beamLength, maxRecurse - 1, ref beamComponents);
+                obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1, ref beamComponents);
             }
 
         }

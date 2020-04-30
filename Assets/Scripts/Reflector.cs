@@ -29,12 +29,12 @@ public class Reflector : Obstacle
         Matrix4x4 Mrefl = Geometry.ReflectionTransformAcrossPlane(n, lims0Cur) * beamLocalToCur;
 
         //Visualize transformation
-        //Vector3 o = beam.transform.TransformPoint(Mrefl.inverse.MultiplyPoint3x4(Vector3.zero));
-        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
-        //Vector3 right = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.right));
-        //Debug.DrawRay(o, right, Color.red);
-        //Vector3 up = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.up));
-        //Debug.DrawRay(o, up, Color.green);
+        Vector3 o = beam.transform.TransformPoint(Mrefl.inverse.MultiplyPoint3x4(Vector3.zero));
+        Debug.DrawLine(Vector3.zero, o, Color.cyan);
+        Vector3 right = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.right));
+        Debug.DrawRay(o, right, Color.red);
+        Vector3 up = beam.transform.TransformVector(Mrefl.inverse.MultiplyVector(Vector3.up));
+        Debug.DrawRay(o, up, Color.green);
 
         Vector2 lims0World = beam.transform.TransformPoint(limsBeamLocal[0]);
         Vector2 lims1World = beam.transform.TransformPoint(limsBeamLocal[1]);
