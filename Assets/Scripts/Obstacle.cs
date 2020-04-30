@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Obstacle : MonoBehaviour
 {
-    EdgeCollider2D edgeCol;
+    protected EdgeCollider2D edgeCol;
 
     // Start is called before the first frame update
     protected void Start()

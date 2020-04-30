@@ -112,7 +112,7 @@ public class Beam : MonoBehaviour
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
         beamComponents = new List<List<Vector2>>();
 
-        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 1, ref beamComponents);
+        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
     }
     

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GeometryUtils;
+using System.Linq;
 
 public class Refractor : Obstacle
 {
