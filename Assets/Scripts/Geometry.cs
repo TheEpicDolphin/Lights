@@ -93,15 +93,31 @@ namespace GeometryUtils
             vR.Normalize();
             float cos_theta1 = dot_vI_n;
             float cos_theta2 = Vector3.Dot(vR, n);
-            Debug.Log(cos_theta1);
 
-            Matrix4x4 rotToRefrDir = Matrix4x4.Rotate(Quaternion.FromToRotation(vI, vR));
-            float d = Vector3.Dot(p0, n);
-            float dRefr = n2_n1 * (cos_theta2 / cos_theta1) * d;
-            Matrix4x4 translate_depth_diff = Matrix4x4.Translate(-(dRefr - d) * n);
+            //Prevent division by 0 errors
+            if(Mathf.Approximately(cos_theta1, 0.0f))
+            {
+                return Matrix4x4.identity;
+            }
 
-            Matrix4x4 M = translate_depth_diff * rotToRefrDir;
-            return M.inverse;
+            //If theta2 == pi/2, we have reached the critical angle.
+            if(Mathf.Approximately(cos_theta2, 0.0f))
+            {
+                //Total internal reflection only
+                return ReflectionTransformAcrossPlane(n, p0);
+            }
+            else
+            {
+                //Refraction
+                Matrix4x4 rotToRefrDir = Matrix4x4.Rotate(Quaternion.FromToRotation(vI, vR));
+                float d = Vector3.Dot(p0, n);
+                float dRefr = n2_n1 * (cos_theta2 / cos_theta1) * d;
+                Matrix4x4 translate_depth_diff = Matrix4x4.Translate(-(dRefr - d) * n);
+
+                Matrix4x4 M = translate_depth_diff * rotToRefrDir;
+                return M.inverse;
+            }
+            
         }
 
         /*

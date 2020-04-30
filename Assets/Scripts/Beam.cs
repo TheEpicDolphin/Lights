@@ -241,8 +241,7 @@ public class Beam : MonoBehaviour
         sortedKeyVertices = sortedKeyVertices.OrderBy(node => node.Value.v.x).ThenBy(node => node.Value.v.y).ToList();
 
         List<LinkedListNode<ObstacleVertex>> activeEdges = new List<LinkedListNode<ObstacleVertex>>();
-        List<Vector2> beamFunction = new List<Vector2>();
-        List<ObstacleVertex> beamFunctionObj = new List<ObstacleVertex>();
+        List<ObstacleVertex> beamFunction = new List<ObstacleVertex>();
 
         LinkedListNode<ObstacleVertex> curClosestEdge = sortedKeyVertices[0];
 
@@ -284,11 +283,8 @@ public class Beam : MonoBehaviour
                 if (prevClosestEdge.Next != curClosestEdge && vertNode == curClosestEdge)
                 {
                     //A new edge has started that is closer than the previous closest edge.
-                    beamFunction.Add(clipPrev);
-                    beamFunction.Add(closestVert);
-
-                    beamFunctionObj.Add(new ObstacleVertex(clipPrev, prevClosestEdge.Value.obsRef));
-                    beamFunctionObj.Add(new ObstacleVertex(closestVert, curClosestEdge.Value.obsRef));
+                    beamFunction.Add(new ObstacleVertex(clipPrev, prevClosestEdge.Value.obsRef));
+                    beamFunction.Add(new ObstacleVertex(closestVert, curClosestEdge.Value.obsRef));
                     //Reflection/refraction:
                     //prevClosestEdge.v -> clipPrev
 
@@ -296,9 +292,7 @@ public class Beam : MonoBehaviour
                 else if (vertNode == curClosestEdge)
                 {
                     //We are continuing a chain of connected edges
-                    beamFunction.Add(closestVert);
-
-                    beamFunctionObj.Add(new ObstacleVertex(closestVert, curClosestEdge.Value.obsRef));
+                    beamFunction.Add(new ObstacleVertex(closestVert, curClosestEdge.Value.obsRef));
                     //Reflection/refraction:
                     //prevClosestEdge.v -> vertNode.v
 
@@ -328,11 +322,8 @@ public class Beam : MonoBehaviour
                         }
                     }
 
-                    beamFunction.Add(ve);
-                    beamFunction.Add(nextClosestVert);
-
-                    beamFunctionObj.Add(vertNode.Value);
-                    beamFunctionObj.Add(new ObstacleVertex(nextClosestVert, curClosestEdge.Value.obsRef));
+                    beamFunction.Add(vertNode.Value);
+                    beamFunction.Add(new ObstacleVertex(nextClosestVert, curClosestEdge.Value.obsRef));
                     //Reflection/refraction:
                     //vertNode.v -> curClosestEdge.v
 
@@ -342,7 +333,7 @@ public class Beam : MonoBehaviour
         }
 
         List<float> beamFunctionXs = new List<float>();
-        foreach(ObstacleVertex p in beamFunctionObj)
+        foreach(ObstacleVertex p in beamFunction)
         {
             beamFunctionXs.Add(p.v.x);
         }
@@ -354,11 +345,11 @@ public class Beam : MonoBehaviour
         int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LARGEST_LEQUAL, lims[0].x);
         int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.SMALLEST_GEQUAL, lims[1].x);
 
-        Vector2 dir1 = (beamFunctionObj[s + 1].v - beamFunctionObj[s].v).normalized;
-        Vector2 clipStart = beamFunctionObj[s].v + ((lims[0].x - beamFunctionObj[s].v.x) / dir1.x) * dir1;
+        Vector2 dir1 = (beamFunction[s + 1].v - beamFunction[s].v).normalized;
+        Vector2 clipStart = beamFunction[s].v + ((lims[0].x - beamFunction[s].v.x) / dir1.x) * dir1;
 
-        Vector2 dir2 = (beamFunctionObj[e].v - beamFunctionObj[e - 1].v).normalized;
-        Vector2 clipEnd = beamFunctionObj[e - 1].v + ((lims[1].x - beamFunctionObj[e - 1].v.x) / dir2.x) * dir2;
+        Vector2 dir2 = (beamFunction[e].v - beamFunction[e - 1].v).normalized;
+        Vector2 clipEnd = beamFunction[e - 1].v + ((lims[1].x - beamFunction[e - 1].v.x) / dir2.x) * dir2;
 
         //Vector3 o = transform.TransformPoint(curToBeamLocal.MultiplyPoint3x4(Vector3.zero));
         //Debug.DrawLine(Vector3.zero, o, Color.cyan);
@@ -373,8 +364,8 @@ public class Beam : MonoBehaviour
 
         for (int j = s + 1; j < e; j++)
         {
-            Obstacle obs = beamFunctionObj[j].obsRef;
-            Vector2 v = curToBeamLocal.MultiplyPoint3x4(beamFunctionObj[j].v);
+            Obstacle obs = beamFunction[j].obsRef;
+            Vector2 v = curToBeamLocal.MultiplyPoint3x4(beamFunction[j].v);
             Vector2 vLast = beamComponent.Last();
 
             if (!Mathf.Approximately(v.x, vLast.x))
@@ -385,7 +376,7 @@ public class Beam : MonoBehaviour
             beamComponent.Add(v);
         }
 
-        Obstacle lastObs = beamFunctionObj[e].obsRef;
+        Obstacle lastObs = beamFunction[e].obsRef;
         illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(lastObs, 
                             new Vector2[] { beamComponent.Last(), curToBeamLocal.MultiplyPoint3x4(clipEnd) }));
 
