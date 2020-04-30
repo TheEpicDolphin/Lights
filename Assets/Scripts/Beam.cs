@@ -111,7 +111,8 @@ public class Beam : MonoBehaviour
         List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
         beamComponents = new List<List<Vector2>>();
-        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
+
+        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 1, ref beamComponents);
 
     }
     
@@ -264,6 +265,7 @@ public class Beam : MonoBehaviour
                 LinkedListNode<ObstacleVertex> prevClosestEdge = curClosestEdge;
                 LineSegment lsPrev = new LineSegment(prevClosestEdge.Value.v, prevClosestEdge.Next.Value.v);
                 Vector2 clipPrev = lsPrev.p1 + ((vs.x - lsPrev.p1.x) / lsPrev.dir.x) * lsPrev.dir;
+                clipPrev = new Vector2(vs.x, clipPrev.y);
 
                 Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
                 foreach (LinkedListNode<ObstacleVertex> activeEdge in activeEdges)
@@ -375,7 +377,7 @@ public class Beam : MonoBehaviour
             Vector2 v = curToBeamLocal.MultiplyPoint3x4(beamFunctionObj[j].v);
             Vector2 vLast = beamComponent.Last();
 
-            if (v.x != vLast.x)
+            if (!Mathf.Approximately(v.x, vLast.x))
             {
                 illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(obs, new Vector2[] { vLast, v }));
             }

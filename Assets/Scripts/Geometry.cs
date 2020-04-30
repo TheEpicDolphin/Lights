@@ -93,6 +93,7 @@ namespace GeometryUtils
             vR.Normalize();
             float cos_theta1 = dot_vI_n;
             float cos_theta2 = Vector3.Dot(vR, n);
+            Debug.Log(cos_theta1);
 
             Matrix4x4 rotToRefrDir = Matrix4x4.Rotate(Quaternion.FromToRotation(vI, vR));
             float d = Vector3.Dot(p0, n);

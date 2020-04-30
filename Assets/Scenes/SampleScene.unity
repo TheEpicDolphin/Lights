@@ -992,7 +992,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &1232038003
 BoxCollider2D:
@@ -1195,7 +1195,7 @@ PrefabInstance:
     - target: {fileID: 232896413665371495, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
@@ -1235,7 +1235,7 @@ PrefabInstance:
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 11
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
@@ -1276,6 +1276,11 @@ PrefabInstance:
         type: 3}
       propertyPath: xLims.Array.data[1]
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 232896413665371494, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9501d0a9e07bc874bb3d299ad9d7969a, type: 3}
@@ -1329,7 +1334,7 @@ PrefabInstance:
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 232896413665371497, guid: 9501d0a9e07bc874bb3d299ad9d7969a,
         type: 3}
@@ -1587,7 +1592,7 @@ PrefabInstance:
     - target: {fileID: 4900662638257523834, guid: d7b0b9689ba613a49a5b6293a78eaa16,
         type: 3}
       propertyPath: m_RootOrder
-      value: 12
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4900662638257523834, guid: d7b0b9689ba613a49a5b6293a78eaa16,
         type: 3}
@@ -1730,7 +1735,7 @@ PrefabInstance:
     - target: {fileID: 6115183603580084947, guid: 0928d5356c3bc964cad5264b8a3a4f80,
         type: 3}
       propertyPath: m_RootOrder
-      value: 9
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6115183603580084947, guid: 0928d5356c3bc964cad5264b8a3a4f80,
         type: 3}
