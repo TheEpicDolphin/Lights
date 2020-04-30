@@ -150,6 +150,9 @@ public class Beam : MonoBehaviour
         Matrix4x4 worldToCur = beamLocalToCur * transform.worldToLocalMatrix;
         Matrix4x4 curToBeamLocal = beamLocalToCur.inverse;
 
+        //Vector3 o = transform.TransformPoint(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
+        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
+
         Vector3 right = beamLocalToCur.GetColumn(0);
         Vector3 up = beamLocalToCur.GetColumn(1);
         Vector3 forward = beamLocalToCur.GetColumn(2);
@@ -354,6 +357,13 @@ public class Beam : MonoBehaviour
 
         Vector2 dir2 = (beamFunctionObj[e].v - beamFunctionObj[e - 1].v).normalized;
         Vector2 clipEnd = beamFunctionObj[e - 1].v + ((lims[1].x - beamFunctionObj[e - 1].v.x) / dir2.x) * dir2;
+
+        //Vector3 o = transform.TransformPoint(curToBeamLocal.MultiplyPoint3x4(Vector3.zero));
+        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
+        //Vector3 o = transform.TransformPoint(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
+        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
+        Vector3 o = transform.localToWorldMatrix.MultiplyPoint3x4(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
+        Debug.DrawLine(Vector3.zero, o, Color.cyan);
 
         if (!(lims[0] == clipStart))
         {

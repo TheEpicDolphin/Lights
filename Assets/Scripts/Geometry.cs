@@ -86,9 +86,30 @@ namespace GeometryUtils
         internal static Matrix4x4 RefractTransformWithPlane(Vector3 n, Vector3 p0, Vector3 vI, float n2_n1)
         {
             float dot_vI_n = Vector3.Dot(vI, n);
+            //Refracted direction
+            Vector3 vR = (vI - dot_vI_n * n) / n2_n1 +
+                        Mathf.Sqrt(1 - (1 - dot_vI_n * dot_vI_n) / (n2_n1 * n2_n1)) * n;
+            vR.Normalize();
+            float cos_theta1 = dot_vI_n;
+            float cos_theta2 = Vector3.Dot(vR, n);
+
+            Matrix4x4 rotToRefrDir = Matrix4x4.Rotate(Quaternion.FromToRotation(vI, vR));
+            float d = Vector3.Dot(p0, n);
+            float dRefr = n2_n1 * (cos_theta2 / cos_theta1) * d;
+            Matrix4x4 translate_depth_diff = Matrix4x4.Translate(-(dRefr - d) * n);
+
+            Matrix4x4 M = translate_depth_diff * rotToRefrDir;
+            return M;
+        }
+
+        /*
+        internal static Matrix4x4 RefractTransformWithPlane(Vector3 n, Vector3 p0, Vector3 vI, float n2_n1)
+        {
+            float dot_vI_n = Vector3.Dot(vI, n);
             Vector3 vR = (vI - dot_vI_n * n) / n2_n1 + 
                         Mathf.Sqrt(1 - (1 - dot_vI_n * dot_vI_n) /(n2_n1 * n2_n1)) * n;
             vR.Normalize();
+
             float cos_theta1 = dot_vI_n;
             float cos_theta2 = Vector3.Dot(vR, n);
 
@@ -103,6 +124,7 @@ namespace GeometryUtils
             Matrix4x4 M = trans_p0.inverse * rotToNegYAxis.inverse * refractXaxis * rotToNegYAxis * trans_p0;
             return M;
         }
+        */
     }
 }
     
