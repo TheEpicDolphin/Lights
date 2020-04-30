@@ -111,7 +111,7 @@ public class Beam : MonoBehaviour
         List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
                                     (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
         beamComponents = new List<List<Vector2>>();
-
+        Debug.Log("Casting");
         Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
     }
@@ -356,11 +356,6 @@ public class Beam : MonoBehaviour
         Vector2 dir2 = (beamFunction[e].v - beamFunction[e - 1].v).normalized;
         Vector2 clipEnd = beamFunction[e - 1].v + ((lims[1].x - beamFunction[e - 1].v.x) / dir2.x) * dir2;
 
-        //Vector3 o = transform.TransformPoint(curToBeamLocal.MultiplyPoint3x4(Vector3.zero));
-        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
-        //Vector3 o = transform.TransformPoint(beamLocalToCur.MultiplyPoint3x4(Vector3.zero));
-        //Debug.DrawLine(Vector3.zero, o, Color.cyan);
-
         if (!(lims[0] == clipStart))
         {
             beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(lims[0]));
@@ -382,8 +377,12 @@ public class Beam : MonoBehaviour
         }
 
         Obstacle lastObs = beamFunction[e].obsRef;
-        illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(lastObs, 
+        if(!Mathf.Approximately(v.x, vLast.x))
+        {
+            illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(lastObs,
                             new Vector2[] { beamComponent.Last(), curToBeamLocal.MultiplyPoint3x4(clipEnd) }));
+        }
+        
 
         beamComponent.Add(curToBeamLocal.MultiplyPoint3x4(clipEnd));
         if (!(lims[1] == clipEnd))

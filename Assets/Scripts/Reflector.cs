@@ -38,6 +38,15 @@ public class Reflector : Obstacle
 
         Vector2 lims0World = beam.transform.TransformPoint(limsBeamLocal[0]);
         Vector2 lims1World = beam.transform.TransformPoint(limsBeamLocal[1]);
+
+        Debug.Log("Reflection " + maxRecurse.ToString());
+        Debug.Log(lims0World.ToString("F4"));
+        Debug.Log(lims1World.ToString("F4"));
+        Debug.Log("--------");
+        Debug.Log(lims0Cur.ToString("F4"));
+        Debug.Log(lims1Cur.ToString("F4"));
+        Debug.Log(Mathf.Approximately(lims0Cur.x, lims1Cur.x));
+
         Vector2 sourceWorld = (lims0World + lims1World) / 2;
         Vector2 dirWorld = beam.transform.TransformDirection(Mrefl.inverse.MultiplyVector(new Vector2(0, 1)));
         float beamWidth = (lims1World - lims0World).magnitude / 2;
