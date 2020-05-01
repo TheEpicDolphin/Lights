@@ -20,7 +20,7 @@ public struct Tuple<T, V>
 
 //Vector.up is forward in 2D
 
-public class Beam : Item
+public class Beam : MonoBehaviour, IItem
 {
     class ObstacleVertex
     {
@@ -403,6 +403,11 @@ public class Beam : Item
 
         }
 
+
+    }
+
+    public void Animate(float angle)
+    {
 
     }
 

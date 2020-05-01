@@ -10,26 +10,21 @@ public class Player : MonoBehaviour
 
     float playerSpeed = 8.0f;
 
-    //public Firearm firearm;
-    //Item equippedItem;
-
     float moveHorizontal;
     float moveVertical;
     Vector2 relMousePos;
 
     Animator animator;
     Animator handAnimator;
-    Rigidbody rb;
+    Rigidbody2D rb;
+    Hand hand;
 
     //public Inventory inventory;
-
-
-    Hand hand;
 
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody2D>();
 
         GameObject sprite = transform.Find("avatar").gameObject;
         animator = sprite.GetComponent<Animator>();
@@ -47,17 +42,12 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
         relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
         relMousePos.Normalize();
-        
-
-        if (Input.GetMouseButton(0))
-        {
-            //firearm.Shoot(animator, ref inventory);
-        }
 
         velocity = Vector3.zero;
         Vector3 movement = moveVertical * new Vector3(0.0f, 1.0f, 0) + moveHorizontal * new Vector3(1.0f, 0.0f, 0.0f);
@@ -77,6 +67,7 @@ public class Player : MonoBehaviour
             animator.SetFloat("dx", movement.x);
             velocity = movement.normalized * playerSpeed;
             transform.Translate(movement.normalized * playerSpeed * Time.fixedDeltaTime, Space.World);
+            
         }
 
         hand.relMousePos = relMousePos;
@@ -85,6 +76,11 @@ public class Player : MonoBehaviour
     private void LateUpdate()
     {
         
+    }
+
+    public void AddKnockback(float strength, Vector2 dir)
+    {
+        rb.AddForce(strength * dir, ForceMode2D.Impulse);
     }
 
 }

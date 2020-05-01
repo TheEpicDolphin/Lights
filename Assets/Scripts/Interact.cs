@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class Interact : MonoBehaviour
 {
-    List<Item> items = new List<Item>();
-    Transform hand;
+    List<GameObject> nearbyObjects = new List<GameObject>();
+    Hand hand;
 
     // Start is called before the first frame update
     void Start()
     {
-        hand = transform.parent.GetChild(1);   
+        hand = transform.parent.GetComponentInChildren<Hand>();
     }
 
     // Update is called once per frame
@@ -18,18 +18,16 @@ public class Interact : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if(items.Count > 0)
+            if(nearbyObjects.Count > 0)
             {
-                if (hand.childCount > 0)
+                if (hand.HasObjectEquipped())
                 {
-                    Transform equipped = hand.GetChild(0);
-                    equipped.parent = null;
-                    equipped.gameObject.layer = 15;
+                    hand.UnequipObject();
                 }
 
-                Item closestItem = items[0];
+                GameObject closestItem = nearbyObjects[0];
                 float closestDist = Vector3.Distance(closestItem.transform.position, transform.position);
-                foreach(Item item in items)
+                foreach(GameObject item in nearbyObjects)
                 {
                     float newDist = Vector3.Distance(closestItem.transform.position, transform.position);
                     if (newDist < closestDist)
@@ -38,12 +36,8 @@ public class Interact : MonoBehaviour
                         closestItem = item;
                     }
                 }
-                //Attach item to hand
-                closestItem.transform.parent = hand;
-                closestItem.transform.localPosition = Vector3.zero;
-                closestItem.transform.localRotation = Quaternion.identity;
-                items.Remove(closestItem);
-                closestItem.gameObject.layer = 16;
+                hand.EquipObject(closestItem);
+                nearbyObjects.Remove(closestItem);
             }
             
         }
@@ -51,26 +45,18 @@ public class Interact : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.GetComponent<Item>())
+        if (!nearbyObjects.Contains(collision.gameObject))
         {
-            Item item = collision.GetComponent<Item>();
-            if (!items.Contains(item))
-            {
-                items.Add(item);
-            }
+            nearbyObjects.Add(collision.gameObject);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.GetComponent<Item>())
+        if (nearbyObjects.Contains(collision.gameObject))
         {
-            Item item = collision.GetComponent<Item>();
-            if (items.Contains(item))
-            {
-                items.Remove(item);
-                
-            }
+            nearbyObjects.Remove(collision.gameObject);
+
         }
     }
 
