@@ -1075,6 +1075,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9501d0a9e07bc874bb3d299ad9d7969a, type: 3}
+--- !u!1 &1558259853 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5075401875981725253, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
+    type: 3}
+  m_PrefabInstance: {fileID: 5075401876893409780}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &1558259854
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1558259853}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1001 &1786142199
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1345,7 +1372,7 @@ PrefabInstance:
     - target: {fileID: 5075401876883390757, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.062447324
+      value: -0.1
       objectReference: {fileID: 0}
     - target: {fileID: 5075401876883390757, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
         type: 3}

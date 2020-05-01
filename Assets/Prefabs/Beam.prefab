@@ -10,8 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 232896413665371497}
   - component: {fileID: 232896413665371494}
-  - component: {fileID: 3841215457142710659}
-  - component: {fileID: 1478619701862591674}
+  - component: {fileID: 3052223911839277674}
   m_Layer: 14
   m_Name: Beam
   m_TagString: Untagged
@@ -50,28 +49,7 @@ MonoBehaviour:
   - {x: -0.5, y: 0}
   - {x: 0.5, y: 0}
   beamColor: {r: 1, g: 0, b: 0, a: 1}
---- !u!50 &3841215457142710659
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 232896413665371495}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!61 &1478619701862591674
+--- !u!61 &3052223911839277674
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

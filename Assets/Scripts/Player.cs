@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
 
     //public Inventory inventory;
 
+
     Transform hand;
 
     // Start is called before the first frame update
@@ -52,27 +53,11 @@ public class Player : MonoBehaviour
         relMousePos.Normalize();
         Vector3 relHandDir = new Vector3(relMousePos.x, relMousePos.y, 0.0f);
         hand.position = transform.position + 1.0f * relHandDir;
-        hand.rotation = Quaternion.LookRotation(relHandDir, Vector3.up);
-
-        //hand.RotateAround(transform.position, Vector3.forward, ?);
+        hand.rotation = Quaternion.LookRotation(Vector3.forward, relHandDir);
 
         if (Input.GetMouseButton(0))
         {
             //firearm.Shoot(animator, ref inventory);
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            Collider2D[] overlapped = Physics2D.OverlapCircleAll(transform.position, 1.0f);
-            foreach(Collider2D overlap in overlapped)
-            {
-                
-            }
-            //Attach item to hand
-            
-            //equippedItem.transform.parent = hand;
-            //equippedItem.transform.localPosition = Vector3.zero;
-            //equippedItem.transform.localRotation = Quaternion.identity;
         }
 
     }
@@ -98,11 +83,6 @@ public class Player : MonoBehaviour
             transform.Translate(movement.normalized * playerSpeed * Time.fixedDeltaTime, Space.World);
         }
 
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        
     }
 
 }
