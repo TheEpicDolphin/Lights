@@ -20,7 +20,7 @@ public struct Tuple<T, V>
 
 //Vector.up is forward in 2D
 
-public class Beam : MonoBehaviour
+public class Beam : Item
 {
     class ObstacleVertex
     {
@@ -51,21 +51,6 @@ public class Beam : MonoBehaviour
         meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
         //meshRend.material = new Material(Shader.Find("Standard"));
         meshRend.material.color = beamColor;
-
-        /*
-        Vector3 n = new Vector3(-1, 0, 0).normalized;
-        Vector3 p0 = new Vector3(0, 0, 0);
-
-        Matrix4x4 objectTransform = Matrix4x4.identity;
-        objectTransform.SetColumn(0, new Vector3(1, 0, 0));
-        objectTransform.SetColumn(1, new Vector3(0, 1, 0));
-        objectTransform.SetColumn(2, new Vector3(0, 0, 1));
-        objectTransform.SetColumn(3, new Vector4(-1, 1, 0, 1));
-
-        Debug.Log("REFLECTION");
-        Debug.Log(objectTransform);
-        Debug.Log(Geometry.ReflectTransformAcrossPlane(n, p0, objectTransform));
-        */
     }
 
     // Update is called once per frame
@@ -74,6 +59,13 @@ public class Beam : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         List<int> indicesList = new List<int>();
 
+        Vector2 beamOrigin = transform.TransformPoint((sourceLims[0] + sourceLims[1]) / 2);
+        Vector2 beamDir = transform.TransformDirection(new Vector2(0, 1));
+        List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir,
+                                    (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
+        beamComponents = new List<List<Vector2>>();
+
+        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
         foreach (List<Vector2> beamComponent in beamComponents)
         {
@@ -106,13 +98,7 @@ public class Beam : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector2 beamOrigin = transform.TransformPoint((sourceLims[0] + sourceLims[1]) / 2);
-        Vector2 beamDir = transform.TransformDirection(new Vector2(0, 1));
-        List<Obstacle> obstacles = GetObstaclesInBeam(beamOrigin, beamDir, 
-                                    (sourceLims[1] - sourceLims[0]).magnitude / 2, beamLength);
-        beamComponents = new List<List<Vector2>>();
         
-        Cast(sourceLims, obstacles, Matrix4x4.identity, beamLength, 2, ref beamComponents);
 
     }
     

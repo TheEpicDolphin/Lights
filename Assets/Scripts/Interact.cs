@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class Interact : MonoBehaviour
 {
-    Player player;
-    List<Beam> beams = new List<Beam>();
+    List<Item> items = new List<Item>();
+    Transform hand;
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GetComponentInParent<Player>();
+        hand = transform.parent.GetChild(1);   
     }
 
     // Update is called once per frame
@@ -18,23 +18,32 @@ public class Interact : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if(beams.Count > 0)
+            if(items.Count > 0)
             {
-                Beam closestBeam = beams[0];
-                float closestDist = Vector3.Distance(closestBeam.transform.position, transform.position);
-                foreach(Beam beam in beams)
+                if (hand.childCount > 0)
                 {
-                    float newDist = Vector3.Distance(closestBeam.transform.position, transform.position);
+                    Transform equipped = hand.GetChild(0);
+                    equipped.parent = null;
+                    equipped.gameObject.layer = 15;
+                }
+
+                Item closestItem = items[0];
+                float closestDist = Vector3.Distance(closestItem.transform.position, transform.position);
+                foreach(Item item in items)
+                {
+                    float newDist = Vector3.Distance(closestItem.transform.position, transform.position);
                     if (newDist < closestDist)
                     {
                         closestDist = newDist;
-                        closestBeam = beam;
+                        closestItem = item;
                     }
                 }
                 //Attach item to hand
-                closestBeam.transform.parent = transform;
-                closestBeam.transform.localPosition = Vector3.zero;
-                closestBeam.transform.localRotation = Quaternion.identity;
+                closestItem.transform.parent = hand;
+                closestItem.transform.localPosition = Vector3.zero;
+                closestItem.transform.localRotation = Quaternion.identity;
+                items.Remove(closestItem);
+                closestItem.gameObject.layer = 16;
             }
             
         }
@@ -42,24 +51,25 @@ public class Interact : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.GetComponent<Beam>())
+        if (collision.GetComponent<Item>())
         {
-            Beam beam = collision.GetComponent<Beam>();
-            if (!beams.Contains(beam))
+            Item item = collision.GetComponent<Item>();
+            if (!items.Contains(item))
             {
-                beams.Add(beam);
+                items.Add(item);
             }
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.GetComponent<Beam>())
+        if (collision.GetComponent<Item>())
         {
-            Beam beam = collision.GetComponent<Beam>();
-            if (beams.Contains(beam))
+            Item item = collision.GetComponent<Item>();
+            if (items.Contains(item))
             {
-                beams.Remove(beam);
+                items.Remove(item);
+                
             }
         }
     }

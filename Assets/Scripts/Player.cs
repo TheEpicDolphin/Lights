@@ -18,12 +18,13 @@ public class Player : MonoBehaviour
     Vector2 relMousePos;
 
     Animator animator;
+    Animator handAnimator;
     Rigidbody rb;
 
     //public Inventory inventory;
 
 
-    Transform hand;
+    Hand hand;
 
     // Start is called before the first frame update
     void Start()
@@ -36,7 +37,7 @@ public class Player : MonoBehaviour
         transform.forward = -Camera.main.transform.forward;
         transform.up = Camera.main.transform.up;
 
-        hand = transform.Find("hand");
+        hand = GetComponentInChildren<Hand>();
 
         //inventory.handgunAmmo = 200;
 
@@ -49,27 +50,22 @@ public class Player : MonoBehaviour
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
-        relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(transform.position);
+        relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
         relMousePos.Normalize();
-        Vector3 relHandDir = new Vector3(relMousePos.x, relMousePos.y, 0.0f);
-        hand.position = transform.position + 1.0f * relHandDir;
-        hand.rotation = Quaternion.LookRotation(Vector3.forward, relHandDir);
+        
 
         if (Input.GetMouseButton(0))
         {
             //firearm.Shoot(animator, ref inventory);
         }
 
-    }
-
-    private void FixedUpdate()
-    {
         velocity = Vector3.zero;
         Vector3 movement = moveVertical * new Vector3(0.0f, 1.0f, 0) + moveHorizontal * new Vector3(1.0f, 0.0f, 0.0f);
         if (movement.magnitude > 1.0f)
         {
             movement = movement.normalized;
         }
+        //Animate player facing direction
         animator.SetFloat("movement", movement.magnitude);
         animator.SetFloat("facingY", relMousePos.y);
         animator.SetFloat("facingX", relMousePos.x);
@@ -83,6 +79,12 @@ public class Player : MonoBehaviour
             transform.Translate(movement.normalized * playerSpeed * Time.fixedDeltaTime, Space.World);
         }
 
+        hand.relMousePos = relMousePos;
+    }
+
+    private void LateUpdate()
+    {
+        
     }
 
 }
