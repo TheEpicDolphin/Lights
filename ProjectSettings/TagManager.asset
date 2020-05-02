@@ -15,13 +15,13 @@ TagManager:
   - 
   - PostProcessing
   - 
-  - StaticObstacle
-  - MovingObstacle
+  - 
+  - 
   - Obstacle
-  - 
-  - 
-  - 
-  - 
+  - LightTarget
+  - Beam
+  - Item
+  - Player
   - 
   - 
   - 

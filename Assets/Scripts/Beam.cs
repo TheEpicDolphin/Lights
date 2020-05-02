@@ -56,6 +56,7 @@ public class Beam : MonoBehaviour, IItem
     // Update is called once per frame
     void Update()
     {
+        
         List<Vector3> vertices = new List<Vector3>();
         List<int> indicesList = new List<int>();
 
@@ -92,7 +93,7 @@ public class Beam : MonoBehaviour, IItem
         meshFilt.mesh.SetTriangles(indicesList.ToArray(), 0);
         meshFilt.mesh.RecalculateNormals();
         meshFilt.mesh.RecalculateBounds();
-
+        
 
     }
 

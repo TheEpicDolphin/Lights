@@ -16,6 +16,8 @@ public class Player : MonoBehaviour
     Animator animator;
     Animator handAnimator;
     Rigidbody2D rb;
+    Vector2 lastVelocity = Vector2.zero;
+    Vector2 eLast = Vector2.zero;
     Hand hand;
 
     //public Inventory inventory;
@@ -70,10 +72,12 @@ public class Player : MonoBehaviour
 
         hand.relMousePos = relMousePos;
 
-        Vector2 a = (vDesired - rb.velocity) * 20.0f;
-        //Prevent unrealistic force
-        //a = Mathf.Clamp(a.magnitude, 0.0f, 7500.0f) * a.normalized;
-        rb.AddForce(a, ForceMode2D.Force);
+        float k = (1 / Time.deltaTime) * 0.4f;
+        Vector2 f = k * (vDesired - rb.velocity);
+        //Prevent unrealistic forces by clamping to range
+        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
+        rb.AddForce(f, ForceMode2D.Force);
+
     }
 
     private void LateUpdate()
