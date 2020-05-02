@@ -36,7 +36,7 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
             lastT = t;
 
             Player player = transform.parent.GetComponentInParent<Player>();
-            player.AddKnockback(10.0f, -transform.up);
+            player.AddKnockback(25.0f, -transform.up);
         }
         
     }

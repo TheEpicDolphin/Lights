@@ -6,7 +6,6 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public float radius;
-    public Vector3 velocity;
 
     float playerSpeed = 8.0f;
 
@@ -49,8 +48,8 @@ public class Player : MonoBehaviour
         relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
         relMousePos.Normalize();
 
-        velocity = Vector3.zero;
-        Vector3 movement = moveVertical * new Vector3(0.0f, 1.0f, 0) + moveHorizontal * new Vector3(1.0f, 0.0f, 0.0f);
+        Vector2 vDesired = Vector2.zero;
+        Vector2 movement = moveVertical * new Vector2(0, 1) + moveHorizontal * new Vector2(1, 0);
         if (movement.magnitude > 1.0f)
         {
             movement = movement.normalized;
@@ -62,15 +61,19 @@ public class Player : MonoBehaviour
 
         if (movement.magnitude > 0.25f)
         {
+            //Only animate if beyond a certain threshold
             movement.Normalize();
             animator.SetFloat("dy", movement.y);
             animator.SetFloat("dx", movement.x);
-            velocity = movement.normalized * playerSpeed;
-            transform.Translate(movement.normalized * playerSpeed * Time.fixedDeltaTime, Space.World);
-            
+            vDesired = movement.normalized * playerSpeed;
         }
 
         hand.relMousePos = relMousePos;
+
+        Vector2 a = (vDesired - rb.velocity) * 20.0f;
+        //Prevent unrealistic force
+        //a = Mathf.Clamp(a.magnitude, 0.0f, 7500.0f) * a.normalized;
+        rb.AddForce(a, ForceMode2D.Force);
     }
 
     private void LateUpdate()
