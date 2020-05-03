@@ -39,7 +39,6 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
         if(t - lastT > 1 / firerate)
         {
             blast.Play();
-            Debug.Log("Shoot");
             lastT = t;
 
             Player player = transform.parent.GetComponentInParent<Player>();
@@ -55,7 +54,7 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
                 Vector2 pelletDir = Quaternion.AngleAxis(randAngle, Vector3.forward) * dir;
                 RaycastHit2D[] hits = Physics2D.RaycastAll(start, pelletDir, range, (1 << 16));
                 //Debug.DrawRay(start, range * pelletDir, Color.red, 5.0f);
-                
+                /*
                 foreach (RaycastHit2D hit in hits)
                 {
                     Enemy enemy = hit.collider.GetComponent<Enemy>();
@@ -65,7 +64,7 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
                                            pelletDir);
                     }
                 }
-                
+                */
             }
             
         }
