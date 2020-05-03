@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using VecUtils;
+using GeometryUtils;
 
 
 public class BoundaryEdge
@@ -35,7 +35,7 @@ public class NavMeshTriangle : INode
     public Vector3[] verts;
     public Vector3 centroid;
 
-    public int navMeshIdx;
+    public int idx;
     public float area;
     public List<BoundaryEdge> boundaryEdges;
 
@@ -177,7 +177,7 @@ public class Graph<T> where T : INode
 //Assumes navmesh is perpendicular to z axis
 public class NavigationMesh : MonoBehaviour
 {
-    public Graph<NavMeshTriangle> navMeshGraph;
+    Graph<NavMeshTriangle> navMeshGraph;
     HashSet<int> boundaryVerts = new HashSet<int>();
     Mesh mesh;
 
@@ -185,10 +185,9 @@ public class NavigationMesh : MonoBehaviour
     //2 vertex indices
     Dictionary<Vector2Int, Vector2Int> triPairToEdgeMap;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-
+        navMeshGraph = NavMeshToGraph();
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()
@@ -211,7 +210,7 @@ public class NavigationMesh : MonoBehaviour
             Vector2Int e3 = vi3 < vi1 ? new Vector2Int(vi3, vi1) : new Vector2Int(vi1, vi3);
 
             int tri = i / 3;
-            navMeshTris[tri].navMeshIdx = tri;
+            navMeshTris[tri].idx = tri;
             navMeshTris[tri].centroid = (mesh.vertices[vi1] + mesh.vertices[vi2] + mesh.vertices[vi3]) / 3;
             navMeshTris[tri].verts = new Vector3[] { mesh.vertices[vi1], mesh.vertices[vi2], mesh.vertices[vi3] };
             Vector2 p0 = mesh.vertices[vi1];
@@ -347,11 +346,11 @@ public class NavigationMesh : MonoBehaviour
 
 
 
-    Vector2 StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos, float agentRadius)
+    List<Vector2> StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos, float agentRadius)
     {
         if (triPath.Count == 1)
         {
-            return targetPos;
+            return new List<Vector2> { targetPos };
         }
 
         Vector2Int triPair = triPath[0] < triPath[1] ? new Vector2Int(triPath[0], triPath[1]) : new Vector2Int(triPath[1], triPath[0]);
@@ -628,36 +627,49 @@ public class NavigationMesh : MonoBehaviour
             Debug.LogError("FUNNEL ALG FAILED");
         }
 
-        breadCrumbs.Add(targetPos);
-
-
-        //Draws path points
         for (int i = 1; i < breadCrumbs.Count; i++)
         {
             Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),
-                           transform.TransformPoint(breadCrumbs[i]), Color.green, 0.0f, false);
+                               transform.TransformPoint(breadCrumbs[i]), Color.green, 0.0f, false);
         }
 
-        return breadCrumbs[1];
+        breadCrumbs.Add(targetPos);
+        return breadCrumbs;
     }
 
-    public Vector2 GetNextPointOnShortestPath(Vector2 start, Vector2 destination, float radius)
+    public Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination, float radius)
     {
         Vector2 startPosLocal = transform.InverseTransformPoint(start);
         Vector2 endPosLocal = transform.InverseTransformPoint(destination);
-        int startNavMeshTriIdx = ;
-        int endNavMeshTriIdx = ;
+        int startNavMeshTriIdx = FindTriContainingPoint(start);
+        int endNavMeshTriIdx = FindTriContainingPoint(destination);
 
         int[] backPointers = navMeshGraph.DijkstrasAlgorithm(endNavMeshTriIdx);
         List<int> triPath = navMeshGraph.TraceBackPointers(backPointers, startNavMeshTriIdx);
-        Vector2 nextPoint = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal, radius);
-        return transform.TransformPoint(nextPoint);
+        List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal, radius);
+
+        Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
+        for(int i = 1; i < shortestPathLocal.Count; i++)
+        {
+            shortestPathWorld[i] = transform.TransformPoint(shortestPathLocal[i]);
+        }
+
+        return shortestPathWorld;
     }
 
     private int FindTriContainingPoint(Vector2 p)
     {
-
-        return -1;
+        foreach(NavMeshTriangle navMeshTri in navMeshGraph.nodes)
+        {
+            Vector2 a = navMeshTri.verts[0];
+            Vector2 b = navMeshTri.verts[1];
+            Vector2 c = navMeshTri.verts[2];
+            if(Geometry.IsInTriangle(a, b, c, p))
+            {
+                return navMeshTri.idx;
+            }
+        }
+        return 0;
     }
     
 }
