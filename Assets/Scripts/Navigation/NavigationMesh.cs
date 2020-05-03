@@ -187,6 +187,7 @@ public class NavigationMesh : MonoBehaviour
 
     private void Awake()
     {
+        mesh = GetComponent<MeshFilter>().mesh;
         navMeshGraph = NavMeshToGraph();
     }
 
@@ -348,6 +349,7 @@ public class NavigationMesh : MonoBehaviour
 
     List<Vector2> StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos, float agentRadius)
     {
+        
         if (triPath.Count == 1)
         {
             return new List<Vector2> { targetPos };
@@ -627,6 +629,7 @@ public class NavigationMesh : MonoBehaviour
             Debug.LogError("FUNNEL ALG FAILED");
         }
 
+        
         for (int i = 1; i < breadCrumbs.Count; i++)
         {
             Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),
@@ -641,8 +644,10 @@ public class NavigationMesh : MonoBehaviour
     {
         Vector2 startPosLocal = transform.InverseTransformPoint(start);
         Vector2 endPosLocal = transform.InverseTransformPoint(destination);
-        int startNavMeshTriIdx = FindTriContainingPoint(start);
-        int endNavMeshTriIdx = FindTriContainingPoint(destination);
+        int startNavMeshTriIdx = FindTriContainingPoint(startPosLocal);
+        int endNavMeshTriIdx = FindTriContainingPoint(endPosLocal);
+        Debug.Log(startNavMeshTriIdx);
+        Debug.Log(endNavMeshTriIdx);
 
         int[] backPointers = navMeshGraph.DijkstrasAlgorithm(endNavMeshTriIdx);
         List<int> triPath = navMeshGraph.TraceBackPointers(backPointers, startNavMeshTriIdx);
@@ -651,7 +656,7 @@ public class NavigationMesh : MonoBehaviour
         Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
         for(int i = 1; i < shortestPathLocal.Count; i++)
         {
-            shortestPathWorld[i] = transform.TransformPoint(shortestPathLocal[i]);
+            shortestPathWorld[i - 1] = transform.TransformPoint(shortestPathLocal[i]);
         }
 
         return shortestPathWorld;
