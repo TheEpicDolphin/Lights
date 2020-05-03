@@ -29,5 +29,7 @@ namespace VecUtils
             return vector1.x * vector2.y - vector1.y * vector2.x;
         }
 
+        
+
     }
 }

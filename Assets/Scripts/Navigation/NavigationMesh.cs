@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using GeometryUtils;
+using VecUtils;
 
 
 public class BoundaryEdge
@@ -36,7 +37,6 @@ public class NavMeshTriangle : INode
     public Vector3 centroid;
 
     public int idx;
-    public float area;
     public List<BoundaryEdge> boundaryEdges;
 
     public NavMeshTriangle()
@@ -217,16 +217,14 @@ public class NavigationMesh : MonoBehaviour
             Vector2 p0 = mesh.vertices[vi1];
             Vector2 p1 = mesh.vertices[vi2];
             Vector2 p2 = mesh.vertices[vi3];
-            navMeshTris[tri].area = 0.5f * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
 
             if (edgeMap.ContainsKey(e1))
             {
                 navMeshTris[tri].AddNeighbor(edgeMap[e1], 1);
                 navMeshTris[edgeMap[e1]].AddNeighbor(tri, 1);
 
-                Vector2Int triPair = tri < edgeMap[e1] ? new Vector2Int(tri, edgeMap[e1]) : new Vector2Int(edgeMap[e1], tri);
-                triPairToEdgeMap[triPair] = new Vector2Int(vi1, vi2);
-
+                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e1])] = e1;
+                triPairToEdgeMap[new Vector2Int(edgeMap[e1], tri)] = e1;
                 edgeMap.Remove(e1);
             }
             else
@@ -239,8 +237,8 @@ public class NavigationMesh : MonoBehaviour
                 navMeshTris[tri].AddNeighbor(edgeMap[e2], 1);
                 navMeshTris[edgeMap[e2]].AddNeighbor(tri, 1);
 
-                Vector2Int triPair = tri < edgeMap[e2] ? new Vector2Int(tri, edgeMap[e2]) : new Vector2Int(edgeMap[e2], tri);
-                triPairToEdgeMap[triPair] = new Vector2Int(vi2, vi3);
+                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e2])] = e2;
+                triPairToEdgeMap[new Vector2Int(edgeMap[e2], tri)] = e2;
 
                 edgeMap.Remove(e2);
             }
@@ -254,8 +252,8 @@ public class NavigationMesh : MonoBehaviour
                 navMeshTris[tri].AddNeighbor(edgeMap[e3], 1);
                 navMeshTris[edgeMap[e3]].AddNeighbor(tri, 1);
 
-                Vector2Int triPair = tri < edgeMap[e3] ? new Vector2Int(tri, edgeMap[e3]) : new Vector2Int(edgeMap[e3], tri);
-                triPairToEdgeMap[triPair] = new Vector2Int(vi3, vi1);
+                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e3])] = e3;
+                triPairToEdgeMap[new Vector2Int(edgeMap[e3], tri)] = e3;
 
                 edgeMap.Remove(e3);
             }
@@ -346,7 +344,7 @@ public class NavigationMesh : MonoBehaviour
     }
 
 
-
+    /*
     List<Vector2> StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos, float agentRadius)
     {
         
@@ -365,7 +363,10 @@ public class NavigationMesh : MonoBehaviour
         List<Vector2> portalVerts = new List<Vector2> { mesh.vertices[prevE[0]], mesh.vertices[prevE[1]] };
 
         HashSet<int> mappedBoundaryVerts = new HashSet<int>();
+        //Debug.Log(Vector2.SignedAngle(v1 - startPos, v2 - startPos));
+        //Debug.Log(Vector3.SignedAngle(v1 - startPos, v2 - startPos, Vector3.forward));
 
+        //WARNING! Vector2.SignedAngle uses +z axis as forward
         if (Vector2.SignedAngle(v1 - startPos, v2 - startPos) < 0)
         {
             Vector2Int eMapped = new Vector2Int(vertIndexMap[prevE[0]], vertIndexMap[prevE[1]]);
@@ -385,7 +386,6 @@ public class NavigationMesh : MonoBehaviour
             Vector2Int eMapped = new Vector2Int(vertIndexMap[prevE[1]], vertIndexMap[prevE[0]]);
             edgePortals.Add(eMapped);
             prevE = new Vector2Int(prevE[1], prevE[0]);
-
 
             if (boundaryVerts.Contains(prevE[0]))
             {
@@ -442,12 +442,13 @@ public class NavigationMesh : MonoBehaviour
         edgePortals.Add(new Vector2Int(portalVerts.Count, portalVerts.Count));
         portalVerts.Add(targetPos);
 
-        /*
+        
         foreach (Vector2Int edgePortal in edgePortals)
         {
-            Debug.DrawLine(portalVerts[edgePortal[0]], portalVerts[edgePortal[1]], Color.clear, 0.0f, false);
+            Debug.DrawLine(transform.TransformPoint(portalVerts[edgePortal[0]]),
+                transform.TransformPoint(portalVerts[edgePortal[1]]), Color.magenta, 0.0f, false);
         }
-        */
+        
 
         //Run Simple Stupid Funnel Algorithm.
         List<Vector2> breadCrumbs = new List<Vector2> { startPos };
@@ -635,9 +636,262 @@ public class NavigationMesh : MonoBehaviour
             Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),
                                transform.TransformPoint(breadCrumbs[i]), Color.green, 0.0f, false);
         }
+        
 
         breadCrumbs.Add(targetPos);
         return breadCrumbs;
+    }
+    */
+
+    List<Vector2> StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos, float agentRadius)
+    {
+
+        if (triPath.Count == 1)
+        {
+            return new List<Vector2> { targetPos };
+        }
+
+        List<Vector2> edgePortals = new List<Vector2>();
+        Vector2Int e = triPairToEdgeMap[new Vector2Int(triPath[0], triPath[1])];
+        Vector2 v1 = mesh.vertices[e[0]];
+        Vector2 v2 = mesh.vertices[e[1]];
+        HashSet<int> portalBoundaryVerts = new HashSet<int>();
+        
+        if (VecMath.Det(v1 - startPos, v2 - startPos) >= 0)
+        {
+            //counter clockwise rotation
+            edgePortals.Add(v2);
+            edgePortals.Add(v1);
+        }
+        else
+        {
+            //clockwise rotation
+            edgePortals.Add(v1);
+            edgePortals.Add(v2);
+        }
+
+        //Make sure that all edge portals are oriented in the same way
+        for (int i = 2; i < triPath.Count; i++)
+        {
+            int tri1 = triPath[i - 1];
+            int tri2 = triPath[i];
+            e = triPairToEdgeMap[new Vector2Int(tri1, tri2)];
+            v1 = mesh.vertices[e[0]];
+            v2 = mesh.vertices[e[1]];
+            if(v1 == edgePortals[edgePortals.Count - 2] || 
+                    v2 == edgePortals[edgePortals.Count - 1])
+            {
+                edgePortals.Add(v1);
+                edgePortals.Add(v2);
+            }
+            else
+            {
+                edgePortals.Add(v2);
+                edgePortals.Add(v1);
+            }
+        }
+
+        edgePortals.Add(targetPos);
+        edgePortals.Add(targetPos);
+
+        
+
+        for(int i = 0; i < edgePortals.Count; i+=2)
+        {
+            
+            Debug.DrawLine(transform.TransformPoint(edgePortals[i]),
+                transform.TransformPoint(edgePortals[i + 1]), Color.magenta, 0.0f, false);
+        }
+        
+        //Run Simple Stupid Funnel Algorithm.
+        List<Vector2> breadCrumbs = new List<Vector2> { startPos };
+
+        int n = 6;
+        float R = agentRadius / Mathf.Cos(Mathf.PI / n);
+
+        Vector2 minkowskiFunnelL = edgePortals[0] - breadCrumbs[breadCrumbs.Count - 1];
+        Vector2 minkowskiFunnelR = edgePortals[1] - breadCrumbs[breadCrumbs.Count - 1];
+
+        if (mappedBoundaryVerts.Contains(edgePortals[0][0]))
+        {
+            Vector2[] funnelLTangents = CircleTangentPoints(edgePortals[0], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+
+            if (Vector3.SignedAngle(minkowskiFunnelL, funnelLTangents[0] - breadCrumbs[breadCrumbs.Count - 1], Vector3.up) <= 0)
+            {
+                minkowskiFunnelL = (R * (funnelLTangents[0] - edgePortals[0]).normalized + edgePortals[0]) - breadCrumbs[breadCrumbs.Count - 1];
+            }
+            else
+            {
+                minkowskiFunnelL = (R * (funnelLTangents[1] - edgePortals[0]).normalized + edgePortals[0]) - breadCrumbs[breadCrumbs.Count - 1];
+            }
+        }
+
+        if (mappedBoundaryVerts.Contains(edgePortals[0][1]))
+        {
+            Vector2[] funnelRTangents = CircleTangentPoints(portalVerts[edgePortals[0][1]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+
+            if (Vector2.SignedAngle(minkowskiFunnelR, funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) >= 0)
+            {
+                minkowskiFunnelR = (R * (funnelRTangents[0] - portalVerts[edgePortals[0][1]]).normalized + portalVerts[edgePortals[0][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+            }
+            else
+            {
+                minkowskiFunnelR = (R * (funnelRTangents[1] - portalVerts[edgePortals[0][1]]).normalized + portalVerts[edgePortals[0][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+            }
+        }
+
+        int t = 0;
+        int epL = 1;
+        int epR = 1;
+        int ep = 1;
+
+        while (ep < edgePortals.Count && t < 1000)
+        {
+
+            Vector2 newMinkowskiFunnelL = portalVerts[edgePortals[ep][0]] - breadCrumbs[breadCrumbs.Count - 1];
+            if (mappedBoundaryVerts.Contains(edgePortals[ep][0]))
+            {
+                Vector2[] funnelLTangents = CircleTangentPoints(portalVerts[edgePortals[ep][0]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                if (Vector2.SignedAngle(newMinkowskiFunnelL, funnelLTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) <= 0)
+                {
+                    newMinkowskiFunnelL = (R * (funnelLTangents[0] - portalVerts[edgePortals[ep][0]]).normalized + portalVerts[edgePortals[ep][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+                }
+                else
+                {
+                    newMinkowskiFunnelL = (R * (funnelLTangents[1] - portalVerts[edgePortals[ep][0]]).normalized + portalVerts[edgePortals[ep][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+                }
+
+            }
+
+            if (Vector2.SignedAngle(minkowskiFunnelL, newMinkowskiFunnelL) <= 0)
+            {
+                if (edgePortals[ep][0] == edgePortals[epL][0] || Vector2.SignedAngle(newMinkowskiFunnelL, minkowskiFunnelR) <= 0)
+                {
+                    minkowskiFunnelL = newMinkowskiFunnelL;
+                    epL = ep;
+                }
+                else
+                {
+                    breadCrumbs.Add(breadCrumbs[breadCrumbs.Count - 1] + minkowskiFunnelR);
+                    ep = epR;
+                    epL = ep;
+                    epR = ep;
+                    minkowskiFunnelL = portalVerts[edgePortals[epL][0]] - breadCrumbs[breadCrumbs.Count - 1];
+                    if (mappedBoundaryVerts.Contains(edgePortals[epL][0]))
+                    {
+                        Vector2[] funnelLTangents = CircleTangentPoints(portalVerts[edgePortals[epL][0]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                        if (Vector2.SignedAngle(minkowskiFunnelL, funnelLTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) <= 0)
+                        {
+                            minkowskiFunnelL = (R * (funnelLTangents[0] - portalVerts[edgePortals[epL][0]]).normalized + portalVerts[edgePortals[epL][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                        else
+                        {
+                            minkowskiFunnelL = (R * (funnelLTangents[1] - portalVerts[edgePortals[epL][0]]).normalized + portalVerts[edgePortals[epL][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+
+                    }
+                    minkowskiFunnelR = portalVerts[edgePortals[epR][1]] - breadCrumbs[breadCrumbs.Count - 1];
+                    if (mappedBoundaryVerts.Contains(edgePortals[epR][1]))
+                    {
+                        Vector2[] funnelRTangents = CircleTangentPoints(portalVerts[edgePortals[epR][1]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                        if (Vector2.SignedAngle(minkowskiFunnelR, funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) >= 0)
+                        {
+                            minkowskiFunnelR = (R * (funnelRTangents[0] - portalVerts[edgePortals[epR][1]]).normalized + portalVerts[edgePortals[epR][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                        else
+                        {
+                            minkowskiFunnelR = (R * (funnelRTangents[1] - portalVerts[edgePortals[epR][1]]).normalized + portalVerts[edgePortals[epR][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                    }
+                    continue;
+                }
+
+            }
+
+            Vector2 newMinkowskiFunnelR = portalVerts[edgePortals[ep][1]] - breadCrumbs[breadCrumbs.Count - 1];
+            if (mappedBoundaryVerts.Contains(edgePortals[ep][1]))
+            {
+                Vector2[] funnelRTangents = CircleTangentPoints(portalVerts[edgePortals[ep][1]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                newMinkowskiFunnelR = Vector2.SignedAngle(newMinkowskiFunnelR, funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) >= 0 ?
+                                funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1] : funnelRTangents[1] - breadCrumbs[breadCrumbs.Count - 1];
+
+                if (Vector2.SignedAngle(newMinkowskiFunnelR, funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) >= 0)
+                {
+                    newMinkowskiFunnelR = (R * (funnelRTangents[0] - portalVerts[edgePortals[ep][1]]).normalized + portalVerts[edgePortals[ep][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                }
+                else
+                {
+                    newMinkowskiFunnelR = (R * (funnelRTangents[1] - portalVerts[edgePortals[ep][1]]).normalized + portalVerts[edgePortals[ep][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                }
+            }
+
+            if (Vector2.SignedAngle(minkowskiFunnelR, newMinkowskiFunnelR) >= 0)
+            {
+                if (edgePortals[ep][1] == edgePortals[epR][1] || Vector2.SignedAngle(minkowskiFunnelL, newMinkowskiFunnelR) <= 0)
+                {
+                    minkowskiFunnelR = newMinkowskiFunnelR;
+                    epR = ep;
+                }
+                else
+                {
+                    //breadCrumbs.Add(portalVerts[edgePortals[epL][0]]);
+                    breadCrumbs.Add(breadCrumbs[breadCrumbs.Count - 1] + minkowskiFunnelL);
+                    ep = epL;
+                    epL = ep;
+                    epR = ep;
+                    minkowskiFunnelL = portalVerts[edgePortals[epL][0]] - breadCrumbs[breadCrumbs.Count - 1];
+                    if (mappedBoundaryVerts.Contains(edgePortals[epL][0]))
+                    {
+                        Vector2[] funnelLTangents = CircleTangentPoints(portalVerts[edgePortals[epL][0]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                        if (Vector2.SignedAngle(minkowskiFunnelL, funnelLTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) <= 0)
+                        {
+                            minkowskiFunnelL = (R * (funnelLTangents[0] - portalVerts[edgePortals[epL][0]]).normalized + portalVerts[edgePortals[epL][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                        else
+                        {
+                            minkowskiFunnelL = (R * (funnelLTangents[1] - portalVerts[edgePortals[epL][0]]).normalized + portalVerts[edgePortals[epL][0]]) - breadCrumbs[breadCrumbs.Count - 1];
+
+                        }
+
+                    }
+                    minkowskiFunnelR = portalVerts[edgePortals[epR][1]] - breadCrumbs[breadCrumbs.Count - 1];
+                    if (mappedBoundaryVerts.Contains(edgePortals[epR][1]))
+                    {
+                        Vector2[] funnelRTangents = CircleTangentPoints(portalVerts[edgePortals[epR][1]], agentRadius, breadCrumbs[breadCrumbs.Count - 1]);
+                        if (Vector2.SignedAngle(minkowskiFunnelR, funnelRTangents[0] - breadCrumbs[breadCrumbs.Count - 1]) >= 0)
+                        {
+                            minkowskiFunnelR = (R * (funnelRTangents[0] - portalVerts[edgePortals[epR][1]]).normalized + portalVerts[edgePortals[epR][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                        else
+                        {
+                            minkowskiFunnelR = (R * (funnelRTangents[1] - portalVerts[edgePortals[epR][1]]).normalized + portalVerts[edgePortals[epR][1]]) - breadCrumbs[breadCrumbs.Count - 1];
+                        }
+                    }
+                    continue;
+                }
+            }
+
+            ep += 1;
+            t += 1;
+
+        }
+
+        if (t == 100)
+        {
+            Debug.LogError("FUNNEL ALG FAILED");
+        }
+
+
+        for (int i = 1; i < breadCrumbs.Count; i++)
+        {
+            Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),
+                               transform.TransformPoint(breadCrumbs[i]), Color.green, 0.0f, false);
+        }
+
+
+        breadCrumbs.Add(targetPos);
+        return breadCrumbs;
+        
     }
 
     public Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination, float radius)
@@ -646,8 +900,6 @@ public class NavigationMesh : MonoBehaviour
         Vector2 endPosLocal = transform.InverseTransformPoint(destination);
         int startNavMeshTriIdx = FindTriContainingPoint(startPosLocal);
         int endNavMeshTriIdx = FindTriContainingPoint(endPosLocal);
-        Debug.Log(startNavMeshTriIdx);
-        Debug.Log(endNavMeshTriIdx);
 
         int[] backPointers = navMeshGraph.DijkstrasAlgorithm(endNavMeshTriIdx);
         List<int> triPath = navMeshGraph.TraceBackPointers(backPointers, startNavMeshTriIdx);
