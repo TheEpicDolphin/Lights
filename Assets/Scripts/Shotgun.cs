@@ -52,19 +52,19 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
                 float randAngle = Random.Range(-angle, angle);
                 //Add random noise to pellet direction
                 Vector2 pelletDir = Quaternion.AngleAxis(randAngle, Vector3.forward) * dir;
-                RaycastHit2D[] hits = Physics2D.RaycastAll(start, pelletDir, range, (1 << 16));
+                RaycastHit2D[] hits = Physics2D.RaycastAll(start, pelletDir, range, (1 << 11));
                 //Debug.DrawRay(start, range * pelletDir, Color.red, 5.0f);
-                /*
+                
                 foreach (RaycastHit2D hit in hits)
                 {
                     Enemy enemy = hit.collider.GetComponent<Enemy>();
                     if(enemy != null)
                     {
-                        enemy.AddKnockback(knockbackStrength * (1 - hit.distance / range),
+                        enemy.AddKnockback((knockbackStrength / numPellets) * (1 - hit.distance / range),
                                            pelletDir);
                     }
                 }
-                */
+                
             }
             
         }

@@ -32,15 +32,15 @@ public class Enemy : MonoBehaviour, INavAgent
         Vector2 offset = Vector2.Perpendicular(dir) * radius;
         RaycastHit2D hit;
 
-        Debug.DrawRay(curPos + offset, 3.0f * dir, Color.red);
-        Debug.DrawRay(curPos - offset, 3.0f * dir, Color.red);
+        Debug.DrawRay(curPos + offset, 3.0f * dir, Color.red, 0.0f, false);
+        Debug.DrawRay(curPos - offset, 3.0f * dir, Color.red, 0.0f, false);
         if (hit = Physics2D.Raycast(curPos + offset, dir, 3.0f, (1 << 12)))
         {
-            curPos = hit.point + radius * hit.normal;
+            nextPoint = nextPoint + radius * hit.normal;
         }
         else if (hit = Physics2D.Raycast(curPos - offset, dir, 3.0f, (1 << 12)))
         {
-            curPos = hit.point + radius * hit.normal;
+            nextPoint = nextPoint + radius * hit.normal;
         }
         
         Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
@@ -53,4 +53,8 @@ public class Enemy : MonoBehaviour, INavAgent
 
     }
 
+    public void AddKnockback(float strength, Vector2 dir)
+    {
+        rb.AddForce(strength * dir, ForceMode2D.Impulse);
+    }
 }

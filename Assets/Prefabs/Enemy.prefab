@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8656938105662201008}
   - component: {fileID: 8656938105662201009}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: avatar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,8 +90,8 @@ GameObject:
   - component: {fileID: 8656938106796802457}
   - component: {fileID: 8656938106796802462}
   - component: {fileID: 1472143787609314778}
-  - component: {fileID: 3910612467967954371}
-  m_Layer: 0
+  - component: {fileID: 2463459740935338069}
+  m_Layer: 11
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,8 +148,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!58 &3910612467967954371
-CircleCollider2D:
+--- !u!61 &2463459740935338069
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -162,5 +162,15 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Size: {x: 1, y: 2.5}
+  m_EdgeRadius: 0
