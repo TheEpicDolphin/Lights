@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface INavAgent
 {
-    Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination, float radius);
+    void Navigate(Vector2 destination);
 }
