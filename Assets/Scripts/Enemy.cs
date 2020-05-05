@@ -36,11 +36,11 @@ public class Enemy : MonoBehaviour, INavAgent
         Debug.DrawRay(curPos - offset, 3.0f * dir, Color.red, 0.0f, false);
         if (hit = Physics2D.Raycast(curPos + offset, dir, 3.0f, (1 << 12)))
         {
-            nextPoint = nextPoint + radius * hit.normal;
+            nextPoint = nextPoint + 2 * radius * hit.normal;
         }
         else if (hit = Physics2D.Raycast(curPos - offset, dir, 3.0f, (1 << 12)))
         {
-            nextPoint = nextPoint + radius * hit.normal;
+            nextPoint = nextPoint + 2 * radius * hit.normal;
         }
         
         Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
