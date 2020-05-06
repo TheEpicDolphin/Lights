@@ -2,215 +2,116 @@
 using System.Collections.Generic;
 using System.Linq;
 using VecUtils;
+using GeometryUtils;
 
-/*
-//Vertices are clockwise
+//Traverse edges counterclockwise
 public class Triangle
 {
-    public HalfEdge[] edges;
+    public HalfEdge edge;
 
-    public Triangle(HalfEdge[] edges)
+    //Children are entirely contained within parent
+    public List<Triangle> children;
+
+    public Triangle(HalfEdge e01, HalfEdge e12, HalfEdge e20)
     {
-        this.edges = edges;
+        e01.next = e12;
+        e12.next = e20;
+        e20.next = e01;
+
+        e01.prev = e20;
+        e20.prev = e12;
+        e12.prev = e01;
+
+        e01.incidentTriangle = this;
+        e12.incidentTriangle = this;
+        e20.incidentTriangle = this;
+
+        this.edge = e01;
+        this.children = new List<Triangle>();
     }
 
-    public Delete()
+    public Triangle FindContainingTriangle(Vector2 v)
     {
-        foreach(HalfEdge edge in edges)
+        if(children.Count == 0)
         {
-            edge.tri = null;
+            return this;
         }
+
+        foreach(Triangle child in children)
+        {
+            if (child.Contains(v))
+            {
+                return child.FindContainingTriangle(v);
+            }
+        }
+
+        //Shouldn't reach here
+        return null;
     }
+
+    private bool Contains(Vector2 p)
+    {
+        Vector2[] verts = GetCounterClockwiseVerts();
+        return Geometry.IsInTriangle(verts[0], verts[1], verts[2], p);
+    }
+
+    public Vector2[] GetCounterClockwiseVerts()
+    {
+        Vector2[] verts = new Vector2[3];
+        HalfEdge e = edge;
+        for (int i = 0; i < verts.Length; i++)
+        {
+            verts[i] = edge.origin;
+            e = e.next;
+        }
+        return verts;
+    }
+
 }
 
-//Face is on the right side of HalfEdge
+
+//Face is on the left side of the Half-Edge
 public class HalfEdge
 {
-    public VertexNode vNode;
-    public Triangle tri;
+    public Vector2 origin;
+    public HalfEdge twin;
+    public Triangle incidentTriangle;
+    public HalfEdge next;
+    public HalfEdge prev;
 
-    public HalfEdge(VertexNode vNode)
+    public HalfEdge(Vector2 v)
     {
-        this.vNode = vNode;
-        this.tri = null;
+        this.origin = v;
+        this.twin = null;
+        this.incidentTriangle = null;
+        this.next = null;
+        this.prev = null;
     }
 
-    public HalfEdge(VertexNode vNode, Triangle tri)
+    public static void SetTwins(HalfEdge e0, HalfEdge e1)
     {
-        this.vNode = vNode;
-        this.tri = tri;
-    }
+        e0.twin = e1;
+        e1.twin = e0;
+    } 
 }
 
-//Edges are in clockwise order around vertex
-public class VertexNode
+
+public class Vertex
 {
-    public int i;
-    public LinkedList<HalfEdge> edges { get; private set; }
+    public Vector2 v;
+    public HalfEdge incidentEdge;
 
-    public VertexNode(int i)
+    public Vertex(Vector2 v, HalfEdge incidentEdge)
     {
-        this.i = i;
-        this.edges = new LinkedList<HalfEdge>();
+        this.v = v;
+        this.incidentEdge = incidentEdge;
     }
 
-    public VertexNode(int vi, LinkedList<HalfEdge> edges)
+    public Vertex(Vector2 v)
     {
-        this.i = i;
-        this.edges = edges;
+        this.v = v;
+        this.incidentEdge = null;
     }
-
-    public void SetEdges(LinkedList<HalfEdge> edges)
-    {
-        this.edges = edges;
-    }
-
-}
-
-        private VertexNode DivideAndConquer(int s, int e)
-    {
-        if (e - s == 2)
-        {
-            VertexNode v0 = new VertexNode(s);
-            VertexNode v1 = new VertexNode(s + 1);
-            HalfEdge e01 = new HalfEdge(v1);
-            HalfEdge e10 = new HalfEdge(v0);
-            v0.edges.AddAfter(e01);
-            v1.edges.AddAfter(e10);
-            return verts[v0.i].y <= verts[v1.i].y ? v0 : v1;
-        }
-        else if(e - s == 3)
-        {
-            VertexNode v0;
-            VertexNode v1;
-            VertexNode v2;
-            if (verts[s].y <= Mathf.Min(verts[s + 1].y, verts[s + 2].y))
-            {
-                v0 = new VertexNode(s);
-                if (VecMath.Det(verts[s + 1] - verts[s], verts[s + 2] - verts[s]) <= 0)
-                {
-                    v1 = new VertexNode(s + 1);
-                    v2 = new VertexNode(s + 2);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 2);
-                    v2 = new VertexNode(s + 1);
-                }
-            }
-            else if(verts[s + 1].y <= verts[s + 2].y)
-            {
-                v0 = new VertexNode(s + 1);
-                if (VecMath.Det(verts[s] - verts[s + 1], verts[s + 2] - verts[s + 1]) <= 0)
-                {
-                    v1 = new VertexNode(s);
-                    v2 = new VertexNode(s + 2);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 2);
-                    v2 = new VertexNode(s);
-                }
-            }
-            else
-            {
-                v0 = new VertexNode(s + 2);
-                if (VecMath.Det(verts[s] - verts[s + 2], verts[s + 1] - verts[s + 2]) <= 0)
-                {
-                    v1 = new VertexNode(s);
-                    v2 = new VertexNode(s + 1);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 1);
-                    v2 = new VertexNode(s);
-                }
-            }
-            Triangle tri = new Triangle(new VertexNode[] { v0, v1, v2 });
-            HalfEdge e01 = new HalfEdge(v1, tri);
-            HalfEdge e12 = new HalfEdge(v2, tri);
-            HalfEdge e20 = new HalfEdge(v0, tri);
-            v0.edges.AddFirst(e01);
-            v1.edges.AddFirst(e12);
-            v2.edges.AddFirst(e20);
-            HalfEdge e02 = new HalfEdge(v2, null);
-            HalfEdge e21 = new HalfEdge(v1, null);
-            HalfEdge e10 = new HalfEdge(v0, null);
-            v0.edges.AddLast(e02);
-            v2.edges.AddLast(e21);
-            v1.edges.AddLast(e10);
-            return v0;
-        }
-
-        int m = (s + e) / 2;
-        VertexNode baseL = DivideAndConquer(s, m);
-        VertexNode baseR = DivideAndConquer(m, e);
-
-        //Find base LR edge
-        VertexNode potentialCandidateL = baseL.edges.Last.Value;
-        VertexNode potentialCandidateR = baseR.edges.First.Value;
-        while (VecMath.Det(verts[potentialCandidateL.i] - verts[baseL.i],
-                verts[baseR.i] - verts[baseL.i]))
-        {
-            baseL = potentialCandidateL;
-            potentialCandidateL = baseL.edges.Last.Value;
-        }
-
-
-    }
-*/
-
-//Vertices are clockwise
-public class Triangle : LinkedListNode<VertexNode>
-{
-    public VertexNode NextVertex()
-    {
-        
-    }
-}
-
-//Face is on the right side of HalfEdge
-public class HalfEdge
-{
-    public VertexNode vNode;
-    public Triangle tri;
-
-    public HalfEdge(VertexNode vNode)
-    {
-        this.vNode = vNode;
-        this.tri = null;
-    }
-
-    public HalfEdge(VertexNode vNode, Triangle tri)
-    {
-        this.vNode = vNode;
-        this.tri = tri;
-    }
-}
-
-//Edges are in clockwise order around vertex
-public class VertexNode
-{
-    public int i;
-    public LinkedList<LinkedListNode<VertexNode>> triangles { get; private set; }
-
-    public VertexNode(int i)
-    {
-        this.i = i;
-        this.edges = new LinkedList<HalfEdge>();
-    }
-
-    public VertexNode(int vi, LinkedList<HalfEdge> edges)
-    {
-        this.i = i;
-        this.edges = edges;
-    }
-
-    public void SetEdges(LinkedList<HalfEdge> edges)
-    {
-        this.edges = edges;
-    }
-
 }
 
 public class Triangulator
@@ -224,105 +125,55 @@ public class Triangulator
 
     public int[] DelaunayTriangulate()
     {
-        verts = verts.OrderBy(v => v.x).ThenBy(v => v.y).ToList();
+        float[] xBounds = new float[2];
+        float[] yBounds = new float[2];
+        foreach(Vector2 vert in verts)
+        {
+            xBounds[0] = Mathf.Min(xBounds[0], vert.x);
+            xBounds[1] = Mathf.Max(xBounds[1], vert.x);
+            yBounds[0] = Mathf.Min(yBounds[0], vert.y);
+            yBounds[1] = Mathf.Max(yBounds[1], vert.y);
+        }
         List<int> indices = new List<int>();
-        VertexNode triangulationRoot = DivideAndConquer(0, verts.Count);
 
-    }
+        Vector2 v0 = new Vector2(xBounds[0], yBounds[0]);
+        Vector2 v1 = v0 + 2 * new Vector2(xBounds[1], 0);
+        Vector2 v2 = v0 + 2 * new Vector2(0, yBounds[1]);
+        HalfEdge e01 = new HalfEdge(v0);
+        HalfEdge e12 = new HalfEdge(v1);
+        HalfEdge e20 = new HalfEdge(v2);
+        Triangle treeRoot = new Triangle(e01, e12, e20);
 
-    /*
-     *  Returns Root VertexNode, which has smallest y coordinate
-     */ 
-    
-    private VertexNode DivideAndConquer(int s, int e)
-    {
-        if (e - s == 2)
+        for(int i = 0; i < verts.Count; i++)
         {
-            VertexNode v0 = new VertexNode(s);
-            VertexNode v1 = new VertexNode(s + 1);
-            HalfEdge e01 = new HalfEdge(v1);
-            HalfEdge e10 = new HalfEdge(v0);
-            v0.edges.AddAfter(e01);
-            v1.edges.AddAfter(e10);
-            return verts[v0.i].y <= verts[v1.i].y ? v0 : v1;
-        }
-        else if(e - s == 3)
-        {
-            VertexNode v0;
-            VertexNode v1;
-            VertexNode v2;
-            if (verts[s].y <= Mathf.Min(verts[s + 1].y, verts[s + 2].y))
-            {
-                v0 = new VertexNode(s);
-                if (VecMath.Det(verts[s + 1] - verts[s], verts[s + 2] - verts[s]) <= 0)
-                {
-                    v1 = new VertexNode(s + 1);
-                    v2 = new VertexNode(s + 2);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 2);
-                    v2 = new VertexNode(s + 1);
-                }
-            }
-            else if(verts[s + 1].y <= verts[s + 2].y)
-            {
-                v0 = new VertexNode(s + 1);
-                if (VecMath.Det(verts[s] - verts[s + 1], verts[s + 2] - verts[s + 1]) <= 0)
-                {
-                    v1 = new VertexNode(s);
-                    v2 = new VertexNode(s + 2);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 2);
-                    v2 = new VertexNode(s);
-                }
-            }
-            else
-            {
-                v0 = new VertexNode(s + 2);
-                if (VecMath.Det(verts[s] - verts[s + 2], verts[s + 1] - verts[s + 2]) <= 0)
-                {
-                    v1 = new VertexNode(s);
-                    v2 = new VertexNode(s + 1);
-                }
-                else
-                {
-                    v1 = new VertexNode(s + 1);
-                    v2 = new VertexNode(s);
-                }
-            }
-            Triangle tri = new Triangle(new VertexNode[] { v0, v1, v2 });
-            HalfEdge e01 = new HalfEdge(v1, tri);
-            HalfEdge e12 = new HalfEdge(v2, tri);
-            HalfEdge e20 = new HalfEdge(v0, tri);
-            v0.edges.AddFirst(e01);
-            v1.edges.AddFirst(e12);
-            v2.edges.AddFirst(e20);
-            HalfEdge e02 = new HalfEdge(v2, null);
-            HalfEdge e21 = new HalfEdge(v1, null);
-            HalfEdge e10 = new HalfEdge(v0, null);
-            v0.edges.AddLast(e02);
-            v2.edges.AddLast(e21);
-            v1.edges.AddLast(e10);
-            return v0;
-        }
+            Vector2 v = verts[i];
+            Triangle containingTri = treeRoot.FindContainingTriangle(v);
 
-        int m = (s + e) / 2;
-        VertexNode baseL = DivideAndConquer(s, m);
-        VertexNode baseR = DivideAndConquer(m, e);
+            Vector2[] triVerts = containingTri.GetCounterClockwiseVerts();
 
-        //Find base LR edge
-        VertexNode potentialCandidateL = baseL.edges.Last.Value;
-        VertexNode potentialCandidateR = baseR.edges.First.Value;
-        while (VecMath.Det(verts[potentialCandidateL.i] - verts[baseL.i],
-                verts[baseR.i] - verts[baseL.i]))
-        {
-            baseL = potentialCandidateL;
-            potentialCandidateL = baseL.edges.Last.Value;
+            e01 = new HalfEdge(triVerts[0]);
+            HalfEdge e13 = new HalfEdge(triVerts[1]);
+            HalfEdge e30 = new HalfEdge(v);
+            Triangle tri0 = new Triangle(e01, e13, e30);
+
+            e12 = new HalfEdge(triVerts[1]);
+            HalfEdge e23 = new HalfEdge(triVerts[2]);
+            HalfEdge e31 = new HalfEdge(v);
+            Triangle tri1 = new Triangle(e12, e23, e31);
+
+            e20 = new HalfEdge(triVerts[2]);
+            HalfEdge e03 = new HalfEdge(triVerts[0]);
+            HalfEdge e32 = new HalfEdge(v);
+            Triangle tri2 = new Triangle(e20, e03, e32);
+
+            HalfEdge.SetTwins(e03, e30);
+            HalfEdge.SetTwins(e13, e31);
+            HalfEdge.SetTwins(e23, e32);
+            
+            containingTri.children = new List<Triangle> { tri0, tri1, tri2 };
+
+
         }
-
 
     }
     
