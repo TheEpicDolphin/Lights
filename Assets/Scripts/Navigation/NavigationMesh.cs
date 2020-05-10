@@ -29,6 +29,8 @@ public interface INode
     List<int> GetWeights();
 }
 
+//public class NavMeshTriangle : Triangle
+
 public class NavMeshTriangle : INode
 {
     public List<int> neighbors;
@@ -179,16 +181,28 @@ public class NavigationMesh : MonoBehaviour
 {
     Graph<NavMeshTriangle> navMeshGraph;
     Mesh mesh;
+    //TODO: use this instead
+    //DelaunayMesh mesh;
 
     //Maps 2 triangle indices to the edge separating them. The edge is represented by
     //2 vertex indices
     Dictionary<Vector2Int, Vector2Int> triPairToEdgeMap;
-    //List<BoundaryEdge>  
 
     private void Awake()
     {
         mesh = GetComponent<MeshFilter>().mesh;
         navMeshGraph = NavMeshToGraph();
+
+        Vector2[] verts = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(1, 1),
+            new Vector2(0, 1)
+        };
+
+        //Triangulator t = new Triangulator(verts);
+        //t.DelaunayTriangulate();
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()
