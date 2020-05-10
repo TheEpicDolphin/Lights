@@ -12,6 +12,9 @@ public class Triangle
     //Children are entirely contained within parent
     public List<Triangle> children;
 
+    /*
+     * Doesn't modify the twins of the edges
+     */
     public Triangle(HalfEdge e01, HalfEdge e12, HalfEdge e20)
     {
         e01.next = e12;
@@ -149,22 +152,7 @@ public class Triangulator
             Vector2 v = verts[i];
             Triangle containingTri = treeRoot.FindContainingTriangle(v);
 
-            /*
-            HalfEdge pEdge = containingTri.edge;
-            Triangle[] newTris = new Triangle[3];
-            for(int t = 0; t < newTris.Length; t++)
-            {
-                Vector2 vorigin = pEdge.origin;
-                HalfEdge e13 = new HalfEdge(pEdge.next.origin);
-                HalfEdge e30 = new HalfEdge(v);
-                newTris[t] = new Triangle(pEdge, e13, e30);
-                pEdge = pEdge.next;
-            }
-            HalfEdge.SetTwins(e03, e30);
-            HalfEdge.SetTwins(e13, e31);
-            HalfEdge.SetTwins(e23, e32);
-            */
-
+            //Create copies of these
             e01 = containingTri.edge;
             e12 = e01.next;
             e20 = e12.next;
@@ -224,7 +212,8 @@ public class Triangulator
 
                         frontier.AddLast(ad);
                         frontier.AddLast(db);
-                        sptSet.Add(curNode.Value);
+                        sptSet.Add(ab);
+                        sptSet.Add(ba);
                     }
                 }
                 t += 1;
