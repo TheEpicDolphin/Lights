@@ -201,8 +201,8 @@ public class NavigationMesh : MonoBehaviour
             new Vector2(0, 1)
         };
 
-        //Triangulator t = new Triangulator(verts);
-        //t.DelaunayTriangulate();
+        DelaunayMesh dm = new DelaunayMesh(verts);
+        
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()

@@ -58,8 +58,7 @@ public class Triangle
 
     private bool Contains(Vector2 p)
     {
-        Debug.Log(ghostBounds[0].ToString("F4") + ", " + ghostBounds[1].ToString("F4") +
-                ", " + ghostBounds[2].ToString("F4"));
+        //Debug.Log(ghostBounds[0].ToString("F4") + ", " + ghostBounds[1].ToString("F4") + ", " + ghostBounds[2].ToString("F4"));
 
         return Geometry.IsInTriangle(ghostBounds[0], ghostBounds[1], ghostBounds[2], p);
     }
@@ -145,15 +144,15 @@ public class DelaunayMesh
         HalfEdge e12 = new HalfEdge(v1, -1);
         HalfEdge e20 = new HalfEdge(v2, -1);
         Triangle treeRoot = new Triangle(e01, e12, e20);
-        Debug.Log(v0.ToString("F4") + ", " + v1.ToString("F4") + ", " + v2.ToString("F4"));
+        //Debug.Log(v0.ToString("F4") + ", " + v1.ToString("F4") + ", " + v2.ToString("F4"));
 
         for (int i = 0; i < verts.Length; i++)
         {
             Vector2 v = verts[i];
-            Debug.Log(i);
-            Debug.Log(v);
+            //Debug.Log(i);
+            //Debug.Log(v);
             Triangle containingTri = treeRoot.FindContainingTriangle(v);
-            Debug.Log(containingTri);
+            //Debug.Log(containingTri);
 
             e01 = containingTri.edge;
             e12 = e01.next;
@@ -224,15 +223,39 @@ public class DelaunayMesh
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
-        GetRealLeafTriangles(treeRoot, ref leafs);
+        HashSet<Triangle> leafSet = new HashSet<Triangle>();
+        GetRealLeafTriangles(treeRoot, ref leafs, ref leafSet);
+        
+        foreach(Triangle leaf in leafs)
+        {
+            Debug.Log(leaf.edge.origin.ToString("F4") + ", " +
+                    leaf.edge.next.origin.ToString("F4") + ", " + 
+                    leaf.edge.next.next.origin.ToString("F4"));
+        }
+        
         return leafs.ToArray();
     }
 
-    private void GetRealLeafTriangles(Triangle node, ref List<Triangle> leafs)
+    private void GetRealLeafTriangles(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet)
     {
-        if(node.children.Count == 0)
+        if(node.children.Count == 0 && !leafSet.Contains(node))
         {
+            HalfEdge e = node.edge;
+            for (int i = 0; i < 3; i++)
+            {
+                if(e.origini == -1)
+                {
+                    return;
+                }
+                e = e.next;
+            }
             leafs.Add(node);
+            leafSet.Add(node);
+        }
+
+        foreach(Triangle child in node.children)
+        {
+            GetRealLeafTriangles(child, ref leafs, ref leafSet);
         }
 
         
