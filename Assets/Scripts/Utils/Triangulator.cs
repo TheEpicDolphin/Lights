@@ -149,20 +149,35 @@ public class Triangulator
             Vector2 v = verts[i];
             Triangle containingTri = treeRoot.FindContainingTriangle(v);
 
-            Vector2[] triVerts = containingTri.GetCounterClockwiseVerts();
+            /*
+            HalfEdge pEdge = containingTri.edge;
+            Triangle[] newTris = new Triangle[3];
+            for(int t = 0; t < newTris.Length; t++)
+            {
+                Vector2 vorigin = pEdge.origin;
+                HalfEdge e13 = new HalfEdge(pEdge.next.origin);
+                HalfEdge e30 = new HalfEdge(v);
+                newTris[t] = new Triangle(pEdge, e13, e30);
+                pEdge = pEdge.next;
+            }
+            HalfEdge.SetTwins(e03, e30);
+            HalfEdge.SetTwins(e13, e31);
+            HalfEdge.SetTwins(e23, e32);
+            */
 
-            e01 = new HalfEdge(triVerts[0]);
-            HalfEdge e13 = new HalfEdge(triVerts[1]);
+            e01 = containingTri.edge;
+            e12 = e01.next;
+            e20 = e12.next;
+
+            HalfEdge e13 = new HalfEdge(e12.origin);
             HalfEdge e30 = new HalfEdge(v);
             Triangle tri0 = new Triangle(e01, e13, e30);
 
-            e12 = new HalfEdge(triVerts[1]);
-            HalfEdge e23 = new HalfEdge(triVerts[2]);
+            HalfEdge e23 = new HalfEdge(e20.origin);
             HalfEdge e31 = new HalfEdge(v);
             Triangle tri1 = new Triangle(e12, e23, e31);
 
-            e20 = new HalfEdge(triVerts[2]);
-            HalfEdge e03 = new HalfEdge(triVerts[0]);
+            HalfEdge e03 = new HalfEdge(e01.origin);
             HalfEdge e32 = new HalfEdge(v);
             Triangle tri2 = new Triangle(e20, e03, e32);
 
@@ -171,6 +186,43 @@ public class Triangulator
             HalfEdge.SetTwins(e23, e32);
             
             containingTri.children = new List<Triangle> { tri0, tri1, tri2 };
+
+
+            //Flip triangles that don't satisfy property delaunay property
+            HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();
+            LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
+            frontier.AddLast(e01);
+            frontier.AddLast(e12);
+            frontier.AddLast(e20);
+
+            LinkedListNode<HalfEdge> curNode;
+            int t = 0;
+
+            while (frontier.Count > 0 && t < 100)
+            {
+                curNode = frontier.First;
+                frontier.RemoveFirst();
+                if (!sptSet.Contains(curNode.Value))
+                {
+
+                    if (Geometry.IsInCircumscribedCircle())
+                    {
+                        List<int> neighbors = this.nodes[curNode.Value].GetNeighbors();
+                        for (int i = 0; i < neighbors.Count; i++)
+                        {
+                            int neighbor = neighbors[i];
+
+                            if (!sptSet.Contains(neighbor))
+                            {
+                                frontier.AddLast(neighbor);
+                            }
+                        }
+                        sptSet.Add(curNode.Value);
+                    }
+                }
+                t += 1;
+
+            }
 
 
         }

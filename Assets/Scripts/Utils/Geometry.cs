@@ -11,18 +11,19 @@ namespace GeometryUtils
             return v1.x * v2.y - v1.y * v2.x;
         }
 
-        internal static bool IntersectRays2D(Vector2 p1, Vector2 dir1, Vector2 p2, Vector2 dir2, out float t)
+        internal static bool IntersectRays2D(Vector2 p1, Vector2 dir1, Vector2 p2, Vector2 dir2, out Vector2 intersection)
         {
             float det = Det(dir2, dir1);
 
             //Lines are parallel
             if (Mathf.Abs(det) < 1e-5)
             {
-                t = 0.0f;
+                intersection = Vector2.zero;
                 return false;
             }
 
-            t = Det(p1 - p2, dir2) / det;
+            float t = Det(p1 - p2, dir2) / det;
+            intersection = p1 + t * dir1;
             return true;
         }
 
@@ -79,6 +80,28 @@ namespace GeometryUtils
             float u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
             float v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
             return (u >= 0) && (v >= 0) && (u + v < 1);
+        }
+
+        //Vertices a, b, and c are ordered counterclockwise
+        internal static bool IsInCircumscribedCircle(Vector2 a, Vector2 b, Vector2 c, Vector2 p)
+        {
+            Vector2 m1 = (a + b) / 2;
+            Vector2 m2 = (b + c) / 2;
+            Vector2 dir1 = Vector2.Perpendicular(b - a).normalized;
+            Vector2 dir2 = Vector2.Perpendicular(c - b).normalized;
+            Vector2 circumCenter;
+            if(IntersectRays2D(m1, dir1, m2, dir2, out circumCenter))
+            {
+                if ((p - circumCenter).magnitude < (a - circumCenter).magnitude)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /*  trans must be in the format: (similar to transform.localToWorldMatrix)
