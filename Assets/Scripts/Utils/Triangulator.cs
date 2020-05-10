@@ -202,21 +202,28 @@ public class Triangulator
             {
                 curNode = frontier.First;
                 frontier.RemoveFirst();
-                if (!sptSet.Contains(curNode.Value))
+                HalfEdge ab = curNode.Value;
+                HalfEdge ba = ab.twin;
+                if (!sptSet.Contains(ab) && ba != null)
                 {
+                    HalfEdge bc = ab.next;
+                    HalfEdge ca = bc.next;
 
-                    if (Geometry.IsInCircumscribedCircle())
+                    HalfEdge ad = ba.next;
+                    HalfEdge db = ad.next;
+                    if (Geometry.IsInCircumscribedCircle(ab.origin, bc.origin, ca.origin, db.origin))
                     {
-                        List<int> neighbors = this.nodes[curNode.Value].GetNeighbors();
-                        for (int i = 0; i < neighbors.Count; i++)
-                        {
-                            int neighbor = neighbors[i];
+                        HalfEdge dc = new HalfEdge(db.origin);
+                        HalfEdge cd = new HalfEdge(ca.origin);
+                        HalfEdge.SetTwins(dc, cd);
+                        Triangle adc = new Triangle(ad, dc, ca);
+                        Triangle bcd = new Triangle(bc, cd, db);
 
-                            if (!sptSet.Contains(neighbor))
-                            {
-                                frontier.AddLast(neighbor);
-                            }
-                        }
+                        ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
+                        ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
+
+                        frontier.AddLast(ad);
+                        frontier.AddLast(db);
                         sptSet.Add(curNode.Value);
                     }
                 }
