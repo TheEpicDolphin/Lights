@@ -275,7 +275,7 @@ public class DelaunayMesh
 
     private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet)
     {
-        if(node.children.Count == 0 && !leafSet.Contains(node)) && !node.IsImaginary())
+        if(node.children.Count == 0 && !leafSet.Contains(node) && !node.IsImaginary())
         {
             leafs.Add(node);
             leafSet.Add(node);
