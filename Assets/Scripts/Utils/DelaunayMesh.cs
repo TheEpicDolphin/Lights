@@ -153,41 +153,31 @@ public class DelaunayMesh
             yBounds[0] = Mathf.Min(yBounds[0], vert.y);
             yBounds[1] = Mathf.Max(yBounds[1], vert.y);
         }
-        List<int> indices = new List<int>();
 
-
-        //Make these far away
-        //float LARGE_NUMBER = 100.0f;
+        //float LARGE_NUMBER = 10000.0f;
         //Vector2 pi0 = new Vector2(-LARGE_NUMBER, -LARGE_NUMBER);
         //Vector2 pi1 = new Vector2(LARGE_NUMBER, -LARGE_NUMBER);
         //Vector2 pi2 = new Vector2(0, 2 * LARGE_NUMBER);
-        //Debug.DrawLine(pi0, pi1, Color.cyan, 5.0f, false);
-        //Debug.DrawLine(pi1, pi2, Color.cyan, 5.0f, false);
-        //Debug.DrawLine(pi2, pi0, Color.cyan, 5.0f, false);
 
         Vector2 pi0 = new Vector2(xBounds[0] - 0.5f, yBounds[0] - 0.5f);
         Vector2 pi1 = new Vector2(xBounds[1] + (xBounds[1] - xBounds[0]) + 2 * 0.5f, pi0.y);
         Vector2 pi2 = new Vector2(pi0.x, yBounds[1] + (yBounds[1] - yBounds[0]) + 2 * 0.5f);
+        //Debug.DrawLine(pi0, pi1, Color.cyan, 5.0f, false);
+        //Debug.DrawLine(pi1, pi2, Color.cyan, 5.0f, false);
+        //Debug.DrawLine(pi2, pi0, Color.cyan, 5.0f, false);
         Vertex vi0 = new Vertex(pi0, -1);
         Vertex vi1 = new Vertex(pi1, -1);
         Vertex vi2 = new Vertex(pi2, -1);
-        HashSet<Vertex> imaginaryVerts = new HashSet<Vertex>();
-        imaginaryVerts.Add(vi0);
-        imaginaryVerts.Add(vi1);
-        imaginaryVerts.Add(vi2);
 
         //Imaginary triangle
         HalfEdge e01 = new HalfEdge(vi0);
         HalfEdge e12 = new HalfEdge(vi1);
         HalfEdge e20 = new HalfEdge(vi2);
         Triangle treeRoot = new Triangle(e01, e12, e20);
-        //Debug.Log(v0.ToString("F4") + ", " + v1.ToString("F4") + ", " + v2.ToString("F4"));
 
         for (int i = 0; i < verts.Length; i++)
         {
             Vertex v = new Vertex(verts[i], i);
-            Debug.Log(i);
-            Debug.Log(v.p);
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
 
             e01 = containingTri.edge;
@@ -211,7 +201,6 @@ public class DelaunayMesh
             HalfEdge.SetTwins(e23, e32);
 
             containingTri.children = new List<Triangle> { tri0, tri1, tri2 };
-
 
             //Flip triangles that don't satisfy delaunay property
             HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();
@@ -273,6 +262,8 @@ public class DelaunayMesh
         return leafs.ToArray();
     }
 
+
+
     private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet)
     {
         if(node.children.Count == 0 && !leafSet.Contains(node) && !node.IsImaginary())
@@ -286,6 +277,5 @@ public class DelaunayMesh
             GetRealLeafs(child, ref leafs, ref leafSet);
         }
 
-        
     }
 }
