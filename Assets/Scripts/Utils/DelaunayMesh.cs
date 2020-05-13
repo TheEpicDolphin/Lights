@@ -7,13 +7,32 @@ using GeometryUtils;
 //Traverse edges counterclockwise
 public class Triangle
 {
-    private Vector2[] ghostBounds;
+    private Vertex[] ghostBounds;
     public HalfEdge edge;
     public List<Triangle> children;
 
     /*
      * Doesn't modify the twins of the edges
      */
+    public Triangle(HalfEdge e01, HalfEdge e12, HalfEdge e20, Vertex[] ghostBounds)
+    {
+        e01.next = e12;
+        e12.next = e20;
+        e20.next = e01;
+
+        e01.prev = e20;
+        e20.prev = e12;
+        e12.prev = e01;
+
+        e01.incidentTriangle = this;
+        e12.incidentTriangle = this;
+        e20.incidentTriangle = this;
+
+        this.edge = e01;
+        this.children = new List<Triangle>();
+        this.ghostBounds = ghostBounds;
+    }
+
     public Triangle(HalfEdge e01, HalfEdge e12, HalfEdge e20)
     {
         e01.next = e12;
@@ -30,7 +49,7 @@ public class Triangle
 
         this.edge = e01;
         this.children = new List<Triangle>();
-        this.ghostBounds = GetCounterClockwiseVerts();
+        this.ghostBounds = new Vertex[] { e01.origin, e12.origin, e20.origin };
     }
 
     public Triangle FindContainingTriangle(Vector2 v)
@@ -56,19 +75,7 @@ public class Triangle
     private bool Contains(Vector2 p)
     {
         //Debug.Log(ghostBounds[0].ToString("F4") + ", " + ghostBounds[1].ToString("F4") + ", " + ghostBounds[2].ToString("F4"));
-        return Geometry.IsInTriangle(ghostBounds[0], ghostBounds[1], ghostBounds[2], p);
-    }
-
-    public Vector2[] GetCounterClockwiseVerts()
-    {
-        Vector2[] verts = new Vector2[3];
-        HalfEdge e = edge;
-        for (int i = 0; i < verts.Length; i++)
-        {
-            verts[i] = e.origin.p;
-            e = e.next;
-        }
-        return verts;
+        return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
     }
 
     public bool IsImaginary()
@@ -112,6 +119,7 @@ public class HalfEdge
 
 }
 
+//When doing constrained delaunay triangulations, give Vertex reference to HalfEdges
 public class Vertex
 {
     public Vector2 p;
@@ -144,27 +152,30 @@ public class DelaunayMesh
 
     private Triangle[] Triangulate()
     {
-        float[] xBounds = new float[2];
-        float[] yBounds = new float[2];
+        Vector2 centroid = Vector2.zero;
         foreach (Vector2 vert in verts)
         {
-            xBounds[0] = Mathf.Min(xBounds[0], vert.x);
-            xBounds[1] = Mathf.Max(xBounds[1], vert.x);
-            yBounds[0] = Mathf.Min(yBounds[0], vert.y);
-            yBounds[1] = Mathf.Max(yBounds[1], vert.y);
+            centroid += vert;
         }
+        centroid /= verts.Length;
+        float r = 0.0f;
+        foreach (Vector2 vert in verts)
+        {
+            r = Mathf.Max(r, Vector2.Distance(vert, centroid));
+        }
+        //Add some padding to avoid floating point errors later on
+        r *= 1.2f;
 
-        //float LARGE_NUMBER = 10000.0f;
-        //Vector2 pi0 = new Vector2(-LARGE_NUMBER, -LARGE_NUMBER);
-        //Vector2 pi1 = new Vector2(LARGE_NUMBER, -LARGE_NUMBER);
-        //Vector2 pi2 = new Vector2(0, 2 * LARGE_NUMBER);
+        //Debug.Log(Geometry.IsInCircumscribedCircle(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(Mathf.Infinity, 0.0f)));
 
-        Vector2 pi0 = new Vector2(xBounds[0] - 0.5f, yBounds[0] - 0.5f);
-        Vector2 pi1 = new Vector2(xBounds[1] + (xBounds[1] - xBounds[0]) + 2 * 0.5f, pi0.y);
-        Vector2 pi2 = new Vector2(pi0.x, yBounds[1] + (yBounds[1] - yBounds[0]) + 2 * 0.5f);
-        //Debug.DrawLine(pi0, pi1, Color.cyan, 5.0f, false);
-        //Debug.DrawLine(pi1, pi2, Color.cyan, 5.0f, false);
-        //Debug.DrawLine(pi2, pi0, Color.cyan, 5.0f, false);
+        Vector2 pi0 = new Vector2(centroid.x, centroid.y - 2 * r);
+        Vector2 pi1 = new Vector2(centroid.x + r * Mathf.Sqrt(3), centroid.y + r);
+        Vector2 pi2 = new Vector2(centroid.x - r * Mathf.Sqrt(3), centroid.y + r);
+
+        Debug.DrawLine(pi0, pi1, Color.cyan, 5.0f, false);
+        Debug.DrawLine(pi1, pi2, Color.cyan, 5.0f, false);
+        Debug.DrawLine(pi2, pi0, Color.cyan, 5.0f, false);
+
         Vertex vi0 = new Vertex(pi0, -1);
         Vertex vi1 = new Vertex(pi1, -1);
         Vertex vi2 = new Vertex(pi2, -1);
