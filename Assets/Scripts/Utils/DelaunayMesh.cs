@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using VecUtils;
 using GeometryUtils;
+using AlgorithmUtils;
 
 //Traverse edges counterclockwise
 public class Triangle
@@ -10,6 +10,7 @@ public class Triangle
     private Vertex[] ghostBounds;
     public HalfEdge edge;
     public List<Triangle> children;
+    public List<HalfEdge> childrenBounds;
 
     /*
      * Doesn't modify the twins of the edges
@@ -30,6 +31,7 @@ public class Triangle
 
         this.edge = e01;
         this.children = new List<Triangle>();
+        this.childrenBounds = new List<HalfEdge>();
         this.ghostBounds = ghostBounds;
     }
 
@@ -52,19 +54,41 @@ public class Triangle
         this.ghostBounds = new Vertex[] { e01.origin, e12.origin, e20.origin };
     }
 
+    //Possibly return an edge rather than a triangle if point lies between to triangles
     public Triangle FindContainingTriangle(Vector2 v)
     {
-        if (children.Count == 0)
+        Debug.Log(ghostBounds[0].p.ToString("F4") + ", " +
+            ghostBounds[1].p.ToString("F4") + ", " + ghostBounds[2].p.ToString("F4"));
+
+        if (childrenBounds.Count == 0)
         {
             return this;
         }
-
-        foreach (Triangle child in children)
+        else if(childrenBounds.Count == 1)
         {
-
-            if (child.Contains(v))
+            //Two children
+            Vector2 n = Vector2.Perpendicular(childrenBounds[0].twin.origin.p - childrenBounds[0].origin.p).normalized;
+            if (Vector2.Dot(n, v - childrenBounds[0].origin.p) > 0)
             {
-                return child.FindContainingTriangle(v);
+                return childrenBounds[0].incidentTriangle;
+            }
+            else
+            {
+                return childrenBounds[0].twin.incidentTriangle;
+            }
+        }
+        else
+        {
+            for(int i = 0; i < childrenBounds.Count; i++)
+            {
+                HalfEdge bound = childrenBounds[i];
+                HalfEdge nextBound = childrenBounds[(i + 1) % childrenBounds.Count].twin;
+                Vector2 n1 = Vector2.Perpendicular(bound.twin.origin.p - bound.origin.p).normalized;
+                Vector2 n2 = Vector2.Perpendicular(nextBound.twin.origin.p - nextBound.origin.p).normalized;
+                if (Vector2.Dot(n1, v - bound.origin.p) > 0 && Vector2.Dot(n2, v - nextBound.origin.p) > 0)
+                {
+                    return bound.incidentTriangle;
+                }
             }
         }
 
@@ -72,9 +96,39 @@ public class Triangle
         return null;
     }
 
+    /*
+    public Triangle FindContainingTriangle(Vector2 v)
+    {
+        Debug.Log(ghostBounds[0].p.ToString("F4") + ", " +
+            ghostBounds[1].p.ToString("F4") + ", " + ghostBounds[2].p.ToString("F4"));
+
+        if (children.Count == 0)
+        {
+            return this;
+        }
+
+        foreach (Triangle child in children)
+        {
+            if (child.Contains(v))
+            {
+                Debug.Log("CHILD");
+                return child.FindContainingTriangle(v);
+            }
+        }
+
+        //Shouldn't reach here
+        Debug.Log("FAILED");
+        foreach (Triangle child in children)
+        {
+            Debug.Log(child.ghostBounds[0].p.ToString("F4") + ", " +
+            child.ghostBounds[1].p.ToString("F4") + ", " + child.ghostBounds[2].p.ToString("F4"));
+        }
+        return null;
+    }
+    */
+
     private bool Contains(Vector2 p)
     {
-        //Debug.Log(ghostBounds[0].ToString("F4") + ", " + ghostBounds[1].ToString("F4") + ", " + ghostBounds[2].ToString("F4"));
         return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
     }
 
@@ -139,6 +193,7 @@ public class DelaunayMesh
 
     public DelaunayMesh(Vector2[] points)
     {
+        Algorithm.Shuffle<Vector2>(ref points);
         verts = points;
         tris = Triangulate();
     }
@@ -146,7 +201,7 @@ public class DelaunayMesh
     /*
     public NavMeshTriangle ContainingNavMeshTriangle(Vector2 p)
     {
-
+        Geometry.IsInTriangle(Vector2 a, Vector2 b, Vector2 c, Vector2 p)
     }
     */
 
@@ -165,8 +220,6 @@ public class DelaunayMesh
         }
         //Add some padding to avoid floating point errors later on
         r *= 1.2f;
-
-        //Debug.Log(Geometry.IsInCircumscribedCircle(new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(Mathf.Infinity, 0.0f)));
 
         Vector2 pi0 = new Vector2(centroid.x, centroid.y - 2 * r);
         Vector2 pi1 = new Vector2(centroid.x + r * Mathf.Sqrt(3), centroid.y + r);
@@ -189,6 +242,8 @@ public class DelaunayMesh
         for (int i = 0; i < verts.Length; i++)
         {
             Vertex v = new Vertex(verts[i], i);
+            Debug.Log(i);
+            Debug.Log(v.p);
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
 
             e01 = containingTri.edge;
@@ -222,8 +277,9 @@ public class DelaunayMesh
 
             LinkedListNode<HalfEdge> curNode;
             int t = 0;
-            while (frontier.Count > 0 && t++ < 100)
+            while (frontier.Count > 0 && t < 100)
             {
+                t += 1;
                 curNode = frontier.First;
                 frontier.RemoveFirst();
                 HalfEdge ab = curNode.Value;
@@ -245,21 +301,23 @@ public class DelaunayMesh
 
                         ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
                         ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
+                        frontier.AddLast(ad);
+                        frontier.AddLast(db);
                     }
-
-                    frontier.AddLast(ad);
-                    frontier.AddLast(db);
                     sptSet.Add(ab);
                     sptSet.Add(ba);
                 }
             }
+            //Debug.Log(t);
         }
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
         HashSet<Triangle> leafSet = new HashSet<Triangle>();
-        GetRealLeafs(treeRoot, ref leafs, ref leafSet);
-        
+        int count = 0;
+        GetRealLeafs(treeRoot, ref leafs, ref leafSet, ref count, 0);
+        Debug.Log(count);
+        /*
         foreach(Triangle leaf in leafs)
         {
             Vector2 p0 = leaf.edge.origin.p;
@@ -269,23 +327,27 @@ public class DelaunayMesh
             Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
+        */
         
         return leafs.ToArray();
     }
 
 
 
-    private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet)
+    private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet,
+                            ref int count, int depth)
     {
+        count += 1;
         if(node.children.Count == 0 && !leafSet.Contains(node) && !node.IsImaginary())
         {
+            Debug.Log("Depth: " + depth.ToString());
             leafs.Add(node);
             leafSet.Add(node);
         }
 
         foreach(Triangle child in node.children)
         {
-            GetRealLeafs(child, ref leafs, ref leafSet);
+            GetRealLeafs(child, ref leafs, ref leafSet, ref count, count + 1);
         }
 
     }

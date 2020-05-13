@@ -66,6 +66,28 @@ namespace AlgorithmUtils
             return -1;
         }
 
+        internal static void Shuffle<T>(ref List<T> input)
+        {
+            for(int i = 0; i < input.Count; i++)
+            {
+                int j = Random.Range(i, input.Count);
+                T tmp = input[i];
+                input[i] = input[j];
+                input[j] = tmp;
+            }
+        }
+
+        internal static void Shuffle<T>(ref T[] input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                int j = Random.Range(i, input.Length);
+                T tmp = input[i];
+                input[i] = input[j];
+                input[j] = tmp;
+            }
+        }
+
     }
 
     
