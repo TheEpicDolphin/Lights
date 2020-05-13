@@ -203,8 +203,8 @@ public class NavigationMesh : MonoBehaviour
         };
         */
 
-        int C = 4;
-        int R = 4;
+        int C = 10;
+        int R = 10;
         Vector2[] verts = new Vector2[R * C];
         for(int i = 0; i < R; i++)
         {

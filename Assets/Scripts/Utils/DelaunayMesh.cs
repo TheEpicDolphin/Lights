@@ -7,9 +7,7 @@ using AlgorithmUtils;
 //Traverse edges counterclockwise
 public class Triangle
 {
-    private Vertex[] ghostBounds;
     public HalfEdge edge;
-    public List<Triangle> children;
     public List<HalfEdge> childrenBounds;
 
     /*
@@ -30,8 +28,6 @@ public class Triangle
         e20.incidentTriangle = this;
 
         this.edge = e01;
-        this.children = new List<Triangle>();
-        this.ghostBounds = new Vertex[] { e01.origin, e12.origin, e20.origin };
         this.childrenBounds = new List<HalfEdge>();
     }
 
@@ -74,40 +70,10 @@ public class Triangle
         return null;
     }
 
-    /*
-    public Triangle FindContainingTriangle(Vector2 v)
-    {
-        Debug.Log(ghostBounds[0].p.ToString("F4") + ", " +
-            ghostBounds[1].p.ToString("F4") + ", " + ghostBounds[2].p.ToString("F4"));
-
-        if (children.Count == 0)
-        {
-            return this;
-        }
-
-        foreach (Triangle child in children)
-        {
-            if (child.Contains(v))
-            {
-                Debug.Log("CHILD");
-                return child.FindContainingTriangle(v);
-            }
-        }
-
-        //Shouldn't reach here
-        Debug.Log("FAILED");
-        foreach (Triangle child in children)
-        {
-            Debug.Log(child.ghostBounds[0].p.ToString("F4") + ", " +
-            child.ghostBounds[1].p.ToString("F4") + ", " + child.ghostBounds[2].p.ToString("F4"));
-        }
-        return null;
-    }
-    */
-
     private bool Contains(Vector2 p)
     {
-        return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
+        //return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
+        return true;
     }
 
     public bool IsImaginary()
@@ -122,6 +88,40 @@ public class Triangle
             e = e.next;
         }
         return false;
+    }
+
+    public void GetRealLeafs(ref List<Triangle> leafs, ref HashSet<Triangle> visited,
+                            ref int count, int depth)
+    {
+        if (visited.Contains(this))
+        {
+            return;
+        }
+        count += 1;
+        if (this.childrenBounds.Count == 0)
+        {
+            Debug.Log("Depth: " + depth.ToString());
+            if (!this.IsImaginary())
+            {
+                leafs.Add(this);
+            }
+        }
+        else if (this.childrenBounds.Count == 1)
+        {
+            HalfEdge bound = this.childrenBounds[0];
+            bound.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
+            bound.twin.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
+        }
+        else if (this.childrenBounds.Count == 3)
+        {
+            foreach (HalfEdge bound in this.childrenBounds)
+            {
+                bound.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
+            }
+        }
+
+        visited.Add(this);
+
     }
 }
 
@@ -244,7 +244,6 @@ public class DelaunayMesh
             HalfEdge.SetTwins(e13, e31);
             HalfEdge.SetTwins(e23, e32);
 
-            containingTri.children = new List<Triangle> { tri0, tri1, tri2 };
             HalfEdge e30Bound = new HalfEdge(e30.origin);
             HalfEdge e31Bound = new HalfEdge(e31.origin);
             HalfEdge e32Bound = new HalfEdge(e32.origin);
@@ -295,9 +294,6 @@ public class DelaunayMesh
                         Triangle adc = new Triangle(ad, dc, ca);
                         Triangle bcd = new Triangle(bc, cd, db);
 
-                        ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
-                        ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
-
                         HalfEdge dcBound = new HalfEdge(dc.origin);
                         dcBound.incidentTriangle = adc;
                         HalfEdge cdBound = new HalfEdge(cd.origin);
@@ -319,8 +315,9 @@ public class DelaunayMesh
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
         HashSet<Triangle> visited = new HashSet<Triangle>();
+
         int count = 0;
-        GetRealLeafs(treeRoot, ref leafs, ref visited, ref count, 0);
+        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
         Debug.Log(count);
         
         foreach(Triangle leaf in leafs)
@@ -335,58 +332,5 @@ public class DelaunayMesh
         return leafs.ToArray();
     }
 
-
-    /*
-    private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> leafSet,
-                            ref int count, int depth)
-    {
-        count += 1;
-        if(node.children.Count == 0 && !leafSet.Contains(node) && !node.IsImaginary())
-        {
-            Debug.Log("Depth: " + depth.ToString());
-            leafs.Add(node);
-            leafSet.Add(node);
-        }
-
-        foreach(Triangle child in node.children)
-        {
-            GetRealLeafs(child, ref leafs, ref leafSet, ref count, depth + 1);
-        }
-
-    }
-    */
-
-    private void GetRealLeafs(Triangle node, ref List<Triangle> leafs, ref HashSet<Triangle> visited,
-                            ref int count, int depth)
-    {
-        if (visited.Contains(node))
-        {
-            return;
-        }
-        count += 1;
-        if (node.childrenBounds.Count == 0)
-        {
-            Debug.Log("Depth: " + depth.ToString());
-            if (!node.IsImaginary())
-            {
-                leafs.Add(node);
-            }
-        }
-        else if (node.childrenBounds.Count == 1)
-        {
-            HalfEdge bound = node.childrenBounds[0];
-            GetRealLeafs(bound.incidentTriangle, ref leafs, ref visited, ref count, depth + 1);
-            GetRealLeafs(bound.twin.incidentTriangle, ref leafs, ref visited, ref count, depth + 1);
-        }
-        else if(node.childrenBounds.Count == 3)
-        {
-            foreach (HalfEdge bound in node.childrenBounds)
-            {
-                GetRealLeafs(bound.incidentTriangle, ref leafs, ref visited, ref count, depth + 1);
-            }
-        }
-
-        visited.Add(node);
-
-    }
+    
 }
