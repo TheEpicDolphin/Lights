@@ -8,7 +8,8 @@ using AlgorithmUtils;
 public class Triangle
 {
     public HalfEdge edge;
-    public List<HalfEdge> childrenBounds;
+    public List<Triangle> children;
+    private Vertex[] ghostBounds;
 
     /*
      * Doesn't modify the twins of the edges
@@ -28,52 +29,53 @@ public class Triangle
         e20.incidentTriangle = this;
 
         this.edge = e01;
-        this.childrenBounds = new List<HalfEdge>();
+
+        this.children = new List<Triangle>();
+        this.ghostBounds = new Vertex[] { e01.origin, e12.origin, e20.origin };
     }
 
     //Possibly return an edge rather than a triangle if point lies between to triangles
-    public Triangle FindContainingTriangle(Vector2 v)
+    public Triangle FindContainingTriangle(Vector2 p)
     {
-        if (childrenBounds.Count == 0)
+        if (children.Count == 0)
         {
+            //Possibly check if point lies on edge
             return this;
-        }
-        else if(childrenBounds.Count == 1)
-        {
-            //Two children
-            Vector2 n = Vector2.Perpendicular(childrenBounds[0].twin.origin.p - childrenBounds[0].origin.p);
-            if (Vector2.Dot(n, v - childrenBounds[0].origin.p) >= 0)
-            {
-                return childrenBounds[0].incidentTriangle.FindContainingTriangle(v);
-            }
-            else
-            {
-                return childrenBounds[0].twin.incidentTriangle.FindContainingTriangle(v);
-            }
         }
         else
         {
-            for(int i = 0; i < childrenBounds.Count; i++)
+            float maxMin = Mathf.NegativeInfinity;
+            Triangle closestChild = children[0];
+            foreach (Triangle child in children)
             {
-                HalfEdge bound = childrenBounds[i];
-                HalfEdge nextBound = childrenBounds[(i + 1) % childrenBounds.Count].twin;
-                Vector2 n1 = Vector2.Perpendicular(bound.twin.origin.p - bound.origin.p);
-                Vector2 n2 = Vector2.Perpendicular(nextBound.twin.origin.p - nextBound.origin.p);
-                if (Vector2.Dot(n1, v - bound.origin.p) >= 0 && Vector2.Dot(n2, v - nextBound.origin.p) >= 0)
+                Vector3 uvw = Geometry.ToBarycentricCoordinates(child.ghostBounds[0].p, 
+                                                                child.ghostBounds[1].p, 
+                                                                child.ghostBounds[2].p, 
+                                                                p);
+
+                if (uvw[0] >= 0 && uvw[1] >= 0 && uvw[2] >= 0)
                 {
-                    return bound.incidentTriangle.FindContainingTriangle(v);
+                    return child.FindContainingTriangle(p);
+                }
+                else
+                {
+                    float minD = Mathf.Min(uvw[0], Mathf.Min(uvw[1], uvw[2]));
+                    if(minD > maxMin)
+                    {
+                        maxMin = minD;
+                        closestChild = child;
+                    }
                 }
             }
+            return closestChild.FindContainingTriangle(p);
+            
         }
 
-        //Shouldn't reach here
-        return null;
     }
 
     private bool Contains(Vector2 p)
     {
-        //return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
-        return true;
+        return Geometry.IsInTriangle(ghostBounds[0].p, ghostBounds[1].p, ghostBounds[2].p, p);
     }
 
     public bool IsImaginary()
@@ -98,7 +100,7 @@ public class Triangle
             return;
         }
         count += 1;
-        if (this.childrenBounds.Count == 0)
+        if (this.children.Count == 0)
         {
             Debug.Log("Depth: " + depth.ToString());
             if (!this.IsImaginary())
@@ -106,22 +108,43 @@ public class Triangle
                 leafs.Add(this);
             }
         }
-        else if (this.childrenBounds.Count == 1)
+        else
         {
-            HalfEdge bound = this.childrenBounds[0];
-            bound.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
-            bound.twin.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
-        }
-        else if (this.childrenBounds.Count == 3)
-        {
-            foreach (HalfEdge bound in this.childrenBounds)
+            foreach(Triangle child in children)
             {
-                bound.incidentTriangle.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
+                child.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
             }
         }
 
         visited.Add(this);
+    }
 
+    public HalfEdge[] InsertVertex(Vertex v)
+    {
+        HalfEdge e01 = this.edge;
+        HalfEdge e12 = e01.next;
+        HalfEdge e20 = e12.next;
+
+        this.edge = null;
+
+        HalfEdge e13 = new HalfEdge(e12.origin);
+        HalfEdge e30 = new HalfEdge(v);
+        Triangle tri0 = new Triangle(e01, e13, e30);
+
+        HalfEdge e23 = new HalfEdge(e20.origin);
+        HalfEdge e31 = new HalfEdge(v);
+        Triangle tri1 = new Triangle(e12, e23, e31);
+
+        HalfEdge e03 = new HalfEdge(e01.origin);
+        HalfEdge e32 = new HalfEdge(v);
+        Triangle tri2 = new Triangle(e20, e03, e32);
+
+        HalfEdge.SetTwins(e03, e30);
+        HalfEdge.SetTwins(e13, e31);
+        HalfEdge.SetTwins(e23, e32);
+        
+        this.children = new List<Triangle>() { tri0, tri1, tri2 };
+        return new HalfEdge[] { e01, e12, e20 };
     }
 }
 
@@ -223,52 +246,14 @@ public class DelaunayMesh
             Debug.Log(i);
             Debug.Log(v.p);
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
-
-            e01 = containingTri.edge;
-            e12 = e01.next;
-            e20 = e12.next;
-
-            HalfEdge e13 = new HalfEdge(e12.origin);
-            HalfEdge e30 = new HalfEdge(v);
-            Triangle tri0 = new Triangle(e01, e13, e30);
-
-            HalfEdge e23 = new HalfEdge(e20.origin);
-            HalfEdge e31 = new HalfEdge(v);
-            Triangle tri1 = new Triangle(e12, e23, e31);
-
-            HalfEdge e03 = new HalfEdge(e01.origin);
-            HalfEdge e32 = new HalfEdge(v);
-            Triangle tri2 = new Triangle(e20, e03, e32);
-
-            HalfEdge.SetTwins(e03, e30);
-            HalfEdge.SetTwins(e13, e31);
-            HalfEdge.SetTwins(e23, e32);
-
-            HalfEdge e30Bound = new HalfEdge(e30.origin);
-            HalfEdge e31Bound = new HalfEdge(e31.origin);
-            HalfEdge e32Bound = new HalfEdge(e32.origin);
-            e30Bound.incidentTriangle = tri0;
-            e31Bound.incidentTriangle = tri1;
-            e32Bound.incidentTriangle = tri2;
-
-            HalfEdge e03Bound = new HalfEdge(e03.origin);
-            HalfEdge e13Bound = new HalfEdge(e13.origin);
-            HalfEdge e23Bound = new HalfEdge(e23.origin);
-            e03Bound.incidentTriangle = tri2;
-            e13Bound.incidentTriangle = tri0;
-            e23Bound.incidentTriangle = tri1;
-
-            HalfEdge.SetTwins(e30Bound, e03Bound);
-            HalfEdge.SetTwins(e31Bound, e13Bound);
-            HalfEdge.SetTwins(e32Bound, e23Bound);
-            containingTri.childrenBounds = new List<HalfEdge> { e30Bound, e31Bound, e32Bound };
+            HalfEdge[] edges = containingTri.InsertVertex(v);
 
             //Flip triangles that don't satisfy delaunay property
             HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();
             LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
-            frontier.AddLast(e01);
-            frontier.AddLast(e12);
-            frontier.AddLast(e20);
+            frontier.AddLast(edges[0]);
+            frontier.AddLast(edges[1]);
+            frontier.AddLast(edges[2]);
 
             LinkedListNode<HalfEdge> curNode;
             int t = 0;
@@ -294,13 +279,8 @@ public class DelaunayMesh
                         Triangle adc = new Triangle(ad, dc, ca);
                         Triangle bcd = new Triangle(bc, cd, db);
 
-                        HalfEdge dcBound = new HalfEdge(dc.origin);
-                        dcBound.incidentTriangle = adc;
-                        HalfEdge cdBound = new HalfEdge(cd.origin);
-                        cdBound.incidentTriangle = bcd;
-                        HalfEdge.SetTwins(dcBound, cdBound);
-                        ab.incidentTriangle.childrenBounds = new List<HalfEdge> { dcBound };
-                        ba.incidentTriangle.childrenBounds = new List<HalfEdge> { dcBound };
+                        ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
+                        ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
 
                         frontier.AddLast(ad);
                         frontier.AddLast(db);
@@ -334,3 +314,5 @@ public class DelaunayMesh
 
     
 }
+
+
