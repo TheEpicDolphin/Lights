@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
+using VecUtils;
 
 //Traverse edges counterclockwise
 public class Triangle
@@ -142,9 +143,48 @@ public class Triangle
         HalfEdge.SetTwins(e03, e30);
         HalfEdge.SetTwins(e13, e31);
         HalfEdge.SetTwins(e23, e32);
-        
+
+        v.AddOutgoingEdge(e30);
+        v.AddOutgoingEdge(e31);
+        v.AddOutgoingEdge(e32);
+
         this.children = new List<Triangle>() { tri0, tri1, tri2 };
         return new HalfEdge[] { e01, e12, e20 };
+    }
+
+    public HalfEdge[] LawsonFlip(HalfEdge ab)
+    {
+        HalfEdge ba = ab.twin;
+
+        HalfEdge bc = ab.next;
+        HalfEdge ca = bc.next;
+
+        HalfEdge ad = ba.next;
+        HalfEdge db = ad.next;
+        if (Geometry.IsInCircumscribedCircle(ab.origin.p, bc.origin.p, ca.origin.p, db.origin.p))
+        {
+            HalfEdge dc = new HalfEdge(db.origin);
+            HalfEdge cd = new HalfEdge(ca.origin);
+            HalfEdge.SetTwins(dc, cd);
+            Triangle adc = new Triangle(ad, dc, ca);
+            Triangle bcd = new Triangle(bc, cd, db);
+
+            //Remove old edges from vertices
+            ab.origin.RemoveOutgoingEdge(ab);
+            ba.origin.RemoveOutgoingEdge(ba);
+            //Add new edges from flip to vertices 
+            cd.origin.AddOutgoingEdge(cd);
+            dc.origin.AddOutgoingEdge(dc);
+
+            ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
+            ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
+
+            frontier.AddLast(ad);
+            frontier.AddLast(db);
+            return new HalfEdge[] { ad, db };
+        }
+
+        return new HalfEdge[] { };
     }
 }
 
@@ -179,10 +219,57 @@ public class Vertex
 {
     public Vector2 p;
     public int i;
+    //Sorted counter-clockwise
+    private LinkedList<HalfEdge> outgoingEdges;
+
     public Vertex(Vector2 p, int i)
     {
         this.p = p;
         this.i = i;
+        outgoingEdges = new LinkedList<HalfEdge>();
+    }
+
+    public HalfEdge GetOutgoingEdgeClockwiseFrom(Vector2 dir)
+    {
+        LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
+        while (curEdgeNode.Next != null)
+        {
+            HalfEdge outgoingEdge = curEdgeNode.Value;
+            HalfEdge nextOutgoingEdge = curEdgeNode.Next.Value;
+            Vector2 dirCur = outgoingEdge.next.origin.p - outgoingEdge.origin.p;
+            Vector2 dirNext = nextOutgoingEdge.next.origin.p - nextOutgoingEdge.origin.p;
+            if ((VecMath.Det(dirCur, dir) > 0) && (VecMath.Det(dir, dirNext) > 0))
+            {
+                return curEdgeNode.Value;
+            }
+            curEdgeNode = curEdgeNode.Next;
+        }
+        return outgoingEdges.Last.Value;
+    }
+
+    public void AddOutgoingEdge(HalfEdge e)
+    {
+        Vector2 newDir = e.next.origin.p - e.origin.p;
+        LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
+        while (curEdgeNode.Next != null)
+        {
+            HalfEdge outgoingEdge = curEdgeNode.Value;
+            HalfEdge nextOutgoingEdge = curEdgeNode.Next.Value;
+            Vector2 dirCur = outgoingEdge.next.origin.p - outgoingEdge.origin.p;
+            Vector2 dirNext = nextOutgoingEdge.next.origin.p - nextOutgoingEdge.origin.p;
+            if ((VecMath.Det(dirCur, newDir) > 0) && (VecMath.Det(newDir, dirNext) > 0))
+            {
+                outgoingEdges.AddAfter(curEdgeNode, e);
+                return;
+            }
+            curEdgeNode = curEdgeNode.Next;
+        }
+        outgoingEdges.AddLast(e);
+    }
+
+    public void RemoveOutgoingEdge(HalfEdge e)
+    {
+        outgoingEdges.Remove(e);
     }
 }
 
@@ -243,8 +330,8 @@ public class DelaunayMesh
         for (int i = 0; i < verts.Length; i++)
         {
             Vertex v = new Vertex(verts[i], i);
-            Debug.Log(i);
-            Debug.Log(v.p);
+            //Debug.Log(i);
+            //Debug.Log(v.p);
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
             HalfEdge[] edges = containingTri.InsertVertex(v);
 
@@ -289,8 +376,10 @@ public class DelaunayMesh
                     sptSet.Add(ba);
                 }
             }
-            //Debug.Log(t);
         }
+
+        //Insert constrained edges
+
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
