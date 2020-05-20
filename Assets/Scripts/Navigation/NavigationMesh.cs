@@ -213,10 +213,17 @@ public class NavigationMesh : MonoBehaviour
                 verts[C * i + j] = new Vector2(i, j);
             }
         }
-        
 
-        DelaunayMesh dm = new DelaunayMesh(verts);
-        
+        //DelaunayMesh dm = new DelaunayMesh(verts);
+
+        DelaunayMesh dm = new DelaunayMesh(verts, 
+            new List<Vector2[]> {
+                new Vector2[] {
+                    new Vector2(0.5f, 0.5f),
+                    new Vector2(1.5f, 3.0f),
+                    new Vector2(2.3f, -1.5f)
+                }
+            });
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()

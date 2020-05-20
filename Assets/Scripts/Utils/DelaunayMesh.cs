@@ -152,7 +152,34 @@ public class Triangle
         return new HalfEdge[] { e01, e12, e20 };
     }
 
-    public HalfEdge[] LawsonFlip(HalfEdge ab)
+}
+
+//Face is on the left side of the Half-Edge
+public class HalfEdge
+{
+    public Vertex origin;
+    public HalfEdge twin;
+    public Triangle incidentTriangle;
+    public HalfEdge next;
+    public HalfEdge prev;
+
+    public HalfEdge(Vertex v)
+    {
+        this.origin = v;
+        this.twin = null;
+        this.incidentTriangle = null;
+        this.next = null;
+        this.prev = null;
+    }
+
+    public static void SetTwins(HalfEdge e0, HalfEdge e1)
+    {
+        e0.twin = e1;
+        e1.twin = e0;
+    }
+
+    /*
+    public static HalfEdge[] LawsonFlip(HalfEdge ab)
     {
         HalfEdge ba = ab.twin;
 
@@ -186,50 +213,20 @@ public class Triangle
 
         return new HalfEdge[] { };
     }
-}
-
-//Face is on the left side of the Half-Edge
-public class HalfEdge
-{
-    public Vertex origin;
-    public HalfEdge twin;
-    public Triangle incidentTriangle;
-    public HalfEdge next;
-    public HalfEdge prev;
-
-    public HalfEdge(Vertex v)
-    {
-        this.origin = v;
-        this.twin = null;
-        this.incidentTriangle = null;
-        this.next = null;
-        this.prev = null;
-    }
-
-    public static void SetTwins(HalfEdge e0, HalfEdge e1)
-    {
-        e0.twin = e1;
-        e1.twin = e0;
-    }
-
+    */
 }
 
 //When doing constrained delaunay triangulations, give Vertex reference to HalfEdges
-public class Vertex
+public class ConstrainedVertex : Vertex
 {
-    public Vector2 p;
-    public int i;
     //Sorted counter-clockwise
     private LinkedList<HalfEdge> outgoingEdges;
-
-    public Vertex(Vector2 p, int i)
+    public ConstrainedVertex(Vector2 p, int i) : base(p, i)
     {
-        this.p = p;
-        this.i = i;
         outgoingEdges = new LinkedList<HalfEdge>();
     }
 
-    public HalfEdge GetOutgoingEdgeClockwiseFrom(Vector2 dir)
+    public override HalfEdge GetOutgoingEdgeClockwiseFrom(Vector2 dir)
     {
         LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
         while (curEdgeNode.Next != null)
@@ -247,7 +244,7 @@ public class Vertex
         return outgoingEdges.Last.Value;
     }
 
-    public void AddOutgoingEdge(HalfEdge e)
+    public override void AddOutgoingEdge(HalfEdge e)
     {
         Vector2 newDir = e.next.origin.p - e.origin.p;
         LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
@@ -267,44 +264,113 @@ public class Vertex
         outgoingEdges.AddLast(e);
     }
 
-    public void RemoveOutgoingEdge(HalfEdge e)
+    public override void RemoveOutgoingEdge(HalfEdge e)
     {
         outgoingEdges.Remove(e);
+    }
+
+    public override void Print()
+    {
+        Debug.Log("Constrained Vertex");
+        Debug.Log(outgoingEdges.Count);
+    }
+}
+
+
+public class Vertex
+{
+    public Vector2 p;
+    public int i;
+
+    public Vertex(Vector2 p, int i)
+    {
+        this.p = p;
+        this.i = i;
+    }
+
+    public virtual HalfEdge GetOutgoingEdgeClockwiseFrom(Vector2 dir)
+    {
+        return new HalfEdge(new Vertex(Vector2.zero, -1));
+    }
+
+    public virtual void AddOutgoingEdge(HalfEdge e)
+    {
+
+    }
+
+    public virtual void RemoveOutgoingEdge(HalfEdge e)
+    {
+
+    }
+
+    public virtual void Print()
+    {
+        Debug.Log("Unconstrained Vertex");
     }
 }
 
 public class DelaunayMesh
 {
-    private Vector2[] verts;
+    private Vector2[] points;
+    private List<ConstrainedVertex[]> constrainedVerts;
     public Triangle[] tris;
     public Triangle treeRoot;
 
     public DelaunayMesh(Vector2[] points)
     {
-        Algorithm.Shuffle<Vector2>(ref points);
-        verts = points;
-        tris = Triangulate();
-    }
-
-    /*
-    public NavMeshTriangle ContainingNavMeshTriangle(Vector2 p)
-    {
-        Geometry.IsInTriangle(Vector2 a, Vector2 b, Vector2 c, Vector2 p)
-    }
-    */
-
-    private Triangle[] Triangulate()
-    {
-        Vector2 centroid = Vector2.zero;
-        foreach (Vector2 vert in verts)
+        this.points = points;
+        List<Vertex> verts = new List<Vertex>();
+        for(int i = 0; i < points.Length; i++)
         {
-            centroid += vert;
+            verts.Add(new Vertex(points[i], i));
         }
-        centroid /= verts.Length;
-        float r = 0.0f;
-        foreach (Vector2 vert in verts)
+        tris = Triangulate(verts);
+    }
+
+    public DelaunayMesh(Vector2[] unconstrainedPoints, List<Vector2[]> constrainedPoints)
+    {
+        List<Vector2> pointsList = new List<Vector2>();
+        List<Vertex> verts = new List<Vertex>();
+        foreach (Vector2 ucp in unconstrainedPoints)
         {
-            r = Mathf.Max(r, Vector2.Distance(vert, centroid));
+            verts.Add(new Vertex(ucp, pointsList.Count));
+            pointsList.Add(ucp);
+        }
+
+        constrainedVerts = new List<ConstrainedVertex[]>();
+        foreach (Vector2[] segment in constrainedPoints)
+        {
+            ConstrainedVertex[] constrainedSegment = new ConstrainedVertex[segment.Length];
+            for(int i = 0; i < segment.Length; i++)
+            {
+                Vector2 cp = segment[i];
+                ConstrainedVertex v = new ConstrainedVertex(cp, pointsList.Count);
+                pointsList.Add(cp);
+                verts.Add(v);
+                constrainedSegment[i] = v;
+            }
+            constrainedVerts.Add(constrainedSegment);
+        }
+        this.points = pointsList.ToArray();
+
+        tris = Triangulate(verts);
+    }
+
+    private Triangle[] Triangulate(List<Vertex> verts)
+    {
+        //Randomize vertices for faster average triangulation
+        Algorithm.Shuffle<Vertex>(ref verts);
+
+        Vector2 centroid = Vector2.zero;
+        foreach (Vertex vert in verts)
+        {
+            centroid += vert.p;
+        }
+        centroid /= verts.Count;
+        float r = 0.0f;
+        foreach (Vertex vert in verts)
+        {
+            r = Mathf.Max(r, Vector2.Distance(vert.p, centroid));
         }
         //Add some padding to avoid floating point errors later on
         r *= 1.2f;
@@ -327,11 +393,9 @@ public class DelaunayMesh
         HalfEdge e20 = new HalfEdge(vi2);
         Triangle treeRoot = new Triangle(e01, e12, e20);
 
-        for (int i = 0; i < verts.Length; i++)
+        for (int i = 0; i < verts.Count; i++)
         {
-            Vertex v = new Vertex(verts[i], i);
-            //Debug.Log(i);
-            //Debug.Log(v.p);
+            Vertex v = verts[i];
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
             HalfEdge[] edges = containingTri.InsertVertex(v);
 
@@ -365,6 +429,13 @@ public class DelaunayMesh
                         HalfEdge.SetTwins(dc, cd);
                         Triangle adc = new Triangle(ad, dc, ca);
                         Triangle bcd = new Triangle(bc, cd, db);
+
+                        //Remove old edges from vertices
+                        ab.origin.RemoveOutgoingEdge(ab);
+                        ba.origin.RemoveOutgoingEdge(ba);
+                        //Add new edges from flip to vertices 
+                        cd.origin.AddOutgoingEdge(cd);
+                        dc.origin.AddOutgoingEdge(dc);
 
                         ab.incidentTriangle.children = new List<Triangle> { adc, bcd };
                         ba.incidentTriangle.children = new List<Triangle> { adc, bcd };
@@ -401,7 +472,11 @@ public class DelaunayMesh
         return leafs.ToArray();
     }
 
-    
+    public Triangle ContainingNavMeshTriangle(Vector2 p)
+    {
+        return treeRoot.FindContainingTriangle(p);
+    }
+
 }
 
 
