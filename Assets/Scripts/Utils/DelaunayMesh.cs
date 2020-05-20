@@ -246,6 +246,11 @@ public class ConstrainedVertex : Vertex
 
     public override void AddOutgoingEdge(HalfEdge e)
     {
+        if(outgoingEdges.Count == 0)
+        {
+            outgoingEdges.AddLast(e);
+            return;
+        }
         Vector2 newDir = e.next.origin.p - e.origin.p;
         LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
         while (curEdgeNode.Next != null)
@@ -450,7 +455,35 @@ public class DelaunayMesh
         }
 
         //Insert constrained edges
+        List<HalfEdge> edgePortals = new List<HalfEdge>();
+        foreach(ConstrainedVertex[] segment in constrainedVerts)
+        {
+            Debug.DrawLine(segment[0].p, segment[1].p, Color.magenta, 5.0f, false);
+            segment[0].Print();
+            segment[1].Print();
 
+            Vector2 dir = segment[1].p - segment[0].p;
+            HalfEdge e = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
+            edgePortals.Add(e);
+            break;
+            HalfEdge intersected = e.next.twin;
+            Vertex v = segment[0];
+            while (v != segment[1])
+            {
+                edgePortals.Add(intersected);
+
+                v = intersected.prev.origin;
+                Vector2 newDir = v.p - segment[0].p;
+                if (VecMath.Det(dir, newDir) >= 0)
+                {
+                    intersected = intersected.next.twin;
+                }
+                else
+                {
+                    intersected = intersected.prev.twin;
+                }
+            }
+        }
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
@@ -462,13 +495,21 @@ public class DelaunayMesh
         
         foreach(Triangle leaf in leafs)
         {
-            Vector2 p0 = leaf.edge.origin.p;
-            Vector2 p1 = leaf.edge.next.origin.p;
-            Vector2 p2 = leaf.edge.next.next.origin.p;
+            Vector3 p0 = leaf.edge.origin.p;
+            Vector3 p1 = leaf.edge.next.origin.p;
+            Vector3 p2 = leaf.edge.next.next.origin.p;
             Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
             Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
+
+        foreach(HalfEdge e in edgePortals)
+        {
+            Vector2 ep1 = e.origin.p;
+            Vector2 ep2 = e.next.origin.p;
+            Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
+        }
+
         return leafs.ToArray();
     }
 
