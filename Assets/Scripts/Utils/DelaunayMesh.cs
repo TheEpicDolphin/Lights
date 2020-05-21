@@ -144,9 +144,14 @@ public class Triangle
         HalfEdge.SetTwins(e13, e31);
         HalfEdge.SetTwins(e23, e32);
 
-        v.AddOutgoingEdge(e30);
-        v.AddOutgoingEdge(e31);
-        v.AddOutgoingEdge(e32);
+        e30.origin.AddOutgoingEdge(e30);
+        e31.origin.AddOutgoingEdge(e31);
+        e32.origin.AddOutgoingEdge(e32);
+
+        e03.origin.AddOutgoingEdge(e03);
+        e13.origin.AddOutgoingEdge(e13);
+        e23.origin.AddOutgoingEdge(e23);
+
 
         this.children = new List<Triangle>() { tri0, tri1, tri2 };
         return new HalfEdge[] { e01, e12, e20 };
@@ -279,6 +284,14 @@ public class ConstrainedVertex : Vertex
         Debug.Log("Constrained Vertex");
         Debug.Log(outgoingEdges.Count);
     }
+
+    public override void DrawOutgoingEdges()
+    {
+        foreach(HalfEdge e in outgoingEdges)
+        {
+            Debug.DrawLine(e.origin.p, e.next.origin.p, Color.red, 5.0f, false);
+        }
+    }
 }
 
 
@@ -311,6 +324,11 @@ public class Vertex
     public virtual void Print()
     {
         Debug.Log("Unconstrained Vertex");
+    }
+
+    public virtual void DrawOutgoingEdges()
+    {
+
     }
 }
 
@@ -459,19 +477,14 @@ public class DelaunayMesh
         foreach(ConstrainedVertex[] segment in constrainedVerts)
         {
             Debug.DrawLine(segment[0].p, segment[1].p, Color.magenta, 5.0f, false);
-            segment[0].Print();
-            segment[1].Print();
 
             Vector2 dir = segment[1].p - segment[0].p;
             HalfEdge e = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
-            edgePortals.Add(e);
-            break;
             HalfEdge intersected = e.next.twin;
             Vertex v = segment[0];
             while (v != segment[1])
             {
                 edgePortals.Add(intersected);
-
                 v = intersected.prev.origin;
                 Vector2 newDir = v.p - segment[0].p;
                 if (VecMath.Det(dir, newDir) >= 0)
