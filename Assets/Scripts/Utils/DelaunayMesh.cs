@@ -498,6 +498,12 @@ public class DelaunayMesh
             }
         }
 
+        List<HalfEdge> reverseEdgePortals = new List<HalfEdge>();
+        for(int i = edgePortals.Count - 1; i >= 0; i--)
+        {
+            reverseEdgePortals.Add(edgePortals[i].twin);
+        }
+
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
         HashSet<Triangle> visited = new HashSet<Triangle>();
@@ -523,7 +529,82 @@ public class DelaunayMesh
             Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
         }
 
+        int sL = 0;
+        int sR = 0;
+        HalfEdge eConstrainedL = RecursiveTriangulate(ref sL, edgePortals);
+        HalfEdge eConstrainedR = RecursiveTriangulate(ref sR, reverseEdgePortals);
+        HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
+
         return leafs.ToArray();
+    }
+
+    private HalfEdge RecursiveTriangulate(ref int ep, List<HalfEdge> edgePortals)
+    {
+        int epB = ep;
+        Vertex vB = edgePortals[epB].origin;
+        HalfEdge eLast = edgePortals[epB].prev.twin;
+
+        while(ep < edgePortals.Count)
+        {
+            HalfEdge holeEdge = edgePortals[ep].prev.twin;
+            if (holeEdge == edgePortals[ep + 1])
+            {
+                break;
+            }
+            ep += 1;
+        }
+
+        int epLast = ep;
+        ep += 1;
+        
+        while (ep < edgePortals.Count)
+        {
+            HalfEdge holeEdge = edgePortals[ep].prev.twin;
+            if (holeEdge == edgePortals[ep + 1])
+            {
+                ep += 1;
+                continue;
+            }
+            
+            Vector2 funnelL = holeEdge.origin.p - vB.p;
+            Vector2 funnelR = holeEdge.next.origin.p - vB.p;
+
+            Triangle tri;
+
+            if (VecMath.Det(funnelR, funnelL) <= 0)
+            {
+                HalfEdge e = RecursiveTriangulate(ref epLast, edgePortals);
+
+                HalfEdge e01 = new HalfEdge(vB);
+                HalfEdge e12 = new HalfEdge(e.next.origin);
+                HalfEdge e20 = new HalfEdge(e.origin);
+                tri = new Triangle(e01, e12, e20);
+                HalfEdge.SetTwins(e12, e);
+                HalfEdge.SetTwins(e20, eLast);
+                eLast = e01;
+            }
+            else
+            {
+                //Make triangle
+                HalfEdge e01 = new HalfEdge(vB);
+                HalfEdge e12 = new HalfEdge(holeEdge.next.origin);
+                HalfEdge e20 = new HalfEdge(holeEdge.origin);
+                tri = new Triangle(e01, e12, e20);
+                HalfEdge.SetTwins(e12, holeEdge);
+                HalfEdge.SetTwins(e20, eLast);
+                eLast = e01;
+            }
+
+            for (int i = epB; i <= epLast; i++)
+            {
+                edgePortals[i].incidentTriangle.children.Add(tri);
+            }
+
+            epLast = ep;
+            ep += 1;
+        }
+
+        return eLast;
     }
 
     public Triangle ContainingNavMeshTriangle(Vector2 p)
