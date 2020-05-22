@@ -11,6 +11,7 @@ public class Triangle
     public HalfEdge edge;
     public List<Triangle> children;
     private Vertex[] ghostBounds;
+    public bool isIntersectingHole;
 
     /*
      * Doesn't modify the twins of the edges
@@ -33,6 +34,7 @@ public class Triangle
 
         this.children = new List<Triangle>();
         this.ghostBounds = new Vertex[] { e01.origin, e12.origin, e20.origin };
+        this.isIntersectingHole = false;
     }
 
     //Possibly return an edge rather than a triangle if point lies between to triangles
@@ -384,6 +386,7 @@ public class DelaunayMesh
         //Randomize vertices for faster average triangulation
         Algorithm.Shuffle<Vertex>(ref verts);
 
+        //Construct circle enclosing all the vertices
         Vector2 centroid = Vector2.zero;
         foreach (Vertex vert in verts)
         {
@@ -416,6 +419,7 @@ public class DelaunayMesh
         HalfEdge e20 = new HalfEdge(vi2);
         Triangle treeRoot = new Triangle(e01, e12, e20);
 
+        //Perform Delaunay Triangulation
         for (int i = 0; i < verts.Count; i++)
         {
             Vertex v = verts[i];
@@ -445,8 +449,10 @@ public class DelaunayMesh
 
                     HalfEdge ad = ba.next;
                     HalfEdge db = ad.next;
+                    //Check if Delaunay Property is violated
                     if (Geometry.IsInCircumscribedCircle(ab.origin.p, bc.origin.p, ca.origin.p, db.origin.p))
                     {
+                        //Flip triangle
                         HalfEdge dc = new HalfEdge(db.origin);
                         HalfEdge cd = new HalfEdge(ca.origin);
                         HalfEdge.SetTwins(dc, cd);
@@ -473,52 +479,63 @@ public class DelaunayMesh
         }
 
         //Insert constrained edges
-        List<HalfEdge> edgePortals = new List<HalfEdge>();
         foreach(ConstrainedVertex[] segment in constrainedVerts)
         {
-            Debug.DrawLine(segment[0].p, segment[1].p, Color.magenta, 5.0f, false);
-
-            Vector2 dir = segment[1].p - segment[0].p;
-            HalfEdge eStart = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
-            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(-dir);
-
-            HalfEdge intersected = eStart.next.twin;
-            Vertex v = segment[0];
-            while (v != segment[1])
+            List<HalfEdge> holeBounds = new List<HalfEdge>();
+            for(int i = 0; i < segment.Length - 1; i++)
             {
-                edgePortals.Add(intersected);
-                v = intersected.prev.origin;
-                Vector2 newDir = v.p - segment[0].p;
-                if (VecMath.Det(dir, newDir) >= 0)
+                Debug.DrawLine(segment[i].p, segment[i + 1].p, Color.magenta, 5.0f, false);
+
+                Vector2 dir = segment[i + 1].p - segment[i].p;
+                HalfEdge eStart = segment[i].GetOutgoingEdgeClockwiseFrom(dir);
+                HalfEdge eEnd = segment[i + 1].GetOutgoingEdgeClockwiseFrom(-dir);
+
+                List<HalfEdge> edgePortals = new List<HalfEdge>();
+                HalfEdge intersected = eStart.next.twin;
+                Vertex v = segment[i];
+                while (v != segment[i + 1])
                 {
-                    intersected = intersected.next.twin;
+                    edgePortals.Add(intersected);
+                    v = intersected.prev.origin;
+                    Vector2 newDir = v.p - segment[i].p;
+                    if (VecMath.Det(dir, newDir) >= 0)
+                    {
+                        intersected = intersected.next.twin;
+                    }
+                    else
+                    {
+                        intersected = intersected.prev.twin;
+                    }
                 }
-                else
+
+
+                List<HalfEdge> forwardEdgePortals = new List<HalfEdge>();
+                forwardEdgePortals.Add(eStart);
+                for (int j = 0; j < edgePortals.Count; j++)
                 {
-                    intersected = intersected.prev.twin;
+                    forwardEdgePortals.Add(edgePortals[j]);
                 }
+
+                List<HalfEdge> backwardEdgePortals = new List<HalfEdge>();
+                backwardEdgePortals.Add(eEnd);
+                for (int j = edgePortals.Count - 1; j >= 0; j--)
+                {
+                    backwardEdgePortals.Add(edgePortals[j].twin);
+                }
+
+                int sL = 0;
+                int sR = 0;
+                HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
+                holeBounds.Add(eConstrainedL);
+                HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
             }
 
-            
-            List<HalfEdge> forwardEdgePortals = new List<HalfEdge>();
-            forwardEdgePortals.Add(eStart);
-            for (int i = 0; i < edgePortals.Count; i++)
+            if(segment.Length > 2)
             {
-                forwardEdgePortals.Add(edgePortals[i]);
-            }
+                //We have a hole. Hide all triangles that intersect with hole.
 
-            List<HalfEdge> backwardEdgePortals = new List<HalfEdge>();
-            backwardEdgePortals.Add(eEnd);
-            for (int i = edgePortals.Count - 1; i >= 0; i--)
-            {
-                backwardEdgePortals.Add(edgePortals[i].twin);
             }
-
-            int sL = 0;
-            int sR = 0;
-            HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
-            HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
-            HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
         }
 
         
@@ -541,12 +558,14 @@ public class DelaunayMesh
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
 
+        /*
         foreach(HalfEdge e in edgePortals)
         {
             Vector2 ep1 = e.origin.p;
             Vector2 ep2 = e.next.origin.p;
             Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
         }
+        */
 
         return leafs.ToArray();
     }
