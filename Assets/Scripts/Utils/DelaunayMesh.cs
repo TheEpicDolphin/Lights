@@ -499,7 +499,7 @@ public class DelaunayMesh
                 }
             }
 
-            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(dir);
+            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(-dir);
             edgePortals.Add(eEnd);
         }
 
