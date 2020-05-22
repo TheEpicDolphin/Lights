@@ -480,7 +480,7 @@ public class DelaunayMesh
 
             Vector2 dir = segment[1].p - segment[0].p;
             HalfEdge eStart = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
-            edgePortals.Add(eStart);
+            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(-dir);
 
             HalfEdge intersected = eStart.next.twin;
             Vertex v = segment[0];
@@ -499,27 +499,29 @@ public class DelaunayMesh
                 }
             }
 
-            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(-dir);
-            edgePortals.Add(eEnd);
+            
+            List<HalfEdge> forwardEdgePortals = new List<HalfEdge>();
+            forwardEdgePortals.Add(eStart);
+            for (int i = 0; i < edgePortals.Count; i++)
+            {
+                forwardEdgePortals.Add(edgePortals[i]);
+            }
+
+            List<HalfEdge> backwardEdgePortals = new List<HalfEdge>();
+            backwardEdgePortals.Add(eEnd);
+            for (int i = edgePortals.Count - 1; i >= 0; i--)
+            {
+                backwardEdgePortals.Add(edgePortals[i].twin);
+            }
+
+            int sL = 0;
+            int sR = 0;
+            HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
+            HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+            HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
         }
 
-        List<HalfEdge> forwardEdgePortals = new List<HalfEdge>();
-        for (int i = 0; i < edgePortals.Count - 1; i++)
-        {
-            forwardEdgePortals.Add(edgePortals[i]);
-        }
-
-        List<HalfEdge> reverseEdgePortals = new List<HalfEdge>();
-        for(int i = edgePortals.Count - 1; i > 0; i--)
-        {
-            reverseEdgePortals.Add(edgePortals[i].twin);
-        }
-
-        int sL = 0;
-        int sR = 0;
-        HalfEdge eConstrainedL = PolygonTriangulation(ref sL, edgePortals);
-        HalfEdge eConstrainedR = PolygonTriangulation(ref sR, reverseEdgePortals);
-        HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
+        
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
@@ -554,20 +556,6 @@ public class DelaunayMesh
         int epB = ep;
         Vertex vB = edgePortals[epB].origin;
         HalfEdge eLast = edgePortals[epB].prev.twin;
-
-        ep += 1;
-        while(ep < edgePortals.Count)
-        {
-            HalfEdge holeEdge = edgePortals[ep].prev.twin;
-            Debug.Log(edgePortals.Count);
-            Debug.Log(ep);
-            if (holeEdge != edgePortals[ep + 1])
-            {
-                break;
-            }
-            ep += 1;
-        }
-
         int epLast = ep;
         ep += 1;
         
@@ -587,7 +575,7 @@ public class DelaunayMesh
 
             if (VecMath.Det(funnelR, funnelL) <= 0)
             {
-                HalfEdge e = RecursiveTriangulate(ref epLast, edgePortals);
+                HalfEdge e = PolygonTriangulation(ref epLast, edgePortals);
 
                 HalfEdge e01 = new HalfEdge(vB);
                 HalfEdge e12 = new HalfEdge(e.next.origin);
