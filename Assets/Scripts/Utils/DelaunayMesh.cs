@@ -479,8 +479,10 @@ public class DelaunayMesh
             Debug.DrawLine(segment[0].p, segment[1].p, Color.magenta, 5.0f, false);
 
             Vector2 dir = segment[1].p - segment[0].p;
-            HalfEdge e = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
-            HalfEdge intersected = e.next.twin;
+            HalfEdge eStart = segment[0].GetOutgoingEdgeClockwiseFrom(dir);
+            edgePortals.Add(eStart);
+
+            HalfEdge intersected = eStart.next.twin;
             Vertex v = segment[0];
             while (v != segment[1])
             {
@@ -496,13 +498,28 @@ public class DelaunayMesh
                     intersected = intersected.prev.twin;
                 }
             }
+
+            HalfEdge eEnd = segment[1].GetOutgoingEdgeClockwiseFrom(dir);
+            edgePortals.Add(eEnd);
+        }
+
+        List<HalfEdge> forwardEdgePortals = new List<HalfEdge>();
+        for (int i = 0; i < edgePortals.Count - 1; i++)
+        {
+            forwardEdgePortals.Add(edgePortals[i]);
         }
 
         List<HalfEdge> reverseEdgePortals = new List<HalfEdge>();
-        for(int i = edgePortals.Count - 1; i >= 0; i--)
+        for(int i = edgePortals.Count - 1; i > 0; i--)
         {
             reverseEdgePortals.Add(edgePortals[i].twin);
         }
+
+        int sL = 0;
+        int sR = 0;
+        HalfEdge eConstrainedL = PolygonTriangulation(ref sL, edgePortals);
+        HalfEdge eConstrainedR = PolygonTriangulation(ref sR, reverseEdgePortals);
+        HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
 
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
@@ -529,25 +546,22 @@ public class DelaunayMesh
             Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
         }
 
-        int sL = 0;
-        int sR = 0;
-        HalfEdge eConstrainedL = RecursiveTriangulate(ref sL, edgePortals);
-        HalfEdge eConstrainedR = RecursiveTriangulate(ref sR, reverseEdgePortals);
-        HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
-
         return leafs.ToArray();
     }
 
-    private HalfEdge RecursiveTriangulate(ref int ep, List<HalfEdge> edgePortals)
+    private HalfEdge PolygonTriangulation(ref int ep, List<HalfEdge> edgePortals)
     {
         int epB = ep;
         Vertex vB = edgePortals[epB].origin;
         HalfEdge eLast = edgePortals[epB].prev.twin;
 
+        ep += 1;
         while(ep < edgePortals.Count)
         {
             HalfEdge holeEdge = edgePortals[ep].prev.twin;
-            if (holeEdge == edgePortals[ep + 1])
+            Debug.Log(edgePortals.Count);
+            Debug.Log(ep);
+            if (holeEdge != edgePortals[ep + 1])
             {
                 break;
             }
@@ -560,7 +574,7 @@ public class DelaunayMesh
         while (ep < edgePortals.Count)
         {
             HalfEdge holeEdge = edgePortals[ep].prev.twin;
-            if (holeEdge == edgePortals[ep + 1])
+            if (ep < edgePortals.Count - 1 && holeEdge == edgePortals[ep + 1])
             {
                 ep += 1;
                 continue;
