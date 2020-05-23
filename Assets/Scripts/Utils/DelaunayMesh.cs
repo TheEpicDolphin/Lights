@@ -526,9 +526,9 @@ public class DelaunayMesh
                 }
 
                 int sL = 0;
-                int sR = 0;
                 HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
                 holeBounds.Add(eConstrainedL);
+                int sR = 0;
                 eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
             }
@@ -560,14 +560,14 @@ public class DelaunayMesh
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
 
-        
+        /*
         foreach(HalfEdge e in edgePortals)
         {
             Vector2 ep1 = e.origin.p;
             Vector2 ep2 = e.next.origin.p;
             Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
         }
-        
+        */
 
         return leafs.ToArray();
     }
@@ -608,9 +608,8 @@ public class DelaunayMesh
         int epB = ep;
         Vertex vB = edgePortals[epB].origin;
         HalfEdge eLast = edgePortals[epB].prev.twin;
-        int epLast = ep;
         ep += 1;
-        
+
         while (ep < edgePortals.Count)
         {
             HalfEdge holeEdge = edgePortals[ep].prev.twin;
@@ -619,7 +618,7 @@ public class DelaunayMesh
                 ep += 1;
                 continue;
             }
-            
+
             Vector2 funnelL = holeEdge.origin.p - vB.p;
             Vector2 funnelR = holeEdge.next.origin.p - vB.p;
 
@@ -628,7 +627,7 @@ public class DelaunayMesh
             if (VecMath.Det(funnelR, funnelL) <= 0)
             {
                 //Bug is here. Do not make a ref to epLast. Find a way to return the new ep
-                HalfEdge e = PolygonTriangulation(ref epLast, edgePortals);
+                HalfEdge e = PolygonTriangulation(ref ep, edgePortals);
 
                 HalfEdge e01 = new HalfEdge(vB);
                 HalfEdge e12 = new HalfEdge(e.next.origin);
@@ -650,14 +649,14 @@ public class DelaunayMesh
                 eLast = e01;
             }
 
-            for (int i = epB; i <= epLast; i++)
+            for (int i = epB; i <= ep; i++)
             {
                 edgePortals[i].incidentTriangle.children.Add(tri);
             }
-
-            epLast = ep;
             ep += 1;
         }
+
+        ep = edgePortals.Count - 1;
 
         return eLast;
     }

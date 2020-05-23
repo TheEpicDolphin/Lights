@@ -229,7 +229,7 @@ public class NavigationMesh : MonoBehaviour
         DelaunayMesh dm = new DelaunayMesh(verts,
             new List<Vector2[]> {
                 new Vector2[] {
-                    //new Vector2(0.5f, 0.5f),
+                    new Vector2(0.5f, 0.5f),
                     new Vector2(1.5f, 3.0f),
                     new Vector2(3.2f, 0.8f)
                 }
