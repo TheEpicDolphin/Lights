@@ -484,22 +484,26 @@ public class DelaunayMesh
         {
             HashSet<HalfEdge> holeBounds = new HashSet<HalfEdge>();
             HalfEdge eConstrainedR = null;
-            for(int i = 0; i < segments.Length - 1; i++)
+            bool isHole = segments.Length > 2;
+            int n = isHole ? segments.Length : segments.Length - 1;
+            for(int i = 0; i < n; i++)
             {
-                Debug.DrawLine(segments[i].p, segments[i + 1].p, Color.magenta, 5.0f, false);
+                Vertex v1 = segments[i % segments.Length];
+                Vertex v2 = segments[(i + 1) % segments.Length];
+                Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
 
-                Vector2 dir = segments[i + 1].p - segments[i].p;
-                HalfEdge eStart = segments[i].GetOutgoingEdgeClockwiseFrom(dir);
-                HalfEdge eEnd = segments[i + 1].GetOutgoingEdgeClockwiseFrom(-dir);
+                Vector2 dir = v2.p - v1.p;
+                HalfEdge eStart = v1.GetOutgoingEdgeClockwiseFrom(dir);
+                HalfEdge eEnd = v2.GetOutgoingEdgeClockwiseFrom(-dir);
 
                 List<HalfEdge> edgePortals = new List<HalfEdge>();
                 HalfEdge intersected = eStart.next.twin;
-                Vertex v = segments[i];
-                while (v != segments[i + 1])
+                Vertex v = v1;
+                while (v != v2)
                 {
                     edgePortals.Add(intersected);
                     v = intersected.prev.origin;
-                    Vector2 newDir = v.p - segments[i].p;
+                    Vector2 newDir = v.p - v1.p;
                     if (VecMath.Det(dir, newDir) >= 0)
                     {
                         intersected = intersected.next.twin;
@@ -533,10 +537,10 @@ public class DelaunayMesh
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
             }
 
-            if(segments.Length > 2 && eConstrainedR != null)
+            if(isHole && eConstrainedR != null)
             {
                 //We have a hole. Hide all triangles that are in hole
-                //CreateHole(eConstrainedR, holeBounds);
+                CreateHole(eConstrainedR, holeBounds);
             }
         }
 
