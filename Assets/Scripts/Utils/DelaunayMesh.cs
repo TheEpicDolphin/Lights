@@ -478,7 +478,7 @@ public class DelaunayMesh
                 }
             }
         }
-        //List<HalfEdge> edgePortals = new List<HalfEdge>();
+
         //Insert constrained edges
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
@@ -535,6 +535,14 @@ public class DelaunayMesh
                 int sR = 0;
                 eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
+
+
+                foreach (HalfEdge e in edgePortals)
+                {
+                    Vector2 ep1 = e.origin.p;
+                    Vector2 ep2 = e.next.origin.p;
+                    Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
+                }
             }
 
             if(isHole && eConstrainedR != null)
@@ -542,6 +550,7 @@ public class DelaunayMesh
                 //We have a hole. Hide all triangles that are in hole
                 CreateHole(eConstrainedR, holeBounds);
             }
+
         }
 
         
@@ -563,15 +572,6 @@ public class DelaunayMesh
             Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
-
-        /*
-        foreach(HalfEdge e in edgePortals)
-        {
-            Vector2 ep1 = e.origin.p;
-            Vector2 ep2 = e.next.origin.p;
-            Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
-        }
-        */
 
         return leafs.ToArray();
     }
