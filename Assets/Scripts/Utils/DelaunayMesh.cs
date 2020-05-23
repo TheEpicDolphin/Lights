@@ -106,7 +106,7 @@ public class Triangle
         if (this.children.Count == 0)
         {
             Debug.Log("Depth: " + depth.ToString());
-            if (!this.IsImaginary())
+            if (!this.IsImaginary() && !this.isIntersectingHole)
             {
                 leafs.Add(this);
             }
@@ -352,6 +352,7 @@ public class DelaunayMesh
         tris = Triangulate(verts);
     }
 
+    //Holes are specified in clockwise direction
     public DelaunayMesh(Vector2[] unconstrainedPoints, List<Vector2[]> constrainedPoints)
     {
         List<Vector2> pointsList = new List<Vector2>();
@@ -477,27 +478,28 @@ public class DelaunayMesh
                 }
             }
         }
-
+        //List<HalfEdge> edgePortals = new List<HalfEdge>();
         //Insert constrained edges
-        foreach(ConstrainedVertex[] segment in constrainedVerts)
+        foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
-            List<HalfEdge> holeBounds = new List<HalfEdge>();
-            for(int i = 0; i < segment.Length - 1; i++)
+            HashSet<HalfEdge> holeBounds = new HashSet<HalfEdge>();
+            HalfEdge eConstrainedR = null;
+            for(int i = 0; i < segments.Length - 1; i++)
             {
-                Debug.DrawLine(segment[i].p, segment[i + 1].p, Color.magenta, 5.0f, false);
+                Debug.DrawLine(segments[i].p, segments[i + 1].p, Color.magenta, 5.0f, false);
 
-                Vector2 dir = segment[i + 1].p - segment[i].p;
-                HalfEdge eStart = segment[i].GetOutgoingEdgeClockwiseFrom(dir);
-                HalfEdge eEnd = segment[i + 1].GetOutgoingEdgeClockwiseFrom(-dir);
+                Vector2 dir = segments[i + 1].p - segments[i].p;
+                HalfEdge eStart = segments[i].GetOutgoingEdgeClockwiseFrom(dir);
+                HalfEdge eEnd = segments[i + 1].GetOutgoingEdgeClockwiseFrom(-dir);
 
                 List<HalfEdge> edgePortals = new List<HalfEdge>();
                 HalfEdge intersected = eStart.next.twin;
-                Vertex v = segment[i];
-                while (v != segment[i + 1])
+                Vertex v = segments[i];
+                while (v != segments[i + 1])
                 {
                     edgePortals.Add(intersected);
                     v = intersected.prev.origin;
-                    Vector2 newDir = v.p - segment[i].p;
+                    Vector2 newDir = v.p - segments[i].p;
                     if (VecMath.Det(dir, newDir) >= 0)
                     {
                         intersected = intersected.next.twin;
@@ -527,14 +529,14 @@ public class DelaunayMesh
                 int sR = 0;
                 HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
                 holeBounds.Add(eConstrainedL);
-                HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
             }
 
-            if(segment.Length > 2)
+            if(segments.Length > 2 && eConstrainedR != null)
             {
-                //We have a hole. Hide all triangles that intersect with hole.
-
+                //We have a hole. Hide all triangles that are in hole
+                //CreateHole(eConstrainedR, holeBounds);
             }
         }
 
@@ -558,16 +560,47 @@ public class DelaunayMesh
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
 
-        /*
+        
         foreach(HalfEdge e in edgePortals)
         {
             Vector2 ep1 = e.origin.p;
             Vector2 ep2 = e.next.origin.p;
             Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
         }
-        */
+        
 
         return leafs.ToArray();
+    }
+
+    private void CreateHole(HalfEdge startingEdge, HashSet<HalfEdge> visitedEdges)
+    {
+        LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
+        frontier.AddLast(startingEdge);
+
+        LinkedListNode<HalfEdge> curNode;
+        int t = 0;
+        while (frontier.Count > 0 && t < 100)
+        {
+            t += 1;
+            curNode = frontier.First;
+            HalfEdge e = curNode.Value;
+            frontier.RemoveFirst();
+            if (!visitedEdges.Contains(e))
+            {
+                e.incidentTriangle.isIntersectingHole = true;
+                if(e.prev.twin != null)
+                {
+                    frontier.AddLast(e.prev.twin);
+                    visitedEdges.Add(e.prev);
+                }
+                if(e.next.twin != null)
+                {
+                    frontier.AddLast(e.next.twin);
+                    visitedEdges.Add(e.next);
+                }
+                visitedEdges.Add(e);
+            }
+        }
     }
 
     private HalfEdge PolygonTriangulation(ref int ep, List<HalfEdge> edgePortals)
@@ -594,6 +627,7 @@ public class DelaunayMesh
 
             if (VecMath.Det(funnelR, funnelL) <= 0)
             {
+                //Bug is here. Do not make a ref to epLast. Find a way to return the new ep
                 HalfEdge e = PolygonTriangulation(ref epLast, edgePortals);
 
                 HalfEdge e01 = new HalfEdge(vB);
