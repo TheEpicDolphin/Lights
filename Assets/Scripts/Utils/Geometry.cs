@@ -129,6 +129,7 @@ namespace GeometryUtils
             }
             return true;
         }
+ 
 
         /*  trans must be in the format: (similar to transform.localToWorldMatrix)
          *  [ right.x    up.x    forward.x   pos.x ]

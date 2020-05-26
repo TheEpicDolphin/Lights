@@ -227,58 +227,38 @@ public class HalfEdge
 public class ConstrainedVertex : Vertex
 {
     //Sorted counter-clockwise
-    private LinkedList<HalfEdge> outgoingEdges;
+    private List<HalfEdge> outgoingEdges;
     public ConstrainedVertex(Vector2 p, int i) : base(p, i)
     {
-        outgoingEdges = new LinkedList<HalfEdge>();
+        outgoingEdges = new List<HalfEdge>();
     }
 
     public override HalfEdge GetOutgoingEdgeClockwiseFrom(Vector2 dir)
     {
-        LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
-        while (curEdgeNode.Next != null)
+        float minCCAngle = Mathf.Infinity;
+        HalfEdge bestEdge = null;
+        foreach(HalfEdge outgoingEdge in outgoingEdges)
         {
-            HalfEdge outgoingEdge = curEdgeNode.Value;
-            HalfEdge nextOutgoingEdge = curEdgeNode.Next.Value;
-            Vector2 dirCur = outgoingEdge.next.origin.p - outgoingEdge.origin.p;
-            Vector2 dirNext = nextOutgoingEdge.next.origin.p - nextOutgoingEdge.origin.p;
-            if ((VecMath.Det(dirCur, dir) > 0) && (VecMath.Det(dir, dirNext) > 0))
+            Vector2 eDir = outgoingEdge.next.origin.p - outgoingEdge.origin.p;
+            float theta = VecMath.CounterClockwiseAngle(eDir, dir);
+            if (theta < minCCAngle)
             {
-                return curEdgeNode.Value;
+                minCCAngle = theta;
+                bestEdge = outgoingEdge;
             }
-            curEdgeNode = curEdgeNode.Next;
         }
-        return outgoingEdges.Last.Value;
+
+        return bestEdge;
     }
 
     public override void AddOutgoingEdge(HalfEdge e)
     {
-        if(outgoingEdges.Count == 0)
-        {
-            outgoingEdges.AddLast(e);
-            return;
-        }
-        Vector2 newDir = e.next.origin.p - e.origin.p;
-        LinkedListNode<HalfEdge> curEdgeNode = outgoingEdges.First;
-        while (curEdgeNode.Next != null)
-        {
-            HalfEdge outgoingEdge = curEdgeNode.Value;
-            HalfEdge nextOutgoingEdge = curEdgeNode.Next.Value;
-            Vector2 dirCur = outgoingEdge.next.origin.p - outgoingEdge.origin.p;
-            Vector2 dirNext = nextOutgoingEdge.next.origin.p - nextOutgoingEdge.origin.p;
-            if ((VecMath.Det(dirCur, newDir) > 0) && (VecMath.Det(newDir, dirNext) > 0))
-            {
-                outgoingEdges.AddAfter(curEdgeNode, e);
-                return;
-            }
-            curEdgeNode = curEdgeNode.Next;
-        }
-        outgoingEdges.AddLast(e);
+        outgoingEdges.Add(e);
     }
 
-    public override void RemoveOutgoingEdge(HalfEdge e)
+    public override bool RemoveOutgoingEdge(HalfEdge e)
     {
-        outgoingEdges.Remove(e);
+        return outgoingEdges.Remove(e);
     }
 
     public override void Print()
@@ -289,13 +269,13 @@ public class ConstrainedVertex : Vertex
 
     public override void DrawOutgoingEdges()
     {
-        foreach(HalfEdge e in outgoingEdges)
+
+        foreach (HalfEdge e in outgoingEdges)
         {
             Debug.DrawLine(e.origin.p, e.next.origin.p, Color.red, 5.0f, false);
         }
     }
 }
-
 
 public class Vertex
 {
@@ -318,9 +298,9 @@ public class Vertex
 
     }
 
-    public virtual void RemoveOutgoingEdge(HalfEdge e)
+    public virtual bool RemoveOutgoingEdge(HalfEdge e)
     {
-
+        return true;
     }
 
     public virtual void Print()
@@ -479,6 +459,24 @@ public class DelaunayMesh
             }
         }
 
+        //Generate Triangle list
+        List<Triangle> leafs = new List<Triangle>();
+        HashSet<Triangle> visited = new HashSet<Triangle>();
+
+        int count = 0;
+        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
+        Debug.Log(count);
+
+        foreach (Triangle leaf in leafs)
+        {
+            Vector3 p0 = leaf.edge.origin.p;
+            Vector3 p1 = leaf.edge.next.origin.p;
+            Vector3 p2 = leaf.edge.next.next.origin.p;
+            Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
+            Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
+            Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
+        }
+
         //Insert constrained edges
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
@@ -530,11 +528,11 @@ public class DelaunayMesh
                 }
 
                 int sL = 0;
-                HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
-                holeBounds.Add(eConstrainedL);
+                //HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
+                //holeBounds.Add(eConstrainedL);
                 int sR = 0;
-                eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
-                HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
+                //eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                //HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
 
 
                 foreach (HalfEdge e in edgePortals)
@@ -543,6 +541,10 @@ public class DelaunayMesh
                     Vector2 ep2 = e.next.origin.p;
                     Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
                 }
+
+                v1.DrawOutgoingEdges();
+                //Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
+
             }
 
             if(isHole && eConstrainedR != null)
@@ -553,25 +555,9 @@ public class DelaunayMesh
 
         }
 
-        
 
-        //Generate Triangle list
-        List<Triangle> leafs = new List<Triangle>();
-        HashSet<Triangle> visited = new HashSet<Triangle>();
 
-        int count = 0;
-        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
-        Debug.Log(count);
-        
-        foreach(Triangle leaf in leafs)
-        {
-            Vector3 p0 = leaf.edge.origin.p;
-            Vector3 p1 = leaf.edge.next.origin.p;
-            Vector3 p2 = leaf.edge.next.next.origin.p;
-            Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
-        }
+
 
         return leafs.ToArray();
     }
@@ -628,6 +614,7 @@ public class DelaunayMesh
 
             Triangle tri;
 
+            //This can potentially allow 180 degree triangles :'( Must fix
             if (VecMath.Det(funnelR, funnelL) <= 0)
             {
                 //Bug is here. Do not make a ref to epLast. Find a way to return the new ep
