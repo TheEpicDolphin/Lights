@@ -194,17 +194,8 @@ public class NavigationMesh : MonoBehaviour
         navMeshGraph = NavMeshToGraph();
 
         /*
-        Vector2[] verts = new Vector2[]
-        {
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(1, 1),
-            new Vector2(0, 1)
-        };
-        */
-
-        int C = 5;
-        int R = 5;
+        int C = 4;
+        int R = 4;
         Vector2[] verts = new Vector2[R * C];
         for(int i = 0; i < R; i++)
         {
@@ -213,27 +204,48 @@ public class NavigationMesh : MonoBehaviour
                 verts[C * i + j] = new Vector2(i, j);
             }
         }
-
-        //DelaunayMesh dm = new DelaunayMesh(verts);
-
-        /*
-        DelaunayMesh dm = new DelaunayMesh(verts, 
-            new List<Vector2[]> {
-                new Vector2[] {
-                    new Vector2(0.5f, 0.5f),
-                    new Vector2(1.5f, 3.0f)
-                }
-            });
         */
 
+        //DelaunayMesh dm = new DelaunayMesh(verts);
+        /*
         DelaunayMesh dm = new DelaunayMesh(verts,
             new List<Vector2[]> {
                 new Vector2[] {
                     //new Vector2(0.5f, 0.5f),
-                    new Vector2(1.5f, 3.0f),
-                    new Vector2(3.2f, 0.8f)
+                    new Vector2(1.5f, 2.0f),
+                    new Vector2(2.2f, 0.8f)
                 }
             });
+        */
+
+        Vector2[] verts = new Vector2[]
+        {
+            new Vector2(0, 3),
+            new Vector2(0, 0),
+            new Vector2(3, 0),
+            new Vector2(3, 2),
+            new Vector2(3, 3),
+            new Vector2(1, 2),
+            new Vector2(2.2f, 0.8f),
+            //new Vector2(2.201f, 0.8f),
+
+            new Vector2(2, 2),
+            new Vector2(2, 3),
+            new Vector2(1, 0),
+            ////new Vector2(1.5f, 2.0f),
+            new Vector2(1, 1),
+            new Vector2(2, 1),
+            new Vector2(0, 1),
+
+            new Vector2(0, 2),
+            new Vector2(1, 3),
+
+            new Vector2(2, 0),
+
+            //Fucks up at this point
+            new Vector2(3, 1)
+        };
+        DelaunayMesh dm = new DelaunayMesh(verts);
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()

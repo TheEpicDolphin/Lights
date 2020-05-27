@@ -37,9 +37,14 @@ public class Triangle
         this.isIntersectingHole = false;
     }
 
-    //Possibly return an edge rather than a triangle if point lies between to triangles
-    public Triangle FindContainingTriangle(Vector2 p)
+    //Possibly return an edge rather than a triangle if point lies between two triangles
+    public Triangle FindContainingTriangle(Vector2 p, bool debug = false)
     {
+        if (debug)
+        {
+            Debug.Log(ghostBounds[0].p + ", " + ghostBounds[1].p + ", " + ghostBounds[2].p);
+        }
+
         if (children.Count == 0)
         {
             //Possibly check if point lies on edge
@@ -58,7 +63,7 @@ public class Triangle
 
                 if (uvw[0] >= 0 && uvw[1] >= 0 && uvw[2] >= 0)
                 {
-                    return child.FindContainingTriangle(p);
+                    return child.FindContainingTriangle(p, debug);
                 }
                 else
                 {
@@ -70,7 +75,7 @@ public class Triangle
                     }
                 }
             }
-            return closestChild.FindContainingTriangle(p);
+            return closestChild.FindContainingTriangle(p, debug);
             
         }
 
@@ -105,7 +110,7 @@ public class Triangle
         count += 1;
         if (this.children.Count == 0)
         {
-            Debug.Log("Depth: " + depth.ToString());
+            //Debug.Log("Depth: " + depth.ToString());
             if (!this.IsImaginary() && !this.isIntersectingHole)
             {
                 leafs.Add(this);
@@ -146,9 +151,9 @@ public class Triangle
         HalfEdge.SetTwins(e13, e31);
         HalfEdge.SetTwins(e23, e32);
 
-        e30.origin.AddOutgoingEdge(e30);
-        e31.origin.AddOutgoingEdge(e31);
-        e32.origin.AddOutgoingEdge(e32);
+        v.AddOutgoingEdge(e30);
+        v.AddOutgoingEdge(e31);
+        v.AddOutgoingEdge(e32);
 
         e03.origin.AddOutgoingEdge(e03);
         e13.origin.AddOutgoingEdge(e13);
@@ -183,6 +188,68 @@ public class HalfEdge
     {
         e0.twin = e1;
         e1.twin = e0;
+    }
+
+    public HalfEdge[] InsertVertex(Vertex v)
+    {
+        //012 forms left triangle. 103 forms right triangle. 4 is inserted vertex on edge 01, v.
+
+        HalfEdge e01 = this;
+        HalfEdge e12 = e01.next;
+        HalfEdge e20 = e12.next;
+        e01.incidentTriangle.edge = null;
+
+        //Split into 4 triangles
+        HalfEdge e04 = new HalfEdge(e01.origin);
+        HalfEdge e42 = new HalfEdge(v);
+        Triangle tri0 = new Triangle(e04, e42, e20);
+
+        HalfEdge e41 = new HalfEdge(v);
+        HalfEdge e24 = new HalfEdge(e20.origin);
+        Triangle tri1 = new Triangle(e41, e12, e24);
+
+        HalfEdge.SetTwins(e24, e42);
+
+        e04.origin.RemoveOutgoingEdge(e01);
+        e04.origin.AddOutgoingEdge(e04);
+        v.AddOutgoingEdge(e41);
+        v.AddOutgoingEdge(e42);
+        e20.origin.AddOutgoingEdge(e24);
+        
+
+        e01.incidentTriangle.children = new List<Triangle> { tri0, tri1 };
+        HalfEdge e10 = this.twin;
+        if (e10 != null)
+        {
+            e10.incidentTriangle.edge = null;
+
+            HalfEdge e03 = e10.next;
+            HalfEdge e31 = e03.next;
+
+            HalfEdge e14 = new HalfEdge(e10.origin);
+            HalfEdge e43 = new HalfEdge(v);
+            Triangle tri2 = new Triangle(e14, e43, e31);
+
+            HalfEdge e40 = new HalfEdge(v);
+            HalfEdge e34 = new HalfEdge(e31.origin);
+            Triangle tri3 = new Triangle(e40, e03, e34);
+
+            HalfEdge.SetTwins(e04, e40);
+            HalfEdge.SetTwins(e14, e41);
+            HalfEdge.SetTwins(e34, e43);
+
+            e14.origin.RemoveOutgoingEdge(e10);
+            e14.origin.AddOutgoingEdge(e14);
+            v.AddOutgoingEdge(e40);
+            v.AddOutgoingEdge(e43);
+            e31.origin.AddOutgoingEdge(e34);
+
+            e10.incidentTriangle.children = new List<Triangle> { tri2, tri3 };
+            return new HalfEdge[] { e20, e12, e31, e03 };
+        }
+
+        return new HalfEdge[] { e20, e12 };
+
     }
 
     /*
@@ -365,7 +432,10 @@ public class DelaunayMesh
     private Triangle[] Triangulate(List<Vertex> verts)
     {
         //Randomize vertices for faster average triangulation
-        Algorithm.Shuffle<Vertex>(ref verts);
+        //Algorithm.Shuffle<Vertex>(ref verts);
+        //Vector3 uvw = Geometry.ToBarycentricCoordinates(new Vector2(1, 2), new Vector2(3, 0), new Vector2(2.2f, 0.8f), 
+                                                        //new Vector2(3, 3));
+        //Debug.Log(uvw);
 
         //Construct circle enclosing all the vertices
         Vector2 centroid = Vector2.zero;
@@ -404,7 +474,15 @@ public class DelaunayMesh
         for (int i = 0; i < verts.Count; i++)
         {
             Vertex v = verts[i];
+            Debug.Log(v.p);
+
+            //HANDLE DEGENERATE CASES FOR THE LOVE OF GOD!!!
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
+            if(i == verts.Count - 1)
+            {
+                treeRoot.FindContainingTriangle(v.p, true);
+            }
+
             HalfEdge[] edges = containingTri.InsertVertex(v);
 
             //Flip triangles that don't satisfy delaunay property
@@ -416,7 +494,7 @@ public class DelaunayMesh
 
             LinkedListNode<HalfEdge> curNode;
             int t = 0;
-            while (frontier.Count > 0 && t < 100)
+            while (frontier.Count > 0 && t < 100 && i != verts.Count - 1)
             {
                 t += 1;
                 curNode = frontier.First;
@@ -477,6 +555,7 @@ public class DelaunayMesh
             Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
         }
 
+        /*
         //Insert constrained edges
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
@@ -542,8 +621,8 @@ public class DelaunayMesh
                     Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
                 }
 
-                v1.DrawOutgoingEdges();
-                //Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
+                //v1.DrawOutgoingEdges();
+                Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
 
             }
 
@@ -554,10 +633,7 @@ public class DelaunayMesh
             }
 
         }
-
-
-
-
+        */
 
         return leafs.ToArray();
     }
