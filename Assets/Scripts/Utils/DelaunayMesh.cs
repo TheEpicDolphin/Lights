@@ -37,7 +37,6 @@ public class Triangle
         this.isIntersectingHole = false;
     }
 
-    //Possibly return an edge rather than a triangle if point lies between two triangles
     public Triangle FindContainingTriangle(Vector2 p, bool debug = false)
     {
         if (debug)
@@ -47,7 +46,6 @@ public class Triangle
 
         if (children.Count == 0)
         {
-            //Possibly check if point lies on edge
             return this;
         }
         else
@@ -476,14 +474,41 @@ public class DelaunayMesh
             Vertex v = verts[i];
             Debug.Log(v.p);
 
-            //HANDLE DEGENERATE CASES FOR THE LOVE OF GOD!!!
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
+
+            //>>>>>>>>>>>>>>INSERTED RECENTLY
+            //Check for potential degenerate case when point lies on edge of triangle
+            e01 = containingTri.edge;
+            e12 = e01.next;
+            e20 = e12.next;
+            Vector3 uvw = Geometry.ToBarycentricCoordinates(e01.origin.p, e12.origin.p, e20.origin.p, v.p);
+            HalfEdge[] edges;
+            if (uvw[0] < VecMath.epsilon)
+            {
+                edges = e12.InsertVertex(v);
+            }
+            else if (uvw[1] < VecMath.epsilon)
+            {
+                edges = e20.InsertVertex(v);
+            }
+            else if (uvw[2] < VecMath.epsilon)
+            {
+                edges = e01.InsertVertex(v);
+            }
+            else
+            {
+                edges = containingTri.InsertVertex(v);
+            }
+
+            
             if(i == verts.Count - 1)
             {
                 treeRoot.FindContainingTriangle(v.p, true);
             }
+            
+            //>>>>>>>>>>>>>>INSERTED RECENTLY
 
-            HalfEdge[] edges = containingTri.InsertVertex(v);
+            //HalfEdge[] edges = containingTri.InsertVertex(v);
 
             //Flip triangles that don't satisfy delaunay property
             HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();

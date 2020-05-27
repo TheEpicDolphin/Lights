@@ -10,7 +10,7 @@ namespace VecUtils
      */
     public struct VecMath
     {
-
+        public static readonly float epsilon = 1e-9f;
         /**
          * <summary>Computes the determinant of a two-dimensional square matrix
          * with rows consisting of the specified two-dimensional vectors.
