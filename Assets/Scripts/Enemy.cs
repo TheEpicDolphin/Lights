@@ -25,7 +25,7 @@ public class Enemy : MonoBehaviour, INavAgent
     public void Navigate(Vector2 destination)
     {
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination);
-
+        /*
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
         Vector2 dir = (nextPoint - curPos).normalized;
@@ -50,7 +50,7 @@ public class Enemy : MonoBehaviour, INavAgent
         //Prevent unrealistic forces by clamping to range
         f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
         rb.AddForce(f, ForceMode2D.Force);
-
+        */
     }
 
     public void AddKnockback(float strength, Vector2 dir)
