@@ -472,11 +472,10 @@ public class DelaunayMesh
         for (int i = 0; i < verts.Count; i++)
         {
             Vertex v = verts[i];
-            Debug.Log(v.p);
+            //Debug.Log(v.p);
 
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
 
-            //>>>>>>>>>>>>>>INSERTED RECENTLY
             //Check for potential degenerate case when point lies on edge of triangle
             HalfEdge e01 = containingTri.edge;
             HalfEdge e12 = e01.next;
@@ -500,16 +499,6 @@ public class DelaunayMesh
                 edges = containingTri.InsertVertex(v);
             }
 
-            
-            if(i == verts.Count - 1)
-            {
-                treeRoot.FindContainingTriangle(v.p, true);
-            }
-            
-            //>>>>>>>>>>>>>>INSERTED RECENTLY
-
-            //HalfEdge[] edges = containingTri.InsertVertex(v);
-
             //Flip triangles that don't satisfy delaunay property
             HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();
             LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
@@ -520,7 +509,7 @@ public class DelaunayMesh
 
             LinkedListNode<HalfEdge> curNode;
             int t = 0;
-            while (frontier.Count > 0 && t < 100)// && i != verts.Count - 1)
+            while (frontier.Count > 0 && t < 100)
             {
                 t += 1;
                 curNode = frontier.First;
@@ -562,26 +551,7 @@ public class DelaunayMesh
                 }
             }
         }
-
-        //Generate Triangle list
-        List<Triangle> leafs = new List<Triangle>();
-        HashSet<Triangle> visited = new HashSet<Triangle>();
-
-        int count = 0;
-        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
-        Debug.Log(count);
-
-        foreach (Triangle leaf in leafs)
-        {
-            Vector3 p0 = leaf.edge.origin.p;
-            Vector3 p1 = leaf.edge.next.origin.p;
-            Vector3 p2 = leaf.edge.next.next.origin.p;
-            Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
-        }
-
-        /*
+        
         //Insert constrained edges
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
@@ -633,11 +603,11 @@ public class DelaunayMesh
                 }
 
                 int sL = 0;
-                //HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
-                //holeBounds.Add(eConstrainedL);
+                HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
+                holeBounds.Add(eConstrainedL);
                 int sR = 0;
-                //eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
-                //HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
+                eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
 
 
                 foreach (HalfEdge e in edgePortals)
@@ -648,7 +618,7 @@ public class DelaunayMesh
                 }
 
                 //v1.DrawOutgoingEdges();
-                Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
+                //Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
 
             }
 
@@ -657,9 +627,25 @@ public class DelaunayMesh
                 //We have a hole. Hide all triangles that are in hole
                 CreateHole(eConstrainedR, holeBounds);
             }
-
         }
-        */
+
+        //Generate Triangle list
+        List<Triangle> leafs = new List<Triangle>();
+        HashSet<Triangle> visited = new HashSet<Triangle>();
+
+        int count = 0;
+        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
+        Debug.Log(count);
+
+        foreach (Triangle leaf in leafs)
+        {
+            Vector3 p0 = leaf.edge.origin.p;
+            Vector3 p1 = leaf.edge.next.origin.p;
+            Vector3 p2 = leaf.edge.next.next.origin.p;
+            Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
+            Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
+            Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
+        }
 
         return leafs.ToArray();
     }
