@@ -105,7 +105,8 @@ namespace GeometryUtils
             float u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
             float v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
             float w = 1 - u - v;
-            return new Vector3(u, v, w);
+            //return new Vector3(u, v, w);
+            return new Vector3(w, v, u);
         }
 
         //Vertices a, b, and c are ordered counterclockwise

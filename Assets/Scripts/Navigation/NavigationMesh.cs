@@ -243,7 +243,7 @@ public class NavigationMesh : MonoBehaviour
             new Vector2(2, 0),
 
             //Fucks up at this point
-            new Vector2(3, 1)
+            //new Vector2(3, 1)
         };
         DelaunayMesh dm = new DelaunayMesh(verts);
     }

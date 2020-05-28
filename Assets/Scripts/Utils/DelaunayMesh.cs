@@ -463,10 +463,10 @@ public class DelaunayMesh
         Vertex vi2 = new Vertex(pi2, -1);
 
         //Imaginary triangle
-        HalfEdge e01 = new HalfEdge(vi0);
-        HalfEdge e12 = new HalfEdge(vi1);
-        HalfEdge e20 = new HalfEdge(vi2);
-        Triangle treeRoot = new Triangle(e01, e12, e20);
+        HalfEdge e01Imag = new HalfEdge(vi0);
+        HalfEdge e12Imag = new HalfEdge(vi1);
+        HalfEdge e20Imag = new HalfEdge(vi2);
+        Triangle treeRoot = new Triangle(e01Imag, e12Imag, e20Imag);
 
         //Perform Delaunay Triangulation
         for (int i = 0; i < verts.Count; i++)
@@ -478,21 +478,24 @@ public class DelaunayMesh
 
             //>>>>>>>>>>>>>>INSERTED RECENTLY
             //Check for potential degenerate case when point lies on edge of triangle
-            e01 = containingTri.edge;
-            e12 = e01.next;
-            e20 = e12.next;
+            HalfEdge e01 = containingTri.edge;
+            HalfEdge e12 = e01.next;
+            HalfEdge e20 = e12.next;
             Vector3 uvw = Geometry.ToBarycentricCoordinates(e01.origin.p, e12.origin.p, e20.origin.p, v.p);
             HalfEdge[] edges;
             if (uvw[0] < VecMath.epsilon)
             {
+                Debug.Log("HI0");
                 edges = e12.InsertVertex(v);
             }
             else if (uvw[1] < VecMath.epsilon)
             {
+                Debug.Log("HI1");
                 edges = e20.InsertVertex(v);
             }
             else if (uvw[2] < VecMath.epsilon)
             {
+                Debug.Log("HI2");
                 edges = e01.InsertVertex(v);
             }
             else
@@ -513,13 +516,14 @@ public class DelaunayMesh
             //Flip triangles that don't satisfy delaunay property
             HashSet<HalfEdge> sptSet = new HashSet<HalfEdge>();
             LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
-            frontier.AddLast(edges[0]);
-            frontier.AddLast(edges[1]);
-            frontier.AddLast(edges[2]);
+            foreach(HalfEdge edge in edges)
+            {
+                frontier.AddLast(edge);
+            }
 
             LinkedListNode<HalfEdge> curNode;
             int t = 0;
-            while (frontier.Count > 0 && t < 100 && i != verts.Count - 1)
+            while (frontier.Count > 0 && t < 100)// && i != verts.Count - 1)
             {
                 t += 1;
                 curNode = frontier.First;
