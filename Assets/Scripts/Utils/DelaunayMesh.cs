@@ -430,7 +430,7 @@ public class DelaunayMesh
     private Triangle[] Triangulate(List<Vertex> verts)
     {
         //Randomize vertices for faster average triangulation
-        //Algorithm.Shuffle<Vertex>(ref verts);
+        Algorithm.Shuffle<Vertex>(ref verts);
 
         //Construct circle enclosing all the vertices
         Vector2 centroid = Vector2.zero;
@@ -469,7 +469,6 @@ public class DelaunayMesh
         for (int i = 0; i < verts.Count; i++)
         {
             Vertex v = verts[i];
-            //Debug.Log(v.p);
 
             Triangle containingTri = treeRoot.FindContainingTriangle(v.p);
 
