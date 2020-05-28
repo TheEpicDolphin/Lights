@@ -6,7 +6,7 @@ using AlgorithmUtils;
 using VecUtils;
 
 //Traverse edges counterclockwise
-public class Triangle
+public class Triangle : INode
 {
     public HalfEdge edge;
     public List<Triangle> children;
@@ -162,10 +162,25 @@ public class Triangle
         return new HalfEdge[] { e01, e12, e20 };
     }
 
+    public List<INodeEdge> GetNeighborEdges()
+    {
+        List<INodeEdge> outgoingEdges = new List<INodeEdge>();
+        HalfEdge e = this.edge;
+        for(int i = 0; i < 3; i++)
+        {
+            if(e.twin != null)
+            {
+                outgoingEdges.Add(e.twin);
+            }
+            e = e.next;
+        }
+        return outgoingEdges;
+    }
+
 }
 
 //Face is on the left side of the Half-Edge
-public class HalfEdge
+public class HalfEdge : INodeEdge
 {
     public Vertex origin;
     public HalfEdge twin;
@@ -248,6 +263,16 @@ public class HalfEdge
 
         return new HalfEdge[] { e20, e12 };
 
+    }
+
+    public INode GetNode()
+    {
+        return this.incidentTriangle;
+    }
+
+    public int GetWeight()
+    {
+        return 1;
     }
 
     /*
@@ -739,7 +764,7 @@ public class DelaunayMesh
         return eLast;
     }
 
-    public Triangle ContainingNavMeshTriangle(Vector2 p)
+    public Triangle FindContainingTriangle(Vector2 p)
     {
         return treeRoot.FindContainingTriangle(p);
     }

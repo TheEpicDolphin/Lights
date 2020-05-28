@@ -6,20 +6,84 @@ using GeometryUtils;
 using VecUtils;
 
 
-public class BoundaryEdge
+public interface INode
 {
-    public Vector2 v1;
-    public Vector2 v2;
-    public Vector2 n;
-
-    public BoundaryEdge(Vector2 v1, Vector2 v2, Vector2 n)
-    {
-        this.v1 = v1;
-        this.v2 = v2;
-        this.n = n;
-    }
+    List<INodeEdge> GetNeighborEdges();
 }
 
+public interface INodeEdge
+{
+    INode GetNode();
+    int GetWeight();
+}
+
+public class Graph<T> where T : class, INode
+{
+    public T[] nodes;
+
+    public Graph(T[] nodes)
+    {
+        this.nodes = nodes;
+    }
+
+    public List<T> DijkstrasAlgorithm(T start, T end)
+    {
+        HashSet<T> sptSet = new HashSet<T>();
+        Dictionary<T, T> backPointers = new Dictionary<T, T>();
+
+        MinHeap<int, T> frontier = new MinHeap<int, T>();
+        foreach (T node in nodes)
+        {
+            if (node == start)
+            {
+                frontier.Insert(0, node);
+            }
+            else
+            {
+                frontier.Insert(int.MaxValue, node);
+            }
+        }
+        backPointers[start] = null;
+
+        HeapElement<int, T> curNode = frontier.ExtractMin();
+        while (curNode != null)
+        {
+            if (!sptSet.Contains(curNode.value))
+            {
+                List<INodeEdge> outgoingEdges = curNode.value.GetNeighborEdges();
+                foreach(INodeEdge edge in outgoingEdges)
+                {
+                    T neighbor = (T) edge.GetNode();
+                    int edgeWeight = edge.GetWeight();
+                    if (!sptSet.Contains(neighbor))
+                    {
+                        frontier.Update(edgeWeight + curNode.key, neighbor);
+                        backPointers[neighbor] = curNode.value;
+                    }
+                }
+                sptSet.Add(curNode.value);
+            }
+            curNode = frontier.ExtractMin();
+        }
+
+        return TraceBackPointers(backPointers, end);
+    }
+
+    public List<T> TraceBackPointers(Dictionary<T, T> backPointers, T end)
+    {
+        List<T> path = new List<T>();
+        T curNode = end;
+        while (curNode != null)
+        {
+            path.Add(curNode);
+            curNode = backPointers[curNode];
+        }
+        return path;
+    }
+
+}
+
+/*
 public interface INode
 {
     void AddNeighbor(int neighbor, int weight);
@@ -175,37 +239,29 @@ public class Graph<T> where T : INode
     }
 
 }
+*/
 
 //Assumes navmesh is perpendicular to z axis
 public class NavigationMesh : MonoBehaviour
 {
-    Graph<NavMeshTriangle> navMeshGraph;
-    Mesh mesh;
+    Graph<Triangle> navMeshGraph;
     //TODO: use this instead
-    //DelaunayMesh mesh;
-
-    //Maps 2 triangle indices to the edge separating them. The edge is represented by
-    //2 vertex indices
-    Dictionary<Vector2Int, Vector2Int> triPairToEdgeMap;
+    DelaunayMesh mesh;
 
     private void Awake()
     {
-        mesh = GetComponent<MeshFilter>().mesh;
-        navMeshGraph = NavMeshToGraph();
-
-        
         int C = 4;
         int R = 4;
         Vector2[] verts = new Vector2[R * C];
-        for(int i = 0; i < R; i++)
+        for(int i = -10; i < R; i++)
         {
-            for(int j = 0; j < C; j++)
+            for(int j = -10; j < C; j++)
             {
                 verts[C * i + j] = new Vector2(i, j);
             }
         }
         
-        DelaunayMesh dm = new DelaunayMesh(verts,
+        mesh = new DelaunayMesh(verts,
             new List<Vector2[]> {
                 new Vector2[] {
                     new Vector2(0.5f, 0.5f),
@@ -213,7 +269,6 @@ public class NavigationMesh : MonoBehaviour
                     new Vector2(2.2f, 0.8f)
                 }
             });
-        
 
         /*
         Vector2[] verts = new Vector2[]
@@ -242,160 +297,10 @@ public class NavigationMesh : MonoBehaviour
             //Fucks up at this point
             new Vector2(3, 1)
         };
-        DelaunayMesh dm = new DelaunayMesh(verts);
+        mesh = new DelaunayMesh(verts);
         */
-    }
 
-    Graph<NavMeshTriangle> NavMeshToGraph()
-    {
-        NavMeshTriangle[] navMeshTris = new NavMeshTriangle[mesh.triangles.Length / 3];
-        for (int i = 0; i < navMeshTris.Length; i++)
-        {
-            navMeshTris[i] = new NavMeshTriangle();
-        }
-        triPairToEdgeMap = new Dictionary<Vector2Int, Vector2Int>();
-        Dictionary<Vector2Int, int> edgeMap = new Dictionary<Vector2Int, int>();
-        for (int i = 0; i < mesh.triangles.Length; i += 3)
-        {
-            int vi1 = mesh.triangles[i];
-            int vi2 = mesh.triangles[i + 1];
-            int vi3 = mesh.triangles[i + 2];
-
-            Vector2Int e1 = vi1 < vi2 ? new Vector2Int(vi1, vi2) : new Vector2Int(vi2, vi1);
-            Vector2Int e2 = vi2 < vi3 ? new Vector2Int(vi2, vi3) : new Vector2Int(vi3, vi2);
-            Vector2Int e3 = vi3 < vi1 ? new Vector2Int(vi3, vi1) : new Vector2Int(vi1, vi3);
-
-            int tri = i / 3;
-            navMeshTris[tri].idx = tri;
-            navMeshTris[tri].centroid = (mesh.vertices[vi1] + mesh.vertices[vi2] + mesh.vertices[vi3]) / 3;
-            navMeshTris[tri].verts = new Vector3[] { mesh.vertices[vi1], mesh.vertices[vi2], mesh.vertices[vi3] };
-            Vector2 p0 = mesh.vertices[vi1];
-            Vector2 p1 = mesh.vertices[vi2];
-            Vector2 p2 = mesh.vertices[vi3];
-
-            if (edgeMap.ContainsKey(e1))
-            {
-                navMeshTris[tri].AddNeighbor(edgeMap[e1], 1);
-                navMeshTris[edgeMap[e1]].AddNeighbor(tri, 1);
-
-                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e1])] = e1;
-                triPairToEdgeMap[new Vector2Int(edgeMap[e1], tri)] = e1;
-                edgeMap.Remove(e1);
-            }
-            else
-            {
-                edgeMap[e1] = tri;
-            }
-
-            if (edgeMap.ContainsKey(e2))
-            {
-                navMeshTris[tri].AddNeighbor(edgeMap[e2], 1);
-                navMeshTris[edgeMap[e2]].AddNeighbor(tri, 1);
-
-                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e2])] = e2;
-                triPairToEdgeMap[new Vector2Int(edgeMap[e2], tri)] = e2;
-
-                edgeMap.Remove(e2);
-            }
-            else
-            {
-                edgeMap[e2] = tri;
-            }
-
-            if (edgeMap.ContainsKey(e3))
-            {
-                navMeshTris[tri].AddNeighbor(edgeMap[e3], 1);
-                navMeshTris[edgeMap[e3]].AddNeighbor(tri, 1);
-
-                triPairToEdgeMap[new Vector2Int(tri, edgeMap[e3])] = e3;
-                triPairToEdgeMap[new Vector2Int(edgeMap[e3], tri)] = e3;
-
-                edgeMap.Remove(e3);
-            }
-            else
-            {
-                edgeMap[e3] = tri;
-            }
-        }
-
-        //The keys that are left in edgeMap correspond to edges that are only part of one triangle. In other words, these edges make up
-        //any boundaries of the navigation mesh
-        foreach (var e in edgeMap.Keys)
-        {
-            int tri = edgeMap[e];
-            int vi1 = mesh.triangles[3 * tri];
-            int vi2 = mesh.triangles[3 * tri + 1];
-            int vi3 = mesh.triangles[3 * tri + 2];
-            int vi;
-            if (vi1 != e[0] && vi1 != e[1])
-            {
-                vi = vi1;
-            }
-            else if (vi2 != e[0] && vi2 != e[1])
-            {
-                vi = vi2;
-            }
-            else
-            {
-                vi = vi3;
-            }
-
-            //boundaryVerts.Add(e[0]);
-            //boundaryVerts.Add(e[1]);
-
-            Vector2 ev0 = mesh.vertices[e[0]];
-            Vector2 ev1 = mesh.vertices[e[1]];
-            Vector2 v = mesh.vertices[vi];
-            Vector2 dir = (ev1 - ev0).normalized;
-            Vector2 n = Vector2.Perpendicular(dir);
-            if (Vector2.Dot(v - ev0, n) > 0)
-            {
-                navMeshTris[tri].boundaryEdges.Add(new BoundaryEdge(ev0, ev1, n));
-            }
-            else
-            {
-                navMeshTris[tri].boundaryEdges.Add(new BoundaryEdge(ev1, ev0, -n));
-            }
-
-        }
-
-        return new Graph<NavMeshTriangle>(navMeshTris);
-    }
-
-    /*
-     * if(c_origin - source).magnitude > c_radius, it returns the two points that form tangent lines from source to the circle of radius c_radius centered at c_origin. 
-     * else if (c_origin - source).magnitude == c_radius, it returns the single point of tangency, twice.
-     * else if (c_origin - source).magnitude < c_radius, it returns the intersections of the chord perpendicular to (c_origin - source) and passing through source.
-     * 
-     * */
-    Vector2[] CircleTangentPoints(Vector2 c_origin, float c_radius, Vector2 source)
-    {
-        Vector2 dp = c_origin - source;
-        if (dp.magnitude > c_radius)
-        {
-            float phi = Mathf.Abs(Mathf.Asin(c_radius / dp.magnitude)) * Mathf.Rad2Deg;
-            Vector2 b1 = (Quaternion.AngleAxis(phi, Vector3.forward) * dp).normalized;
-            Vector2 b2 = (Quaternion.AngleAxis(-phi, Vector3.forward) * dp).normalized;
-            Vector2 p1 = Vector2.Dot(dp, b1) * b1;
-            Vector2 p2 = Vector2.Dot(dp, b2) * b2;
-            return new Vector2[] { p1 + source, p2 + source };
-        }
-        else if (dp.magnitude == c_radius)
-        {
-            return new Vector2[] { source, source };
-        }
-        else
-        {
-            dp = source - c_origin;
-            float phi = Mathf.Abs(Mathf.Acos(dp.magnitude / c_radius)) * Mathf.Rad2Deg;
-            Vector2 b1 = (Quaternion.AngleAxis(phi, Vector3.forward) * dp).normalized;
-            Vector2 b2 = (Quaternion.AngleAxis(-phi, Vector3.forward) * dp).normalized;
-            Vector2 p1 = Vector2.Dot(dp, b1) * b1;
-            Vector2 p2 = Vector2.Dot(dp, b2) * b2;
-            // returns chord
-            return new Vector2[] { p1 + c_origin, p2 + c_origin };
-        }
-
+        navMeshGraph = new Graph<Triangle>(mesh.tris);
     }
 
     List<Vector2> StringPullingAlgorithm(List<int> triPath, Vector2 startPos, Vector2 targetPos)
@@ -533,11 +438,10 @@ public class NavigationMesh : MonoBehaviour
     {
         Vector2 startPosLocal = transform.InverseTransformPoint(start);
         Vector2 endPosLocal = transform.InverseTransformPoint(destination);
-        int startNavMeshTriIdx = FindTriContainingPoint(startPosLocal);
-        int endNavMeshTriIdx = FindTriContainingPoint(endPosLocal);
+        Triangle startTri = FindContainingTriangle(startPosLocal);
+        Triangle endTri = FindContainingTriangle(endPosLocal);
 
-        int[] backPointers = navMeshGraph.DijkstrasAlgorithm(endNavMeshTriIdx);
-        List<int> triPath = navMeshGraph.TraceBackPointers(backPointers, startNavMeshTriIdx);
+        List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
         List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
 
         Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
@@ -549,8 +453,10 @@ public class NavigationMesh : MonoBehaviour
         return shortestPathWorld;
     }
 
-    private int FindTriContainingPoint(Vector2 p)
+    private Triangle FindContainingTriangle(Vector2 p)
     {
+        return mesh.FindContainingTriangle(p);
+        /*
         foreach(NavMeshTriangle navMeshTri in navMeshGraph.nodes)
         {
             Vector2 a = navMeshTri.verts[0];
@@ -562,6 +468,8 @@ public class NavigationMesh : MonoBehaviour
             }
         }
         return 0;
+        */
+
     }
     
 }

@@ -212,6 +212,42 @@ namespace GeometryUtils
             return M;
         }
         */
+
+        /*
+         * if(c_origin - source).magnitude > c_radius, it returns the two points that form tangent lines from source to the circle of radius c_radius centered at c_origin. 
+         * else if (c_origin - source).magnitude == c_radius, it returns the single point of tangency, twice.
+         * else if (c_origin - source).magnitude < c_radius, it returns the intersections of the chord perpendicular to (c_origin - source) and passing through source.
+         * 
+         * */
+        Vector2[] CircleTangentPoints(Vector2 c_origin, float c_radius, Vector2 source)
+        {
+            Vector2 dp = c_origin - source;
+            if (dp.magnitude > c_radius)
+            {
+                float phi = Mathf.Abs(Mathf.Asin(c_radius / dp.magnitude)) * Mathf.Rad2Deg;
+                Vector2 b1 = (Quaternion.AngleAxis(phi, Vector3.forward) * dp).normalized;
+                Vector2 b2 = (Quaternion.AngleAxis(-phi, Vector3.forward) * dp).normalized;
+                Vector2 p1 = Vector2.Dot(dp, b1) * b1;
+                Vector2 p2 = Vector2.Dot(dp, b2) * b2;
+                return new Vector2[] { p1 + source, p2 + source };
+            }
+            else if (dp.magnitude == c_radius)
+            {
+                return new Vector2[] { source, source };
+            }
+            else
+            {
+                dp = source - c_origin;
+                float phi = Mathf.Abs(Mathf.Acos(dp.magnitude / c_radius)) * Mathf.Rad2Deg;
+                Vector2 b1 = (Quaternion.AngleAxis(phi, Vector3.forward) * dp).normalized;
+                Vector2 b2 = (Quaternion.AngleAxis(-phi, Vector3.forward) * dp).normalized;
+                Vector2 p1 = Vector2.Dot(dp, b1) * b1;
+                Vector2 p2 = Vector2.Dot(dp, b2) * b2;
+                // returns chord
+                return new Vector2[] { p1 + c_origin, p2 + c_origin };
+            }
+
+        }
     }
 }
     
