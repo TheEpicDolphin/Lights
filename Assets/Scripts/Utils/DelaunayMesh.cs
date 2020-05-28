@@ -485,17 +485,14 @@ public class DelaunayMesh
             HalfEdge[] edges;
             if (uvw[0] < VecMath.epsilon)
             {
-                Debug.Log("HI0");
                 edges = e12.InsertVertex(v);
             }
             else if (uvw[1] < VecMath.epsilon)
             {
-                Debug.Log("HI1");
                 edges = e20.InsertVertex(v);
             }
             else if (uvw[2] < VecMath.epsilon)
             {
-                Debug.Log("HI2");
                 edges = e01.InsertVertex(v);
             }
             else
