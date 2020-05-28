@@ -431,9 +431,6 @@ public class DelaunayMesh
     {
         //Randomize vertices for faster average triangulation
         //Algorithm.Shuffle<Vertex>(ref verts);
-        //Vector3 uvw = Geometry.ToBarycentricCoordinates(new Vector2(1, 2), new Vector2(3, 0), new Vector2(2.2f, 0.8f), 
-                                                        //new Vector2(3, 3));
-        //Debug.Log(uvw);
 
         //Construct circle enclosing all the vertices
         Vector2 centroid = Vector2.zero;
@@ -556,7 +553,7 @@ public class DelaunayMesh
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
             HashSet<HalfEdge> holeBounds = new HashSet<HalfEdge>();
-            HalfEdge eConstrainedR = null;
+            HalfEdge holeEdge = null;
             bool isHole = segments.Length > 2;
             int n = isHole ? segments.Length : segments.Length - 1;
             for(int i = 0; i < n; i++)
@@ -572,8 +569,10 @@ public class DelaunayMesh
                 List<HalfEdge> edgePortals = new List<HalfEdge>();
                 HalfEdge intersected = eStart.next.twin;
                 Vertex v = v1;
-                while (v != v2)
+                int t = 0;
+                while (v != v2 && t < 100)
                 {
+                    t += 1;
                     edgePortals.Add(intersected);
                     v = intersected.prev.origin;
                     Vector2 newDir = v.p - v1.p;
@@ -606,7 +605,8 @@ public class DelaunayMesh
                 HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
                 holeBounds.Add(eConstrainedL);
                 int sR = 0;
-                eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
+                holeEdge = eConstrainedR;
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
 
 
@@ -622,10 +622,10 @@ public class DelaunayMesh
 
             }
 
-            if(isHole && eConstrainedR != null)
+            if(isHole && holeEdge != null)
             {
                 //We have a hole. Hide all triangles that are in hole
-                CreateHole(eConstrainedR, holeBounds);
+                CreateHole(holeEdge, holeBounds);
             }
         }
 

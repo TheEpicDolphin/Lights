@@ -193,7 +193,7 @@ public class NavigationMesh : MonoBehaviour
         mesh = GetComponent<MeshFilter>().mesh;
         navMeshGraph = NavMeshToGraph();
 
-        /*
+        
         int C = 4;
         int R = 4;
         Vector2[] verts = new Vector2[R * C];
@@ -204,20 +204,18 @@ public class NavigationMesh : MonoBehaviour
                 verts[C * i + j] = new Vector2(i, j);
             }
         }
-        */
-
-        //DelaunayMesh dm = new DelaunayMesh(verts);
-        /*
+        
         DelaunayMesh dm = new DelaunayMesh(verts,
             new List<Vector2[]> {
                 new Vector2[] {
-                    //new Vector2(0.5f, 0.5f),
+                    new Vector2(0.5f, 0.5f),
                     new Vector2(1.5f, 2.0f),
                     new Vector2(2.2f, 0.8f)
                 }
             });
-        */
+        
 
+        /*
         Vector2[] verts = new Vector2[]
         {
             new Vector2(0, 3),
@@ -245,6 +243,7 @@ public class NavigationMesh : MonoBehaviour
             new Vector2(3, 1)
         };
         DelaunayMesh dm = new DelaunayMesh(verts);
+        */
     }
 
     Graph<NavMeshTriangle> NavMeshToGraph()
