@@ -215,8 +215,9 @@ public class NavigationMesh : MonoBehaviour
                 if (nextTri == triPath[i + 1])
                 {
                     HalfEdge portal = ((HalfEdge) neighborEdge);
-                    edgePortals.Add(portal.next.origin.p);
                     edgePortals.Add(portal.origin.p);
+                    edgePortals.Add(portal.next.origin.p);
+                    break;
                 }
             }
         }
@@ -227,6 +228,7 @@ public class NavigationMesh : MonoBehaviour
         
         for(int i = 0; i < edgePortals.Count; i+=2)
         {
+            //Debug.DrawLine(new Vector2(10.0f, 0.0f), transform.TransformPoint(edgePortals[i]), Color.cyan, 0.0f, false);
             Debug.DrawLine(transform.TransformPoint(edgePortals[i]),
                 transform.TransformPoint(edgePortals[i + 1]), Color.magenta, 0.0f, false);
         }
@@ -237,19 +239,18 @@ public class NavigationMesh : MonoBehaviour
         Vector2 funnelL = edgePortals[0] - breadCrumbs[breadCrumbs.Count - 1];
         Vector2 funnelR = edgePortals[1] - breadCrumbs[breadCrumbs.Count - 1];
 
-        //Left funnel refers to left from our point of view looking down on navmesh
-
-        int t = 0;
+        
         int epL = 2;
         int epR = 2;
         int ep = 2;
-
-        while (ep < edgePortals.Count && t < 1000)
+        int t = 0;
+        while (ep < edgePortals.Count && t < 100)
         {
+            t += 1;
             Vector2 newFunnelL = edgePortals[ep] - breadCrumbs[breadCrumbs.Count - 1];
-            if (VecMath.Det(funnelL, newFunnelL) >= 0)
+            if (VecMath.Det(newFunnelL, funnelL) >= 0)
             {
-                if (edgePortals[ep] == edgePortals[epL] || VecMath.Det(newFunnelL, funnelR) >= 0)
+                if (edgePortals[ep] == edgePortals[epL] || VecMath.Det(funnelR, newFunnelL) >= 0)
                 {
                     funnelL = newFunnelL;
                     epL = ep;
@@ -268,9 +269,9 @@ public class NavigationMesh : MonoBehaviour
             }
 
             Vector2 newFunnelR = edgePortals[ep + 1] - breadCrumbs[breadCrumbs.Count - 1];
-            if (VecMath.Det(funnelR, newFunnelR) <= 0)
+            if (VecMath.Det(funnelR, newFunnelR) >= 0)
             {
-                if (edgePortals[ep + 1] == edgePortals[epR + 1] || VecMath.Det(funnelL, newFunnelR) >= 0)
+                if (edgePortals[ep + 1] == edgePortals[epR + 1] || VecMath.Det(newFunnelR, funnelL) >= 0)
                 {
                     funnelR = newFunnelR;
                     epR = ep;
@@ -288,7 +289,6 @@ public class NavigationMesh : MonoBehaviour
             }
 
             ep += 2;
-            t += 1;
         }
 
         if (t == 100)
@@ -474,19 +474,6 @@ public class NavigationMesh : MonoBehaviour
     private Triangle FindContainingTriangle(Vector2 p)
     {
         return mesh.FindContainingTriangle(p);
-        /*
-        foreach(NavMeshTriangle navMeshTri in navMeshGraph.nodes)
-        {
-            Vector2 a = navMeshTri.verts[0];
-            Vector2 b = navMeshTri.verts[1];
-            Vector2 c = navMeshTri.verts[2];
-            if(Geometry.IsInTriangle(a, b, c, p))
-            {
-                return navMeshTri.idx;
-            }
-        }
-        return 0;
-        */
 
     }
     
