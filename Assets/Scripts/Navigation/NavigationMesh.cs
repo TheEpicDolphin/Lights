@@ -65,7 +65,6 @@ public class Graph<T> where T : class, INode
             }
             curNode = frontier.ExtractMin();
         }
-
         return TraceBackPointers(backPointers, end);
     }
 
@@ -265,18 +264,22 @@ public class NavigationMesh : MonoBehaviour
             for(int j = 0; j < C; j++)
             {
                 float x = xBounds[0] + j * W / C;
+                Debug.Log(x + ", " + y);
                 verts.Add(new Vector2(x, y));
             }
         }
-        
+        mesh = new DelaunayMesh(verts.ToArray());
+
+        /*
         mesh = new DelaunayMesh(verts.ToArray(),
             new List<Vector2[]> {
                 new Vector2[] {
-                    new Vector2(0.5f, 0.5f),
-                    new Vector2(1.5f, 2.0f),
-                    new Vector2(2.2f, 0.8f)
+                    //new Vector2(0.5f, 0.5f),
+                    //new Vector2(1.5f, 2.0f),
+                    //new Vector2(2.2f, 0.8f)
                 }
             });
+        */
 
         /*
         Vector2[] verts = new Vector2[]
@@ -370,8 +373,8 @@ public class NavigationMesh : MonoBehaviour
                 if (nextTri == triPath[i + 1])
                 {
                     HalfEdge portal = ((HalfEdge) neighborEdge);
-                    edgePortals.Add(portal.origin.p);
                     edgePortals.Add(portal.next.origin.p);
+                    edgePortals.Add(portal.origin.p);
                 }
             }
         }

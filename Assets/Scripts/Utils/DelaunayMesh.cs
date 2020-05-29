@@ -109,10 +109,13 @@ public class Triangle : INode
         if (this.children.Count == 0)
         {
             //Debug.Log("Depth: " + depth.ToString());
+            /*
             if (!this.IsImaginary() && !this.isIntersectingHole)
             {
                 leafs.Add(this);
             }
+            */
+            leafs.Add(this);
         }
         else
         {
@@ -419,6 +422,7 @@ public class DelaunayMesh
         {
             verts.Add(new Vertex(points[i], i));
         }
+        constrainedVerts = new List<ConstrainedVertex[]>();
         tris = Triangulate(verts);
     }
 
@@ -488,7 +492,7 @@ public class DelaunayMesh
         HalfEdge e01Imag = new HalfEdge(vi0);
         HalfEdge e12Imag = new HalfEdge(vi1);
         HalfEdge e20Imag = new HalfEdge(vi2);
-        Triangle treeRoot = new Triangle(e01Imag, e12Imag, e20Imag);
+        treeRoot = new Triangle(e01Imag, e12Imag, e20Imag);
 
         //Perform Delaunay Triangulation
         for (int i = 0; i < verts.Count; i++)
@@ -591,7 +595,15 @@ public class DelaunayMesh
                 HalfEdge eEnd = v2.GetOutgoingEdgeClockwiseFrom(-dir);
 
                 List<HalfEdge> edgePortals = new List<HalfEdge>();
+                
                 HalfEdge intersected = eStart.next.twin;
+
+                //TODO: Check if contrained vertex outgoing edges contains second vertex
+                if(eStart.next.origin == v2)
+                {
+
+                }
+
                 Vertex v = v1;
                 int t = 0;
                 while (v != v2 && t < 100)
