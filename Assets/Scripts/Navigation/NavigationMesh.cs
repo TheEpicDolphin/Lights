@@ -112,18 +112,18 @@ public class NavigationMesh : MonoBehaviour
                 verts.Add(new Vector2(x, y));
             }
         }
-        mesh = new DelaunayMesh(verts.ToArray());
+        //mesh = new DelaunayMesh(verts.ToArray());
 
-        /*
+        
         mesh = new DelaunayMesh(verts.ToArray(),
             new List<Vector2[]> {
                 new Vector2[] {
-                    //new Vector2(0.5f, 0.5f),
-                    //new Vector2(1.5f, 2.0f),
-                    //new Vector2(2.2f, 0.8f)
+                    new Vector2(0.5f, 0.5f),
+                    new Vector2(1.5f, 2.0f),
+                    new Vector2(2.2f, 0.8f)
                 }
             });
-        */
+        
 
         /*
         Vector2[] verts = new Vector2[]
@@ -258,6 +258,7 @@ public class NavigationMesh : MonoBehaviour
         }
 
         breadCrumbs.Add(targetPos);
+
         for (int i = 1; i < breadCrumbs.Count; i++)
         {
             Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),

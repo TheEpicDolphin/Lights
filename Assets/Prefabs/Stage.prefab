@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7953356690821524821}
   - component: {fileID: 4041000933676918017}
   - component: {fileID: 8495442053088856677}
-  - component: {fileID: 4965771201375747752}
   m_Layer: 10
   m_Name: Stage
   m_TagString: Untagged
@@ -78,15 +77,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &4965771201375747752
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2540716634650704712}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1255cc44fe67f4d46898816bd7ef2587, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

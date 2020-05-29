@@ -98,7 +98,7 @@ public class Triangle : INode
         return false;
     }
 
-    public void GetRealLeafs(ref List<Triangle> leafs, ref HashSet<Triangle> visited,
+    public void GetLeafs(ref List<Triangle> leafs, ref HashSet<Triangle> visited,
                             ref int count, int depth)
     {
         if (visited.Contains(this))
@@ -109,19 +109,13 @@ public class Triangle : INode
         if (this.children.Count == 0)
         {
             //Debug.Log("Depth: " + depth.ToString());
-            /*
-            if (!this.IsImaginary() && !this.isIntersectingHole)
-            {
-                leafs.Add(this);
-            }
-            */
             leafs.Add(this);
         }
         else
         {
             foreach(Triangle child in children)
             {
-                child.GetRealLeafs(ref leafs, ref visited, ref count, depth + 1);
+                child.GetLeafs(ref leafs, ref visited, ref count, depth + 1);
             }
         }
 
@@ -275,7 +269,20 @@ public class HalfEdge : INodeEdge
 
     public int GetWeight()
     {
-        return 1;
+        //Discourage AI from traveling through holes and imaginary triangles
+        if (incidentTriangle.IsImaginary())
+        {
+            return 1000;
+        }
+        else if (incidentTriangle.isIntersectingHole)
+        {
+            return 1000;
+        }
+        else
+        {
+            return 1;
+        }
+        
     }
 
     /*
@@ -367,6 +374,20 @@ public class ConstrainedVertex : Vertex
         {
             Debug.DrawLine(e.origin.p, e.next.origin.p, Color.red, 5.0f, false);
         }
+    }
+
+    public bool IsConnectedTo(Vertex v, out HalfEdge constrainedEdge)
+    {
+        foreach(HalfEdge e in outgoingEdges)
+        {
+            if(e.next.origin == v)
+            {
+                constrainedEdge = e;
+                return true;
+            }
+        }
+        constrainedEdge = null;
+        return false;
     }
 }
 
@@ -586,9 +607,8 @@ public class DelaunayMesh
             int n = isHole ? segments.Length : segments.Length - 1;
             for(int i = 0; i < n; i++)
             {
-                Vertex v1 = segments[i % segments.Length];
-                Vertex v2 = segments[(i + 1) % segments.Length];
-                Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
+                ConstrainedVertex v1 = segments[i % segments.Length];
+                ConstrainedVertex v2 = segments[(i + 1) % segments.Length];
 
                 Vector2 dir = v2.p - v1.p;
                 HalfEdge eStart = v1.GetOutgoingEdgeClockwiseFrom(dir);
@@ -598,10 +618,13 @@ public class DelaunayMesh
                 
                 HalfEdge intersected = eStart.next.twin;
 
-                //TODO: Check if contrained vertex outgoing edges contains second vertex
-                if(eStart.next.origin == v2)
+                //Constrained vertices v1 and v2 are connected
+                HalfEdge connection;
+                if(v1.IsConnectedTo(v2, out connection))
                 {
-
+                    holeBounds.Add(connection);
+                    holeEdge = connection;
+                    continue;
                 }
 
                 Vertex v = v1;
@@ -644,22 +667,11 @@ public class DelaunayMesh
                 HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
                 holeEdge = eConstrainedR;
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
-
-
-                foreach (HalfEdge e in edgePortals)
-                {
-                    Vector2 ep1 = e.origin.p;
-                    Vector2 ep2 = e.next.origin.p;
-                    Debug.DrawLine(ep1, ep2, Color.green, 5.0f, false);
-                }
-
-                //v1.DrawOutgoingEdges();
-                //Debug.DrawLine(eStart.origin.p, eStart.next.origin.p, Color.red, 5.0f, false);
-
             }
 
             if(isHole && holeEdge != null)
             {
+                Debug.Log("HOLE!");
                 //We have a hole. Hide all triangles that are in hole
                 CreateHole(holeEdge, holeBounds);
             }
@@ -670,16 +682,32 @@ public class DelaunayMesh
         HashSet<Triangle> visited = new HashSet<Triangle>();
 
         int count = 0;
-        treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
+        treeRoot.GetLeafs(ref leafs, ref visited, ref count, 0);
 
         foreach (Triangle leaf in leafs)
         {
-            Vector3 p0 = leaf.edge.origin.p;
-            Vector3 p1 = leaf.edge.next.origin.p;
-            Vector3 p2 = leaf.edge.next.next.origin.p;
-            //Debug.DrawLine(p0, p1, Color.cyan, 20.0f, false);
-            //Debug.DrawLine(p1, p2, Color.cyan, 20.0f, false);
-            //Debug.DrawLine(p2, p0, Color.cyan, 20.0f, false);
+            if (!leaf.isIntersectingHole)
+            {
+                Vector3 p0 = leaf.edge.origin.p;
+                Vector3 p1 = leaf.edge.next.origin.p;
+                Vector3 p2 = leaf.edge.next.next.origin.p;
+                Debug.DrawLine(p0, p1, Color.cyan, 20.0f, false);
+                Debug.DrawLine(p1, p2, Color.cyan, 20.0f, false);
+                Debug.DrawLine(p2, p0, Color.cyan, 20.0f, false);
+            }
+        }
+
+        //Draw constrained edges in magenta
+        foreach (ConstrainedVertex[] segments in constrainedVerts)
+        {
+            bool isHole = segments.Length > 2;
+            int n = isHole ? segments.Length : segments.Length - 1;
+            for (int i = 0; i < n; i++)
+            {
+                ConstrainedVertex v1 = segments[i % segments.Length];
+                ConstrainedVertex v2 = segments[(i + 1) % segments.Length];
+                Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
+            }
         }
 
         return leafs.ToArray();
