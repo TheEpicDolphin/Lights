@@ -671,16 +671,15 @@ public class DelaunayMesh
 
         int count = 0;
         treeRoot.GetRealLeafs(ref leafs, ref visited, ref count, 0);
-        Debug.Log(count);
 
         foreach (Triangle leaf in leafs)
         {
             Vector3 p0 = leaf.edge.origin.p;
             Vector3 p1 = leaf.edge.next.origin.p;
             Vector3 p2 = leaf.edge.next.next.origin.p;
-            Debug.DrawLine(p0, p1, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p1, p2, Color.cyan, 5.0f, false);
-            Debug.DrawLine(p2, p0, Color.cyan, 5.0f, false);
+            Debug.DrawLine(p0, p1, Color.cyan, 20.0f, false);
+            Debug.DrawLine(p1, p2, Color.cyan, 20.0f, false);
+            Debug.DrawLine(p2, p0, Color.cyan, 20.0f, false);
         }
 
         return leafs.ToArray();

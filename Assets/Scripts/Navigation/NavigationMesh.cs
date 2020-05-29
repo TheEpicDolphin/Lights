@@ -82,164 +82,6 @@ public class Graph<T> where T : class, INode
 
 }
 
-/*
-public interface INode
-{
-    void AddNeighbor(int neighbor, int weight);
-
-    List<int> GetNeighbors();
-
-    List<int> GetWeights();
-}
-
-//public class NavMeshTriangle : Triangle
-
-public class NavMeshTriangle : INode
-{
-    public List<int> neighbors;
-    public List<int> weights;
-    public Vector3[] verts;
-    public Vector3 centroid;
-
-    public int idx;
-    public List<BoundaryEdge> boundaryEdges;
-
-    public NavMeshTriangle()
-    {
-        neighbors = new List<int>();
-        weights = new List<int>();
-        boundaryEdges = new List<BoundaryEdge>();
-        verts = new Vector3[3];
-        centroid = Vector3.zero;
-    }
-
-    public void AddNeighbor(int neighbor, int weight)
-    {
-        this.neighbors.Add(neighbor);
-        this.weights.Add(weight);
-    }
-
-    public List<int> GetNeighbors()
-    {
-        return this.neighbors;
-    }
-
-    public List<int> GetWeights()
-    {
-        return this.weights;
-    }
-}
-
-public class Graph<T> where T : INode
-{
-    public T[] nodes;
-
-    public Graph(T[] nodes)
-    {
-        this.nodes = nodes;
-    }
-
-    public int[] DijkstrasAlgorithm(int start)
-    {
-        HashSet<int> sptSet = new HashSet<int>();
-        int[] backPointers = new int[this.nodes.Length];
-
-        MinHeap<int, int> frontier = new MinHeap<int, int>();
-        for (int i = 0; i < this.nodes.Length; i++)
-        {
-            if (i == start)
-            {
-                frontier.Insert(0, i);
-            }
-            else
-            {
-                frontier.Insert(int.MaxValue, i);
-            }
-        }
-
-        backPointers[start] = -1;
-        HeapElement<int, int> curNode = frontier.ExtractMin();
-        while (curNode != null)
-        {
-            if (!sptSet.Contains(curNode.value))
-            {
-                List<int> neighbors = this.nodes[curNode.value].GetNeighbors();
-                List<int> weights = this.nodes[curNode.value].GetWeights();
-                for (int i = 0; i < neighbors.Count; i++)
-                {
-                    int neighbor = neighbors[i];
-                    int edgeWeight = weights[i];
-
-                    if (!sptSet.Contains(neighbor))
-                    {
-                        frontier.Update(edgeWeight + curNode.key, neighbor);
-                        backPointers[neighbor] = curNode.value;
-                    }
-                }
-                sptSet.Add(curNode.value);
-            }
-            curNode = frontier.ExtractMin();
-        }
-        return backPointers;
-    }
-
-    public List<int> TraceBackPointers(int[] backPointers, int end)
-    {
-        List<int> path = new List<int>();
-        int curNode = end;
-        while (curNode != -1)
-        {
-            path.Add(curNode);
-            curNode = backPointers[curNode];
-
-        }
-        return path;
-    }
-
-    public T BreadthFirstSearch(int start, Func<T, bool> stopCondition)
-    {
-        HashSet<int> sptSet = new HashSet<int>();
-
-        LinkedList<int> frontier = new LinkedList<int>();
-        frontier.AddLast(start);
-
-        LinkedListNode<int> curNode;
-        int t = 0;
-
-        while (frontier.Count > 0 && t < 100)
-        {
-            curNode = frontier.First;
-            frontier.RemoveFirst();
-
-
-            if (!sptSet.Contains(curNode.Value))
-            {
-                if (stopCondition(this.nodes[curNode.Value]))
-                {
-                    return this.nodes[curNode.Value];
-                }
-
-                List<int> neighbors = this.nodes[curNode.Value].GetNeighbors();
-                for (int i = 0; i < neighbors.Count; i++)
-                {
-                    int neighbor = neighbors[i];
-
-                    if (!sptSet.Contains(neighbor))
-                    {
-                        frontier.AddLast(neighbor);
-                    }
-                }
-                sptSet.Add(curNode.Value);
-            }
-            t += 1;
-
-        }
-        return default(T);
-    }
-
-}
-*/
-
 //Assumes navmesh is perpendicular to z axis
 public class NavigationMesh : MonoBehaviour
 {
@@ -382,11 +224,13 @@ public class NavigationMesh : MonoBehaviour
         edgePortals.Add(targetPos);
         edgePortals.Add(targetPos);
 
-        //for(int i = 0; i < edgePortals.Count; i+=2)
-        //{
-        //    Debug.DrawLine(transform.TransformPoint(edgePortals[i]),
-        //        transform.TransformPoint(edgePortals[i + 1]), Color.magenta, 0.0f, false);
-        //}
+        
+        for(int i = 0; i < edgePortals.Count; i+=2)
+        {
+            Debug.DrawLine(transform.TransformPoint(edgePortals[i]),
+                transform.TransformPoint(edgePortals[i + 1]), Color.magenta, 0.0f, false);
+        }
+        
 
         //Run Simple Stupid Funnel Algorithm.
         List<Vector2> breadCrumbs = new List<Vector2> { startPos };
@@ -604,6 +448,18 @@ public class NavigationMesh : MonoBehaviour
         Triangle endTri = FindContainingTriangle(endPosLocal);
 
         List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
+
+        /*
+        for (int i = 0; i < triPath.Count - 1; i++)
+        {
+            Triangle curTri = triPath[i];
+            Triangle nextTri = triPath[i + 1];
+            Vector2 c1 = (curTri.edge.origin.p + curTri.edge.next.origin.p + curTri.edge.next.next.origin.p) / 3;
+            Vector2 c2 = (nextTri.edge.origin.p + nextTri.edge.next.origin.p + nextTri.edge.next.next.origin.p) / 3;
+            Debug.DrawLine(c1, c2, Color.magenta, 0.0f, false);
+        }
+        */
+
         List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
 
         Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
