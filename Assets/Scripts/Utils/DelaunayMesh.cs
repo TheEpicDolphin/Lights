@@ -668,9 +668,9 @@ public class DelaunayMesh
 
             //Handle case of hole constraints in mesh
             HalfEdge holeEdge = holeBounds[holeBounds.Count - 1];
-            holeBounds.RemoveAt(holeBounds.Count - 1);
-            if (holeBounds.Count > 1 && holeEdge.twin != null)
+            if (holeBounds.Count > 2 && holeEdge.twin != null)
             {
+                holeBounds.RemoveAt(holeBounds.Count - 1);
                 //We have a hole. Hide all triangles that are in hole
                 CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
             }
