@@ -609,15 +609,7 @@ public class DelaunayMesh
                 ConstrainedVertex v1 = segments[i % segments.Length];
                 ConstrainedVertex v2 = segments[(i + 1) % segments.Length];
 
-                Vector2 dir = v2.p - v1.p;
-                HalfEdge eStart = v1.GetOutgoingEdgeClockwiseFrom(dir);
-                HalfEdge eEnd = v2.GetOutgoingEdgeClockwiseFrom(-dir);
-
-                List<HalfEdge> edgePortals = new List<HalfEdge>();
-                
-                HalfEdge intersected = eStart.next.twin;
-
-                //Constrained vertices v1 and v2 are connected
+                //Case where constrained vertices v1 and v2 are connected
                 HalfEdge connection;
                 if(v1.IsConnectedTo(v2, out connection))
                 {
@@ -625,6 +617,11 @@ public class DelaunayMesh
                     continue;
                 }
 
+                Vector2 dir = v2.p - v1.p;
+                HalfEdge eStart = v1.GetOutgoingEdgeClockwiseFrom(dir);
+                HalfEdge eEnd = v2.GetOutgoingEdgeClockwiseFrom(-dir);
+                List<HalfEdge> edgePortals = new List<HalfEdge>();
+                HalfEdge intersected = eStart.next.twin;
                 Vertex v = v1;
                 int t = 0;
                 while (v != v2 && t < 100)
