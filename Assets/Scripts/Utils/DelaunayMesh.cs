@@ -601,8 +601,7 @@ public class DelaunayMesh
         //Insert constrained edges
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
-            HashSet<HalfEdge> holeBounds = new HashSet<HalfEdge>();
-            HalfEdge holeEdge = null;
+            List<HalfEdge> holeBounds = new List<HalfEdge>();
             bool isHole = segments.Length > 2;
             int n = isHole ? segments.Length : segments.Length - 1;
             for(int i = 0; i < n; i++)
@@ -623,7 +622,6 @@ public class DelaunayMesh
                 if(v1.IsConnectedTo(v2, out connection))
                 {
                     holeBounds.Add(connection);
-                    holeEdge = connection;
                     continue;
                 }
 
@@ -665,15 +663,16 @@ public class DelaunayMesh
                 holeBounds.Add(eConstrainedL);
                 int sR = 0;
                 HalfEdge eConstrainedR = PolygonTriangulation(ref sR, backwardEdgePortals);
-                holeEdge = eConstrainedR;
                 HalfEdge.SetTwins(eConstrainedL, eConstrainedR);
             }
 
-            if(isHole && holeEdge != null)
+            //Handle case of hole constraints in mesh
+            HalfEdge holeEdge = holeBounds[holeBounds.Count - 1];
+            holeBounds.RemoveAt(holeBounds.Count - 1);
+            if (holeBounds.Count > 1 && holeEdge.twin != null)
             {
-                Debug.Log("HOLE!");
                 //We have a hole. Hide all triangles that are in hole
-                CreateHole(holeEdge, holeBounds);
+                CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
             }
         }
 
