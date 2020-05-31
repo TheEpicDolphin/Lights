@@ -667,7 +667,6 @@ public class DelaunayMesh
             HalfEdge holeEdge = holeBounds[holeBounds.Count - 1];
             if (holeBounds.Count > 2 && holeEdge.twin != null)
             {
-                holeBounds.RemoveAt(holeBounds.Count - 1);
                 //We have a hole. Hide all triangles that are in hole
                 CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
             }
@@ -680,35 +679,6 @@ public class DelaunayMesh
         int count = 0;
         treeRoot.GetLeafs(ref leafs, ref visited, ref count, 0);
 
-        /*
-        foreach (Triangle leaf in leafs)
-        {
-            if (!leaf.isIntersectingHole)
-            {
-                Vector3 p0 = leaf.edge.origin.p;
-                Vector3 p1 = leaf.edge.next.origin.p;
-                Vector3 p2 = leaf.edge.next.next.origin.p;
-                Debug.DrawLine(p0, p1, Color.cyan, 20.0f, false);
-                Debug.DrawLine(p1, p2, Color.cyan, 20.0f, false);
-                Debug.DrawLine(p2, p0, Color.cyan, 20.0f, false);
-            }
-        }
-
-        
-        //Draw constrained edges in magenta
-        foreach (ConstrainedVertex[] segments in constrainedVerts)
-        {
-            bool isHole = segments.Length > 2;
-            int n = isHole ? segments.Length : segments.Length - 1;
-            for (int i = 0; i < n; i++)
-            {
-                ConstrainedVertex v1 = segments[i % segments.Length];
-                ConstrainedVertex v2 = segments[(i + 1) % segments.Length];
-                Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
-            }
-        }
-        */
-
         return leafs.ToArray();
     }
 
@@ -716,6 +686,7 @@ public class DelaunayMesh
     {
         LinkedList<HalfEdge> frontier = new LinkedList<HalfEdge>();
         frontier.AddLast(startingEdge);
+        visitedEdges.Add(startingEdge);
 
         LinkedListNode<HalfEdge> curNode;
         int t = 0;
@@ -725,21 +696,21 @@ public class DelaunayMesh
             curNode = frontier.First;
             HalfEdge e = curNode.Value;
             frontier.RemoveFirst();
-            if (!visitedEdges.Contains(e))
+
+            e.incidentTriangle.isIntersectingHole = true;
+            if (!visitedEdges.Contains(e.prev.twin) && e.prev.twin != null)
             {
-                e.incidentTriangle.isIntersectingHole = true;
-                if(e.prev.twin != null)
-                {
-                    frontier.AddLast(e.prev.twin);
-                    visitedEdges.Add(e.prev);
-                }
-                if(e.next.twin != null)
-                {
-                    frontier.AddLast(e.next.twin);
-                    visitedEdges.Add(e.next);
-                }
-                visitedEdges.Add(e);
+                frontier.AddLast(e.prev.twin);
+                visitedEdges.Add(e.prev);
+                visitedEdges.Add(e.prev.twin);
             }
+            if (!visitedEdges.Contains(e.next.twin) && e.next.twin != null)
+            {
+                frontier.AddLast(e.next.twin);
+                visitedEdges.Add(e.next);
+                visitedEdges.Add(e.next.twin);
+            }
+
         }
     }
 
@@ -805,6 +776,70 @@ public class DelaunayMesh
     public Triangle FindContainingTriangle(Vector2 p)
     {
         return treeRoot.FindContainingTriangle(p);
+    }
+
+    public void Draw()
+    {
+        List<HalfEdge> regularBatch = new List<HalfEdge>();
+        List<HalfEdge> holeBatch = new List<HalfEdge>();
+        List<HalfEdge> imaginaryBatch = new List<HalfEdge>();
+
+        HashSet<HalfEdge> drawnEdges = new HashSet<HalfEdge>();
+        foreach (Triangle leaf in tris)
+        {
+            HalfEdge e = leaf.edge;
+            for(int i = 0; i < 3; i++)
+            {
+                if (!drawnEdges.Contains(e))
+                {
+                    Triangle tri0 = e.incidentTriangle;
+                    Triangle tri1 = e.twin?.incidentTriangle;
+
+                    if (tri1 == null || (tri0.IsImaginary() & tri1.IsImaginary()))
+                    {
+                        imaginaryBatch.Add(e);
+                    }
+                    else if (tri0.isIntersectingHole || tri1.isIntersectingHole)
+                    {
+                        holeBatch.Add(e);
+                    }
+                    else
+                    {
+                        regularBatch.Add(e);
+                    }
+
+                    if (e.twin != null)
+                    {
+                        drawnEdges.Add(e.twin);
+                    }
+                }
+                e = e.next;
+            }
+        }
+
+        //Draw in batches for speed
+
+        GL.Color(Color.cyan);
+        foreach(HalfEdge e in regularBatch)
+        {
+            GL.Vertex(e.origin.p);
+            GL.Vertex(e.next.origin.p);
+        }
+
+        GL.Color(Color.magenta);
+        foreach (HalfEdge e in holeBatch)
+        {
+            GL.Vertex(e.origin.p);
+            GL.Vertex(e.next.origin.p);
+        }
+
+        GL.Color(Color.clear);
+        foreach (HalfEdge e in imaginaryBatch)
+        {
+            GL.Vertex(e.origin.p);
+            GL.Vertex(e.next.origin.p);
+        }
+
     }
 
 }
