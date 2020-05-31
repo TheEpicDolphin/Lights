@@ -501,10 +501,6 @@ public class DelaunayMesh
         Vector2 pi1 = new Vector2(centroid.x + r * Mathf.Sqrt(3), centroid.y + r);
         Vector2 pi2 = new Vector2(centroid.x - r * Mathf.Sqrt(3), centroid.y + r);
 
-        Debug.DrawLine(pi0, pi1, Color.cyan, 5.0f, false);
-        Debug.DrawLine(pi1, pi2, Color.cyan, 5.0f, false);
-        Debug.DrawLine(pi2, pi0, Color.cyan, 5.0f, false);
-
         Vertex vi0 = new Vertex(pi0, -1);
         Vertex vi1 = new Vertex(pi1, -1);
         Vertex vi2 = new Vertex(pi2, -1);
@@ -668,10 +664,11 @@ public class DelaunayMesh
             if (holeBounds.Count > 2 && holeEdge.twin != null)
             {
                 //We have a hole. Hide all triangles that are in hole
-                CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
+                //CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
             }
         }
 
+        
         //Generate Triangle list
         List<Triangle> leafs = new List<Triangle>();
         HashSet<Triangle> visited = new HashSet<Triangle>();

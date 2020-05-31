@@ -106,10 +106,10 @@ public class NavigationMesh : MonoBehaviour
         float W = (xBounds[1] - xBounds[0]);
         float H = (yBounds[1] - yBounds[0]);
 
-        for(int i = 0; i < R; i++)
+        for(int i = 0; i < R + 1; i++)
         {
             float y = yBounds[0] + i * H / R;
-            for(int j = 0; j < C; j++)
+            for(int j = 0; j < C + 1; j++)
             {
                 float x = xBounds[0] + j * W / C;
                 Debug.Log(x + ", " + y);
@@ -118,7 +118,7 @@ public class NavigationMesh : MonoBehaviour
         }
         //mesh = new DelaunayMesh(verts.ToArray());
 
-        
+        /*
         mesh = new DelaunayMesh(verts.ToArray(),
             new List<Vector2[]> {
                 new Vector2[] {
@@ -127,37 +127,15 @@ public class NavigationMesh : MonoBehaviour
                     new Vector2(2.2f, 0.8f)
                 }
             });
-        
-
-        /*
-        Vector2[] verts = new Vector2[]
-        {
-            new Vector2(0, 3),
-            new Vector2(0, 0),
-            new Vector2(3, 0),
-            new Vector2(3, 2),
-            new Vector2(3, 3),
-            new Vector2(1, 2),
-            new Vector2(2.2f, 0.8f),
-
-            new Vector2(2, 2),
-            new Vector2(2, 3),
-            new Vector2(1, 0),
-            new Vector2(1.5f, 2.0f),
-            new Vector2(1, 1),
-            new Vector2(2, 1),
-            new Vector2(0, 1),
-
-            new Vector2(0, 2),
-            new Vector2(1, 3),
-
-            new Vector2(2, 0),
-
-            //Fucks up at this point
-            new Vector2(3, 1)
-        };
-        mesh = new DelaunayMesh(verts);
         */
+        mesh = new DelaunayMesh(verts.ToArray(),
+            new List<Vector2[]> {
+                new Vector2[] {
+                    new Vector2(-1.5f, 2.3f),
+                    new Vector2(3.2f, -2.9f),
+                    new Vector2(3.3f, 3.7f)
+                }
+            });
 
         navMeshGraph = new Graph<Triangle>(mesh.tris);
     }
@@ -302,7 +280,7 @@ public class NavigationMesh : MonoBehaviour
         
         if (!mat)
         {
-            Debug.LogError("Please Assign a material on the inspector");
+            Debug.LogError("Material not assigned");
             return;
         }
         

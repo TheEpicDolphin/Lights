@@ -8,7 +8,7 @@ public class Enemy : MonoBehaviour, INavAgent
     public Player player;
     Rigidbody2D rb;
     float radius = 1.0f;
-    float enemySpeed = 5.0f;
+    float enemySpeed = 2.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -25,24 +25,9 @@ public class Enemy : MonoBehaviour, INavAgent
     public void Navigate(Vector2 destination)
     {
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination);
-        /*
+        
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        Vector2 dir = (nextPoint - curPos).normalized;
-        Vector2 offset = Vector2.Perpendicular(dir) * radius;
-        RaycastHit2D hit;
-
-        Debug.DrawRay(curPos + offset, 3.0f * dir, Color.red, 0.0f, false);
-        Debug.DrawRay(curPos - offset, 3.0f * dir, Color.red, 0.0f, false);
-        if (hit = Physics2D.Raycast(curPos + offset, dir, 3.0f, (1 << 12)))
-        {
-            nextPoint = nextPoint + 2 * radius * hit.normal;
-        }
-        else if (hit = Physics2D.Raycast(curPos - offset, dir, 3.0f, (1 << 12)))
-        {
-            nextPoint = nextPoint + 2 * radius * hit.normal;
-        }
-        
         Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
 
         float k = (1 / Time.deltaTime) * 0.4f;
@@ -50,7 +35,7 @@ public class Enemy : MonoBehaviour, INavAgent
         //Prevent unrealistic forces by clamping to range
         f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
         rb.AddForce(f, ForceMode2D.Force);
-        */
+        
     }
 
     public void AddKnockback(float strength, Vector2 dir)
