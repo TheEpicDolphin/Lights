@@ -88,11 +88,13 @@ public class Graph<T> where T : class, INode
 public class NavigationMesh : MonoBehaviour
 {
     Graph<Triangle> navMeshGraph;
-    //TODO: use this instead
     DelaunayMesh mesh;
+    Material mat;
 
     private void Awake()
     {
+        mat = GetComponent<Renderer>().material;
+
         List<Vector2> verts = new List<Vector2>();
         int C = 4;
         int R = 4;
@@ -292,7 +294,71 @@ public class NavigationMesh : MonoBehaviour
     {
         return mesh.FindContainingTriangle(p);
     }
-    
+
+    public void Draw()
+    {
+        
+        if (!mat)
+        {
+            Debug.LogError("Please Assign a material on the inspector");
+            return;
+        }
+        
+        GL.PushMatrix();
+        mat.SetPass(0);
+
+        //GL.LoadOrtho();
+        
+        //GL.LoadIdentity();
+        //GL.MultMatrix();
+
+        GL.Begin(GL.LINES);
+        GL.Color(Color.cyan);
+
+        
+        foreach (Triangle leaf in mesh.tris)
+        {
+            if (!leaf.isIntersectingHole)
+            {
+                Vector3 p0 = leaf.edge.origin.p;
+                Vector3 p1 = leaf.edge.next.origin.p;
+                Vector3 p2 = leaf.edge.next.next.origin.p;
+                Debug.DrawLine(p0, p1, Color.cyan, 20.0f, false);
+                Debug.DrawLine(p1, p2, Color.cyan, 20.0f, false);
+                Debug.DrawLine(p2, p0, Color.cyan, 20.0f, false);
+
+                GL.Vertex(p0);
+                GL.Vertex(p1);
+
+                GL.Vertex(p1);
+                GL.Vertex(p2);
+
+                GL.Vertex(p2);
+                GL.Vertex(p0);
+            }
+        }
+        
+        
+        /*
+        //Draw constrained edges in magenta
+        foreach (ConstrainedVertex[] segments in constrainedVerts)
+        {
+            bool isHole = segments.Length > 2;
+            int n = isHole ? segments.Length : segments.Length - 1;
+            for (int i = 0; i < n; i++)
+            {
+                ConstrainedVertex v1 = segments[i % segments.Length];
+                ConstrainedVertex v2 = segments[(i + 1) % segments.Length];
+                Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
+            }
+        }
+        */
+
+        GL.End();
+
+        GL.PopMatrix();
+    }
+
 }
 
 

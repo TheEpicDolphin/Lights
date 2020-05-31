@@ -680,6 +680,7 @@ public class DelaunayMesh
         int count = 0;
         treeRoot.GetLeafs(ref leafs, ref visited, ref count, 0);
 
+        /*
         foreach (Triangle leaf in leafs)
         {
             if (!leaf.isIntersectingHole)
@@ -693,6 +694,7 @@ public class DelaunayMesh
             }
         }
 
+        
         //Draw constrained edges in magenta
         foreach (ConstrainedVertex[] segments in constrainedVerts)
         {
@@ -705,6 +707,7 @@ public class DelaunayMesh
                 Debug.DrawLine(v1.p, v2.p, Color.magenta, 5.0f, false);
             }
         }
+        */
 
         return leafs.ToArray();
     }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public Transform target;
+    public NavigationMesh navMesh;
     // Start is called before the first frame update
     void Start()
     {
@@ -15,5 +16,10 @@ public class CameraController : MonoBehaviour
     {
         Vector3 newPos = target.position - 100.0f * target.forward;
         transform.position = Vector3.Lerp(transform.position, newPos, 5.0f * Time.deltaTime);
+    }
+
+    private void OnPostRender()
+    {
+        navMesh.Draw();
     }
 }
