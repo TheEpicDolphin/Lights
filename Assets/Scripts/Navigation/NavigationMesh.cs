@@ -132,8 +132,8 @@ public class NavigationMesh : MonoBehaviour
             new List<Vector2[]> {
                 new Vector2[] {
                     new Vector2(-1.5f, 2.3f),
-                    new Vector2(3.2f, -2.9f),
-                    new Vector2(3.3f, 3.7f)
+                    new Vector2(3.3f, 3.7f),
+                    new Vector2(3.2f, -2.9f)
                 }
             });
 

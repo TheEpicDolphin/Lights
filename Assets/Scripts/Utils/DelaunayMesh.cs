@@ -651,6 +651,14 @@ public class DelaunayMesh
                     backwardEdgePortals.Add(edgePortals[j].twin);
                 }
 
+
+                foreach (HalfEdge edgePortal in forwardEdgePortals)
+                {
+                    edgePortal.origin.RemoveOutgoingEdge(edgePortal);
+                    edgePortal.next.origin.RemoveOutgoingEdge(edgePortal.next);
+                    edgePortal.prev.origin.RemoveOutgoingEdge(edgePortal.prev);
+                }
+
                 int sL = 0;
                 HalfEdge eConstrainedL = PolygonTriangulation(ref sL, forwardEdgePortals);
                 holeBounds.Add(eConstrainedL);
@@ -664,7 +672,7 @@ public class DelaunayMesh
             if (holeBounds.Count > 2 && holeEdge.twin != null)
             {
                 //We have a hole. Hide all triangles that are in hole
-                //CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
+                CreateHole(holeEdge.twin, new HashSet<HalfEdge>(holeBounds));
             }
         }
 
@@ -735,7 +743,6 @@ public class DelaunayMesh
             //This can potentially allow 180 degree triangles :'( Must fix
             if (VecMath.Det(funnelR, funnelL) <= 0)
             {
-                //Bug is here. Do not make a ref to epLast. Find a way to return the new ep
                 HalfEdge e = PolygonTriangulation(ref ep, edgePortals);
 
                 HalfEdge e01 = new HalfEdge(vB);
@@ -744,6 +751,9 @@ public class DelaunayMesh
                 tri = new Triangle(e01, e12, e20);
                 HalfEdge.SetTwins(e12, e);
                 HalfEdge.SetTwins(e20, eLast);
+                e01.origin.AddOutgoingEdge(e01);
+                e12.origin.AddOutgoingEdge(e12);
+                e20.origin.AddOutgoingEdge(e20);
                 eLast = e01;
             }
             else
@@ -751,10 +761,14 @@ public class DelaunayMesh
                 //Make triangle
                 HalfEdge e01 = new HalfEdge(vB);
                 HalfEdge e12 = new HalfEdge(holeEdge.next.origin);
+                //HalfEdge e12 = holeEdge.twin;
                 HalfEdge e20 = new HalfEdge(holeEdge.origin);
                 tri = new Triangle(e01, e12, e20);
                 HalfEdge.SetTwins(e12, holeEdge);
                 HalfEdge.SetTwins(e20, eLast);
+                e01.origin.AddOutgoingEdge(e01);
+                e12.origin.AddOutgoingEdge(e12);
+                e20.origin.AddOutgoingEdge(e20);
                 eLast = e01;
             }
 
