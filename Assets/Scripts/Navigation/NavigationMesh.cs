@@ -247,7 +247,6 @@ public class NavigationMesh : MonoBehaviour
         }
 
         breadCrumbs.Add(targetPos);
-
         return breadCrumbs;
 
     }
@@ -260,8 +259,8 @@ public class NavigationMesh : MonoBehaviour
         Triangle endTri = FindContainingTriangle(endPosLocal);
 
         List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
-        //List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
-        List<Vector2> shortestPathLocal = CentroidPath(triPath, startPosLocal, endPosLocal);
+        List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
+        //List<Vector2> shortestPathLocal = CentroidPath(triPath, startPosLocal, endPosLocal);
 
         Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
         for(int i = 1; i < shortestPathLocal.Count; i++)
@@ -281,7 +280,6 @@ public class NavigationMesh : MonoBehaviour
 
     public void Draw()
     {
-        
         if (!mat)
         {
             Debug.LogError("Material not assigned");
