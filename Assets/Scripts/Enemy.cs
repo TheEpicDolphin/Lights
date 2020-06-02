@@ -34,7 +34,7 @@ public class Enemy : MonoBehaviour, INavAgent
         Vector2 f = k * (vDesired - rb.velocity);
         //Prevent unrealistic forces by clamping to range
         f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
-        rb.AddForce(f, ForceMode2D.Force);
+        //rb.AddForce(f, ForceMode2D.Force);
         
     }
 

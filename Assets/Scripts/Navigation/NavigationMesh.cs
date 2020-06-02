@@ -140,6 +140,18 @@ public class NavigationMesh : MonoBehaviour
         navMeshGraph = new Graph<Triangle>(mesh.tris);
     }
 
+    List<Vector2> CentroidPath(List<Triangle> triPath, Vector2 startPos, Vector2 targetPos)
+    {
+        List<Vector2> path = new List<Vector2>();
+        foreach (Triangle tri in triPath)
+        {
+            Vector2 c = (tri.edge.prev.origin.p + tri.edge.origin.p + tri.edge.next.origin.p) / 3;
+            path.Add(c);
+        }
+        path.Add(targetPos);
+        return path;
+    }
+
     List<Vector2> StringPullingAlgorithm(List<Triangle> triPath, Vector2 startPos, Vector2 targetPos)
     {
         if (triPath.Count == 1)
@@ -241,12 +253,6 @@ public class NavigationMesh : MonoBehaviour
 
         breadCrumbs.Add(targetPos);
 
-        for (int i = 1; i < breadCrumbs.Count; i++)
-        {
-            Debug.DrawLine(transform.TransformPoint(breadCrumbs[i - 1]),
-                               transform.TransformPoint(breadCrumbs[i]), Color.green, 0.0f, false);
-        }
-
         return breadCrumbs;
 
     }
@@ -259,12 +265,15 @@ public class NavigationMesh : MonoBehaviour
         Triangle endTri = FindContainingTriangle(endPosLocal);
 
         List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
-        List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
+        //List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
+        List<Vector2> shortestPathLocal = CentroidPath(triPath, startPosLocal, endPosLocal);
 
         Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
         for(int i = 1; i < shortestPathLocal.Count; i++)
         {
             shortestPathWorld[i - 1] = transform.TransformPoint(shortestPathLocal[i]);
+            Debug.DrawLine(transform.TransformPoint(shortestPathLocal[i - 1]),
+                               transform.TransformPoint(shortestPathLocal[i]), Color.green, 0.0f, false);
         }
 
         return shortestPathWorld;
