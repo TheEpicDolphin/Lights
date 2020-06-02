@@ -282,7 +282,6 @@ public class HalfEdge : INodeEdge
         {
             return 1;
         }
-        
     }
 
     /*

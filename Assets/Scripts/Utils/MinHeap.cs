@@ -80,6 +80,17 @@ public class MinHeap<TKey, TValue> where TKey : IComparable
 
     }
 
+    public TKey FetchKeyFor(TValue value)
+    {
+        int i = indexMap[value];
+        return heap[i].key;
+    }
+
+    public bool ContainsValue(TValue value)
+    {
+        return indexMap.ContainsKey(value);
+    }
+
     private void MinHeapifyUp(int i)
     {
         int p = Parent(i);

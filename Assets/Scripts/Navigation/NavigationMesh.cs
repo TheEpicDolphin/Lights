@@ -28,9 +28,8 @@ public class Graph<T> where T : class, INode
 
     public List<T> DijkstrasAlgorithm(T start, T end)
     {
-        HashSet<T> sptSet = new HashSet<T>();
+        
         Dictionary<T, T> backPointers = new Dictionary<T, T>();
-
         MinHeap<int, T> frontier = new MinHeap<int, T>();
         foreach (T node in nodes)
         {
@@ -45,25 +44,21 @@ public class Graph<T> where T : class, INode
         }
         backPointers[start] = null;
 
+        HashSet<T> sptSet = new HashSet<T>();
         HeapElement<int, T> curNode = frontier.ExtractMin();
         while (curNode != null)
         {
-            if (!sptSet.Contains(curNode.value))
+            sptSet.Add(curNode.value);
+            List<INodeEdge> outgoingEdges = curNode.value.GetNeighborEdges();
+            foreach (INodeEdge edge in outgoingEdges)
             {
-                List<INodeEdge> outgoingEdges = curNode.value.GetNeighborEdges();
-                foreach(INodeEdge edge in outgoingEdges)
+                T neighbor = (T)edge.GetNode();
+                int edgeWeight = edge.GetWeight();
+                if (!sptSet.Contains(neighbor) && (frontier.FetchKeyFor(neighbor) > edgeWeight + curNode.key))
                 {
-                    T neighbor = (T) edge.GetNode();
-                    int edgeWeight = edge.GetWeight();
-
-                    //Add functionality for stopping early
-                    if (!sptSet.Contains(neighbor))
-                    {
-                        frontier.Update(edgeWeight + curNode.key, neighbor);
-                        backPointers[neighbor] = curNode.value;
-                    }
+                    frontier.Update(edgeWeight + curNode.key, neighbor);
+                    backPointers[neighbor] = curNode.value;
                 }
-                sptSet.Add(curNode.value);
             }
             curNode = frontier.ExtractMin();
         }
