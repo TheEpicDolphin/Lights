@@ -107,7 +107,6 @@ public class NavigationMesh : MonoBehaviour
             for(int j = 0; j < C + 1; j++)
             {
                 float x = xBounds[0] + j * W / C;
-                Debug.Log(x + ", " + y);
                 verts.Add(new Vector2(x, y));
             }
         }

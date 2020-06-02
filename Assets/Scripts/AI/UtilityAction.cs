@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class UtilityAction
 {
-    string name;
+    protected string name;
     
     public UtilityAction(string name)
     {
         this.name = name;
     }
 
-    public virtual float Score()
+    public virtual float Score(Dictionary<string, object> blackboard)
     {
         return 0.0f;
     }
 
-    public virtual void Run()
+    public virtual void Run(Dictionary<string, object> blackboard)
     {
         
     }
