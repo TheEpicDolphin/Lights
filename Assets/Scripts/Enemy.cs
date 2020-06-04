@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour, INavAgent
     Rigidbody2D rb;
     float radius = 1.0f;
     float enemySpeed = 2.0f;
+    Hand hand;
 
     // Start is called before the first frame update
     void Start()
@@ -42,4 +43,16 @@ public class Enemy : MonoBehaviour, INavAgent
     {
         rb.AddForce(strength * dir, ForceMode2D.Impulse);
     }
+
+    public void Attack()
+    {
+        hand.Attack();
+    }
+
+    public void Sense()
+    {
+
+    }
+    
+    
 }

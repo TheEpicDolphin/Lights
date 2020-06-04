@@ -4,31 +4,51 @@ using UnityEngine;
 
 public class ShootFirearm : UtilityAction
 {
-    public ShootFirearm(string name) : base(name)
+    Player player;
+    Enemy me;
+
+    float range;
+    public ShootFirearm(string name, float range) : base(name)
     {
-        
+        this.range = range;
     }
 
-    public override float Score(Dictionary<string, object> blackboard)
+    public override bool CheckPrerequisites(Dictionary<string, object> memory)
     {
-        Player player = (Player)blackboard["player"];
-        if (!blackboard.ContainsKey("player"))
+        if (memory.ContainsKey("player"))
         {
-            return -1.0f;
+            player = (Player)memory["player"];
         }
-        Enemy me = (Enemy)blackboard["me"];
-        if (!blackboard.ContainsKey("me"))
+        else
         {
-            return -1.0f;
+            return false;
         }
 
-        return 0.0f;
+        if (memory.ContainsKey("me"))
+        {
+            me = (Enemy)memory["me"];
+        }
+        else
+        {
+            return false;
+        }
+
+        //Check if gun is equipped by me
+
+        return true;
     }
 
-    public override void Run(Dictionary<string, object> blackboard)
+    public override float Score(Dictionary<string, object> calculated)
     {
-        Player player = (Player) blackboard["player"];
-        Enemy me = (Enemy) blackboard["me"];
+        float d = Vector3.Distance(player.transform.position, me.transform.position);
+        //Get direction the enemy's gun is facing
+        float U = Mathf.Max(range - d, 0.0f) / range;
 
+        return U;
+    }
+
+    public override void Run(Dictionary<string, object> calculated)
+    {
+        me.Attack();
     }
 }

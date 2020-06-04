@@ -16,17 +16,6 @@ public class Hand : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
-        {
-            IFirearm firearm = equippedObject?.GetComponent<IFirearm>();
-            if(firearm != null)
-            {
-                firearm.Shoot(relMousePos);
-            }
-
-            
-        }
-
         animator.SetFloat("facingY", relMousePos.y);
         animator.SetFloat("facingX", relMousePos.x);
 
@@ -41,6 +30,17 @@ public class Hand : MonoBehaviour
             item.Animate(angle);
         }
     }
+
+    public void Attack()
+    {
+        IFirearm firearm = equippedObject?.GetComponent<IFirearm>();
+        if (firearm != null)
+        {
+            firearm.Shoot(relMousePos);
+        }
+    }
+
+    
 
     private void LateUpdate()
     {

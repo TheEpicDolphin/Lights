@@ -11,12 +11,17 @@ public class UtilityAction
         this.name = name;
     }
 
-    public virtual float Score(Dictionary<string, object> blackboard)
+    public virtual bool CheckPrerequisites(Dictionary<string, object> memory)
+    {
+        return false;
+    }
+
+    public virtual float Score(Dictionary<string, object> calculated)
     {
         return 0.0f;
     }
 
-    public virtual void Run(Dictionary<string, object> blackboard)
+    public virtual void Run(Dictionary<string, object> calculated)
     {
         
     }

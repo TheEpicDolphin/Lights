@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class UtilityAI
 {
-    public Dictionary<string, object> utilityBlackboard;
+    public Dictionary<string, object> utilityMemory;
     private List<UtilityBucket> utilityBuckets;
 
     public UtilityAI(List<UtilityBucket> utilityBuckets)
     {
-        this.utilityBlackboard = new Dictionary<string, object>();
+        this.utilityMemory = new Dictionary<string, object>();
         this.utilityBuckets = utilityBuckets;
     }
 
-
+    
 }

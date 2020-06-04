@@ -14,14 +14,25 @@ public class UtilityBucket
         this.utilityActions = actions;
     }
 
-    public virtual float EvaluatePriority(Dictionary<string, object> blackboard)
+    public virtual float EvaluatePriority(Dictionary<string, object> memory)
     {
         return 0.0f;
     }
 
-    public void RunOptimalAction(Dictionary<string, object> blackboard)
+    public void RunOptimalAction(Dictionary<string, object> memory)
     {
-        List<UtilityAction> sortedActions = utilityActions.OrderByDescending(action => action.Score(blackboard)).ToList();
+        List<UtilityAction> validUtilityActions = new List<UtilityAction>();
+        foreach(UtilityAction action in utilityActions)
+        {
+            if (action.CheckPrerequisites(memory))
+            {
+                validUtilityActions.Add(action);
+            }
+        }
+
+        Dictionary<string, object> calculated = new Dictionary<string, object>();
+
+        List<UtilityAction> sortedActions = validUtilityActions.OrderByDescending(action => action.Score(calculated)).ToList();
         List<UtilityAction> highestScoringSubset = sortedActions.GetRange(0, Mathf.Min(3, sortedActions.Count));
 
         float z = 0.0f;
@@ -29,7 +40,7 @@ public class UtilityBucket
         for(int i = 0; i < cumScores.Length; i++)
         {
             UtilityAction action = highestScoringSubset[i];
-            z += action.Score(blackboard);
+            z += action.Score(calculated);
             cumScores[i] = z;
         }
 
@@ -39,11 +50,11 @@ public class UtilityBucket
             if(x < cumScores[i])
             {
                 //This action was randomly chosen out of the best for the AI to take
-                highestScoringSubset[i].Run(blackboard);
+                highestScoringSubset[i].Run(calculated);
                 return;
             }
         }
 
-        highestScoringSubset[cumScores.Length - 1].Run(blackboard);
+        highestScoringSubset[cumScores.Length - 1].Run(memory);
     }
 }
