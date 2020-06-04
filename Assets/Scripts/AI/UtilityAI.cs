@@ -13,5 +13,8 @@ public class UtilityAI
         this.utilityBuckets = utilityBuckets;
     }
 
-    
+    public void RunOptimalAction()
+    {
+        utilityBuckets[0].RunOptimalAction(utilityMemory);
+    }
 }

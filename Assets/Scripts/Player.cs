@@ -11,14 +11,13 @@ public class Player : MonoBehaviour
 
     float moveHorizontal;
     float moveVertical;
-    Vector2 relMousePos;
 
     Animator animator;
     Animator handAnimator;
     Rigidbody2D rb;
     Vector2 lastVelocity = Vector2.zero;
     Vector2 eLast = Vector2.zero;
-    Hand hand;
+    public Hand hand;
 
     //public Inventory inventory;
 
@@ -51,8 +50,8 @@ public class Player : MonoBehaviour
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
-        relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
-        relMousePos.Normalize();
+        Vector2 relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
+        Vector2 relHandDir = relMousePos.normalized;
 
         Vector2 vDesired = Vector2.zero;
         Vector2 movement = moveVertical * new Vector2(0, 1) + moveHorizontal * new Vector2(1, 0);
@@ -62,8 +61,8 @@ public class Player : MonoBehaviour
         }
         //Animate player facing direction
         animator.SetFloat("movement", movement.magnitude);
-        animator.SetFloat("facingY", relMousePos.y);
-        animator.SetFloat("facingX", relMousePos.x);
+        animator.SetFloat("facingY", relHandDir.y);
+        animator.SetFloat("facingX", relHandDir.x);
 
         if (movement.magnitude > 0.25f)
         {
@@ -71,10 +70,10 @@ public class Player : MonoBehaviour
             movement.Normalize();
             animator.SetFloat("dy", movement.y);
             animator.SetFloat("dx", movement.x);
-            vDesired = movement.normalized * playerSpeed;
+            vDesired = movement * playerSpeed;
         }
 
-        hand.relMousePos = relMousePos;
+        hand.SetHandDirection(relHandDir);
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);

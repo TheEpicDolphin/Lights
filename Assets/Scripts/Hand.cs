@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Hand : MonoBehaviour
 {
-    public Vector2 relMousePos = Vector2.zero;
+    Vector2 direction = Vector2.zero;
     Animator animator;
     GameObject equippedObject;
     // Start is called before the first frame update
@@ -16,13 +16,13 @@ public class Hand : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        animator.SetFloat("facingY", relMousePos.y);
-        animator.SetFloat("facingX", relMousePos.x);
+        animator.SetFloat("facingY", direction.y);
+        animator.SetFloat("facingX", direction.x);
 
         IItem item = equippedObject?.GetComponent<IItem>();
         if (item != null)
         {
-            float angle = Vector2.SignedAngle(Vector2.right, relMousePos);
+            float angle = Vector2.SignedAngle(Vector2.right, direction);
             if (angle < 0.0f)
             {
                 angle = 360.0f + angle;
@@ -36,15 +36,14 @@ public class Hand : MonoBehaviour
         IFirearm firearm = equippedObject?.GetComponent<IFirearm>();
         if (firearm != null)
         {
-            firearm.Shoot(relMousePos);
+            firearm.Shoot(direction);
         }
     }
 
-    
 
     private void LateUpdate()
     {
-        Vector3 relHandDir = new Vector3(relMousePos.x, relMousePos.y, 0.0f);
+        Vector3 relHandDir = new Vector3(direction.x, direction.y, 0.0f);
         transform.rotation = Quaternion.LookRotation(Vector3.forward, relHandDir);
     }
 
@@ -69,5 +68,18 @@ public class Hand : MonoBehaviour
         return equippedObject != null;
     }
 
-    
+    public GameObject GetEquippedObject()
+    {
+        return equippedObject;
+    }
+
+    public void SetHandDirection(Vector2 handDir)
+    {
+        direction = handDir;
+    } 
+
+    public Vector2 GetHandDirection()
+    {
+        return direction;
+    }
 }

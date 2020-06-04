@@ -70,4 +70,14 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
         }
         
     }
+
+    public bool ReadyToFire()
+    {
+        return (Time.time - lastT) > (1 / firerate);
+    }
+
+    public float GetRange()
+    {
+        return range;
+    }
 }

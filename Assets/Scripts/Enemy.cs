@@ -9,7 +9,7 @@ public class Enemy : MonoBehaviour, INavAgent
     Rigidbody2D rb;
     float radius = 1.0f;
     float enemySpeed = 2.0f;
-    Hand hand;
+    public Hand hand;
 
     // Start is called before the first frame update
     void Start()
@@ -20,10 +20,16 @@ public class Enemy : MonoBehaviour, INavAgent
     // Update is called once per frame
     void FixedUpdate()
     {
-        Navigate(player.transform.position);
+        NavigateTo(player.transform.position);
     }
 
-    public void Navigate(Vector2 destination)
+    void Update()
+    {
+        Sense();
+        
+    }
+
+    public void NavigateTo(Vector2 destination)
     {
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination);
         
