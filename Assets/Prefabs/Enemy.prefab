@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 8656938106796802457}
   - component: {fileID: 8656938106796802462}
   - component: {fileID: 1472143787609314778}
-  - component: {fileID: 2463459740935338069}
+  - component: {fileID: 8559577527015138785}
   m_Layer: 11
   m_Name: Enemy
   m_TagString: Untagged
@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   navMesh: {fileID: 0}
   player: {fileID: 0}
+  hand: {fileID: 0}
 --- !u!50 &1472143787609314778
 Rigidbody2D:
   serializedVersion: 4
@@ -148,8 +149,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &2463459740935338069
-BoxCollider2D:
+--- !u!58 &8559577527015138785
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -162,15 +163,5 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0.5}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
+  m_Radius: 1

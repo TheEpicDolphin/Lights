@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using AlgorithmUtils;
 
 
 public abstract class Obstacle : MonoBehaviour
@@ -9,6 +10,11 @@ public abstract class Obstacle : MonoBehaviour
 
     // Start is called before the first frame update
     protected void Start()
+    {
+        edgeCol = GetComponent<EdgeCollider2D>();
+    }
+
+    public void InitializeEdges()
     {
         edgeCol = GetComponent<EdgeCollider2D>();
     }
@@ -24,12 +30,40 @@ public abstract class Obstacle : MonoBehaviour
 
     }
 
-    public Vector2[] GetWorldBoundVerts()
+    private int Mod(int x, int m)
+    {
+        return (x % m + m) % m;
+    }
+
+    public Vector2[] GetWorldMinkowskiBoundVerts(float radius, bool clockwise = false)
+    {
+        Vector2[] boundVerts = GetWorldBoundVerts(clockwise);
+        Vector2[] minkowskiBoundVerts = new Vector2[boundVerts.Length];
+        for(int i = 0; i < boundVerts.Length; i++)
+        {
+            Vector2 n1 = -Vector2.Perpendicular(boundVerts[i] - boundVerts[Mod(i - 1, boundVerts.Length)]);
+            Vector2 n2 = -Vector2.Perpendicular(boundVerts[Mod(i + 1, boundVerts.Length)] - boundVerts[i]);
+            if (clockwise)
+            {
+                n1 = -n1;
+                n2 = -n2;
+            }
+            Vector2 n = (n1 + n2).normalized;
+            minkowskiBoundVerts[i] = boundVerts[i] + radius * n;
+        }
+        return minkowskiBoundVerts;
+    }
+
+    public Vector2[] GetWorldBoundVerts(bool clockwise = false)
     {
         Vector2[] verts = new Vector2[edgeCol.points.Length - 1];
         for(int i = 0; i < edgeCol.points.Length - 1; i++)
         {
             verts[i] = transform.TransformPoint(edgeCol.points[i]);
+        }
+        if (clockwise)
+        {
+            System.Array.Reverse(verts);
         }
         return verts;
     }

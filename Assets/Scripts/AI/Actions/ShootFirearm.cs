@@ -64,7 +64,7 @@ public class ShootFirearm : UtilityAction
         float dist = Vector3.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Max(range - dist, 0.0f) / range;
 
-        float U = ;
+        float U = 1.0f;
         return U;
     }
 

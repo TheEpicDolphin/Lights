@@ -98,6 +98,11 @@ public class Triangle : INode
         return false;
     }
 
+    public Vector2 Centroid()
+    {
+        return (edge.prev.origin.p + edge.origin.p + edge.next.origin.p) / 3; 
+    }
+
     public void GetLeafs(ref List<Triangle> leafs, ref HashSet<Triangle> visited,
                             ref int count, int depth)
     {

@@ -26,9 +26,47 @@ public class Graph<T> where T : class, INode
         this.nodes = nodes;
     }
 
+    public List<T> DijkstrasAlgorithm(T start, T end, Func<INodeEdge, float> edgeMultiplier)
+    {
+        Dictionary<T, T> backPointers = new Dictionary<T, T>();
+        MinHeap<float, T> frontier = new MinHeap<float, T>();
+        foreach (T node in nodes)
+        {
+            if (node == start)
+            {
+                frontier.Insert(0, node);
+            }
+            else
+            {
+                frontier.Insert(float.MaxValue, node);
+            }
+        }
+        backPointers[start] = null;
+
+        HashSet<T> sptSet = new HashSet<T>();
+        HeapElement<float, T> curNode = frontier.ExtractMin();
+        while (curNode != null)
+        {
+            sptSet.Add(curNode.value);
+            List<INodeEdge> outgoingEdges = curNode.value.GetNeighborEdges();
+            foreach (INodeEdge edge in outgoingEdges)
+            {
+                T neighbor = (T)edge.GetNode();
+                float edgeWeight = edgeMultiplier(edge) * edge.GetWeight();
+                if (!sptSet.Contains(neighbor) && (frontier.FetchKeyFor(neighbor) > edgeWeight + curNode.key))
+                {
+                    frontier.Update(edgeWeight + curNode.key, neighbor);
+                    backPointers[neighbor] = curNode.value;
+                }
+            }
+            curNode = frontier.ExtractMin();
+        }
+
+        return TraceBackPointers(backPointers, end);
+    }
+
     public List<T> DijkstrasAlgorithm(T start, T end)
     {
-        
         Dictionary<T, T> backPointers = new Dictionary<T, T>();
         MinHeap<int, T> frontier = new MinHeap<int, T>();
         foreach (T node in nodes)
@@ -84,6 +122,7 @@ public class Graph<T> where T : class, INode
 //Assumes navmesh is perpendicular to z axis
 public class NavigationMesh : MonoBehaviour
 {
+    public List<Obstacle> obstacles;
     Graph<Triangle> navMeshGraph;
     DelaunayMesh mesh;
     Material mat;
@@ -116,21 +155,21 @@ public class NavigationMesh : MonoBehaviour
         mesh = new DelaunayMesh(verts.ToArray(),
             new List<Vector2[]> {
                 new Vector2[] {
-                    new Vector2(0.5f, 0.5f),
-                    new Vector2(1.5f, 2.0f),
-                    new Vector2(2.2f, 0.8f)
-                }
-            });
-        */
-        mesh = new DelaunayMesh(verts.ToArray(),
-            new List<Vector2[]> {
-                new Vector2[] {
                     new Vector2(-1.5f, 2.3f),
                     new Vector2(3.3f, 3.7f),
                     new Vector2(3.2f, -2.9f)
                 }
             });
+        */
 
+        List<Vector2[]> constrainedPoints = new List<Vector2[]>();
+        foreach (Obstacle obstacle in obstacles)
+        {
+            obstacle.InitializeEdges();
+            constrainedPoints.Add(obstacle.GetWorldMinkowskiBoundVerts(2.0f, true));
+        }
+
+        mesh = new DelaunayMesh(verts.ToArray(), constrainedPoints);
         navMeshGraph = new Graph<Triangle>(mesh.tris);
     }
 
@@ -252,24 +291,37 @@ public class NavigationMesh : MonoBehaviour
 
     public Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination)
     {
-        Vector2 startPosLocal = transform.InverseTransformPoint(start);
-        Vector2 endPosLocal = transform.InverseTransformPoint(destination);
-        Triangle startTri = FindContainingTriangle(startPosLocal);
-        Triangle endTri = FindContainingTriangle(endPosLocal);
+        Triangle startTri = FindContainingTriangle(start);
+        Triangle endTri = FindContainingTriangle(destination);
 
         List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
-        List<Vector2> shortestPathLocal = StringPullingAlgorithm(triPath, startPosLocal, endPosLocal);
-        //List<Vector2> shortestPathLocal = CentroidPath(triPath, startPosLocal, endPosLocal);
+        List<Vector2> shortestPathList = StringPullingAlgorithm(triPath, start, destination);
 
-        Vector2[] shortestPathWorld = new Vector2[shortestPathLocal.Count - 1];
-        for(int i = 1; i < shortestPathLocal.Count; i++)
+        Vector2[] shortestPath = new Vector2[shortestPathList.Count - 1];
+        for (int i = 1; i < shortestPathList.Count; i++)
         {
-            shortestPathWorld[i - 1] = transform.TransformPoint(shortestPathLocal[i]);
-            Debug.DrawLine(transform.TransformPoint(shortestPathLocal[i - 1]),
-                               transform.TransformPoint(shortestPathLocal[i]), Color.green, 0.0f, false);
+            shortestPath[i - 1] = shortestPathList[i];
+            Debug.DrawLine(shortestPathList[i - 1], shortestPathList[i], Color.green, 0.0f, false);
+        }
+        return shortestPath;
+    }
+
+    public Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination, Func<INodeEdge, float> edgeMultiplier)
+    {
+        Triangle startTri = FindContainingTriangle(start);
+        Triangle endTri = FindContainingTriangle(destination);
+
+        List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri, edgeMultiplier);
+        List<Vector2> shortestPathList = StringPullingAlgorithm(triPath, start, destination);
+
+        Vector2[] shortestPath = new Vector2[shortestPathList.Count - 1];
+        for (int i = 1; i < shortestPathList.Count; i++)
+        {
+            shortestPath[i - 1] = shortestPathList[i];
+            Debug.DrawLine(shortestPathList[i - 1], shortestPathList[i], Color.green, 0.0f, false);
         }
 
-        return shortestPathWorld;
+        return shortestPath;
     }
 
     private Triangle FindContainingTriangle(Vector2 p)

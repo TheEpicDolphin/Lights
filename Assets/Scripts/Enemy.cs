@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour, INavAgent
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    float radius = 1.0f;
+    float radius;
     float enemySpeed = 2.0f;
     public Hand hand;
 
@@ -15,6 +15,7 @@ public class Enemy : MonoBehaviour, INavAgent
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        radius = GetComponent<Collider2D>().bounds.extents[0];
     }
 
     // Update is called once per frame
@@ -25,14 +26,14 @@ public class Enemy : MonoBehaviour, INavAgent
 
     void Update()
     {
-        Sense();
+        //Sense();
         
     }
 
     public void NavigateTo(Vector2 destination)
     {
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination);
-        
+
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
         Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
@@ -43,6 +44,27 @@ public class Enemy : MonoBehaviour, INavAgent
         f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
         rb.AddForce(f, ForceMode2D.Force);
         
+    }
+
+    public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
+    {
+        Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination,
+        (e) =>
+        {
+            Triangle tri = (Triangle)e.GetNode();
+            float dist = Vector2.Distance(tri.Centroid(), avoid);
+            return 1.0f + Mathf.Max(5.0f - dist, 0.0f);
+        });
+
+        Vector2 nextPoint = shortestPath[0];
+        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
+        Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
+
+        float k = (1 / Time.deltaTime) * 0.4f;
+        Vector2 f = k * (vDesired - rb.velocity);
+        //Prevent unrealistic forces by clamping to range
+        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
+        rb.AddForce(f, ForceMode2D.Force);
     }
 
     public void AddKnockback(float strength, Vector2 dir)
@@ -58,7 +80,6 @@ public class Enemy : MonoBehaviour, INavAgent
     public void Sense()
     {
 
-    }
-    
+    }    
     
 }

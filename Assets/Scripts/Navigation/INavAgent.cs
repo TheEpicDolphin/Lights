@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface INavAgent
 {
-    void Navigate(Vector2 destination);
+    void NavigateTo(Vector2 destination);
 }
