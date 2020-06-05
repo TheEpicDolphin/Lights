@@ -37,19 +37,18 @@ public abstract class Obstacle : MonoBehaviour
 
     public Vector2[] GetWorldMinkowskiBoundVerts(float radius, bool clockwise = false)
     {
-        Vector2[] boundVerts = GetWorldBoundVerts(clockwise);
+        Vector2[] boundVerts = GetWorldBoundVerts();
         Vector2[] minkowskiBoundVerts = new Vector2[boundVerts.Length];
         for(int i = 0; i < boundVerts.Length; i++)
         {
             Vector2 n1 = -Vector2.Perpendicular(boundVerts[i] - boundVerts[Mod(i - 1, boundVerts.Length)]);
             Vector2 n2 = -Vector2.Perpendicular(boundVerts[Mod(i + 1, boundVerts.Length)] - boundVerts[i]);
-            if (clockwise)
-            {
-                n1 = -n1;
-                n2 = -n2;
-            }
             Vector2 n = (n1 + n2).normalized;
             minkowskiBoundVerts[i] = boundVerts[i] + radius * n;
+        }
+        if (clockwise)
+        {
+            System.Array.Reverse(minkowskiBoundVerts);
         }
         return minkowskiBoundVerts;
     }
