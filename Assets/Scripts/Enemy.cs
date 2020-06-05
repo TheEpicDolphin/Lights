@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour, INavAgent
     float radius;
     float enemySpeed = 2.0f;
     public Hand hand;
+    UtilityAI uai;
 
     // Start is called before the first frame update
     void Start()
@@ -79,6 +80,7 @@ public class Enemy : MonoBehaviour, INavAgent
 
     public void Sense()
     {
+        uai.AddMemory("cover_colliders", Physics2D.OverlapCircleAll(transform.position, 10.0f, 1 << 12));
 
     }    
     

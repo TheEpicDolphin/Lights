@@ -6,7 +6,7 @@ public class FindCover : UtilityAction
 {
     Player player;
     Enemy me;
-    
+    Collider2D[] coverColliders;
 
     public FindCover(string name) : base(name)
     {
@@ -40,6 +40,8 @@ public class FindCover : UtilityAction
             return false;
         }
 
+        coverColliders = (Collider2D[]) memory["cover_colliders"];
+
         return true;
     }
 
@@ -63,8 +65,6 @@ public class FindCover : UtilityAction
 
     public override void Run(Dictionary<string, object> calculated)
     {
-
-        Collider2D[] coverColliders = Physics2D.OverlapCircleAll(me.transform.position, 10.0f, 1 << 12);
         Vector2 playerDir = player.transform.position - me.transform.position;
         bool coverFound = false;
         Vector2 bestCoverLocation = Vector2.zero;

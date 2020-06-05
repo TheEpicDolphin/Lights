@@ -17,4 +17,9 @@ public class UtilityAI
     {
         utilityBuckets[0].RunOptimalAction(utilityMemory);
     }
+
+    public void AddMemory(string key, object obj)
+    {
+        utilityMemory[key] = obj;
+    }
 }
