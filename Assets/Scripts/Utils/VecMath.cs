@@ -39,5 +39,10 @@ namespace VecUtils
             return angle;
         }
 
+        internal static float ClockwiseAngle(Vector2 from, Vector2 to)
+        {
+            return CounterClockwiseAngle(to, from);
+        }
+
     }
 }
