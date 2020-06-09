@@ -108,21 +108,19 @@ public class VisibilityCone : MonoBehaviour
                 i = (i + 1) % obstacleBoundPolarVerts.Length;
                 PolarCoord p2 = obstacleBoundPolarVerts[i];
 
-                PolarCoord pcoord1 = new PolarCoord(Vector2.Distance(v1, origin), VecMath.CounterClockwiseAngle(-direction, v1));
-                PolarCoord pcoord2 = new PolarCoord(Vector2.Distance(v2, origin), VecMath.CounterClockwiseAngle(-direction, v2));
-                bool isOutOfBounds = (pcoord1.theta > thetaL && pcoord2.theta > thetaL) || 
-                                     (pcoord1.theta < thetaR && pcoord2.theta < thetaR);
-                if (VecMath.Det(v1 - origin, v2 - origin) > 0 && !isOutOfBounds)
+                bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
+                                     (p1.theta < thetaR && p2.theta < thetaR);
+                if (p1.theta > p2.theta && !isOutOfBounds)
                 {
                     //Normal is facing towards beam
                     if (transitionReady)
                     {
                         contiguousVertices = new LinkedList<PolarCoord>();
-                        sortedKeyVertices.Add(contiguousVertices.AddLast(pcoord1));
+                        sortedKeyVertices.Add(contiguousVertices.AddLast(p1));
                         transitionReady = false;
                     }
 
-                    sortedKeyVertices.Add(contiguousVertices.AddLast(pcoord2));
+                    sortedKeyVertices.Add(contiguousVertices.AddLast(p2));
                 }
                 else
                 {
@@ -171,20 +169,19 @@ public class VisibilityCone : MonoBehaviour
                 {
                     Debug.Log("That one issue");
                 }
-                LineSegment lsPrev = new LineSegment(prevClosestEdge.Value.v, prevClosestEdge.Next.Value.v);
-                Vector2 clipPrev = lsPrev.p1 + ((vs.x - lsPrev.p1.x) / lsPrev.dir.x) * lsPrev.dir;
-                clipPrev = new Vector2(vs.x, clipPrev.y);
 
-                Vector2 closestVert = new Vector2(vs.x, Mathf.Infinity);
-                foreach (LinkedListNode<ObstacleVertex> activeEdge in activeEdges)
+                float clipPrevR = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next.Value, vs.theta);
+                PolarCoord clipPrev = new PolarCoord(vs.theta, clipPrevR);
+
+                PolarCoord closestVert = new PolarCoord(Mathf.Infinity, vs.theta);
+                foreach (LinkedListNode<PolarCoord> activeEdge in activeEdges)
                 {
-                    Vector2 activeEdgeStart = activeEdge.Value.v;
-                    Vector2 activeEdgeEnd = activeEdge.Next.Value.v;
-                    LineSegment ls = new LineSegment(activeEdgeStart, activeEdgeEnd);
-                    Vector2 clip = ls.p1 + ((vs.x - ls.p1.x) / ls.dir.x) * ls.dir;
-                    if (clip.y < closestVert.y)
+                    PolarCoord activeEdgeStart = activeEdge.Value;
+                    PolarCoord activeEdgeEnd = activeEdge.Next.Value;
+                    float clipR = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, vs.theta);
+                    if (clipR < closestVert.r)
                     {
-                        closestVert.y = clip.y;
+                        closestVert.r = clipR;
                         curClosestEdge = activeEdge;
                     }
                 }
@@ -295,24 +292,7 @@ public class VisibilityCone : MonoBehaviour
             beamComponent[i] = curToBeamLocal.MultiplyPoint3x4(beamComponent[i]);
         }
 
-        beamComponents.Add(beamComponent);
-        if (maxRecurse == 0)
-        {
-            return;
-        }
-
-        //Do reflections/refractions here
-        foreach (Tuple<Obstacle, Vector2[]> illuminatedEdge in illuminatedEdges)
-        {
-            Obstacle obs = illuminatedEdge.el1;
-            Vector2[] newLims = illuminatedEdge.el2;
-            if (obs != null)
-            {
-                obs.Cast(this, newLims, beamLocalToCur, beamLength, maxRecurse - 1, ref beamComponents);
-            }
-
-        }
-
+        return beamComponent;
 
     }
 }
