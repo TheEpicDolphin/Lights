@@ -16,6 +16,11 @@ public class VisibilityCone : MonoBehaviour
             this.theta = theta;
         }
 
+        public static PolarCoord ToPolarCoords(Vector2 p)
+        {
+            return new PolarCoord(p.magnitude, Mathf.Atan2(p.y, p.x));
+        }
+
         public float x()
         {
             return r * Mathf.Cos(theta);
@@ -24,6 +29,11 @@ public class VisibilityCone : MonoBehaviour
         public float y()
         {
             return r * Mathf.Sin(theta);
+        }
+
+        public static float Interpolate(PolarCoord p1, PolarCoord p2, float t)
+        {
+            return 0.0f;
         }
     }
 
@@ -44,8 +54,14 @@ public class VisibilityCone : MonoBehaviour
     //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
     public List<Vector2> Trace(List<Obstacle> obstacles)
     {
-        Vector2 origin = transform.position;
-        Vector2 direction = transform.up;
+        Matrix4x4 toConeSpace = Matrix4x4.Translate(transform.position);
+        toConeSpace.SetColumn(0, -transform.up);
+        toConeSpace.SetColumn(1, transform.right);
+        toConeSpace.SetColumn(2, transform.forward);
+
+        Vector2 direction = toConeSpace.GetColumn(0);
+        Vector2 origin = toConeSpace.GetColumn(3);
+
         float thetaL = 180.0f + angle / 2;
         float thetaR = 180.0f - angle / 2;
         Vector2 coneL = Quaternion.Euler(0, 0,-angle / 2) * direction;
@@ -54,17 +70,23 @@ public class VisibilityCone : MonoBehaviour
 
         foreach (Obstacle obstacle in obstacles)
         {
-
-            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts(true);
+            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts();
+            PolarCoord[] obstacleBoundPolarVerts = new PolarCoord[obstacleBoundVerts.Length];
+            //Transform points to cone space
+            for(int j = 0; j < obstacleBoundVerts.Length; j++)
+            {
+                Vector2 v = toConeSpace.MultiplyPoint(obstacleBoundVerts[j]);
+                obstacleBoundPolarVerts[j] = PolarCoord.ToPolarCoords(v);
+            }
 
             bool transitionReady = false;
             int i = 0;
             //Wait for first away -> towards transition
-            while (i < obstacleBoundVerts.Length)
+            while (i < obstacleBoundPolarVerts.Length)
             {
-                Vector2 v1 = obstacleBoundVerts[i];
-                Vector2 v2 = obstacleBoundVerts[(i + 1) % obstacleBoundVerts.Length];
-                if (VecMath.Det(v1 - origin, v2 - origin) > 0)
+                PolarCoord p1 = obstacleBoundPolarVerts[i];
+                PolarCoord p2 = obstacleBoundPolarVerts[(i + 1) % obstacleBoundPolarVerts.Length];
+                if (p1.theta > p2.theta)
                 {
                     if (transitionReady)
                     {
@@ -80,11 +102,11 @@ public class VisibilityCone : MonoBehaviour
             i %= obstacleBoundVerts.Length;
 
             LinkedList<PolarCoord> contiguousVertices = new LinkedList<PolarCoord>();
-            for (int t = 0; t < obstacleBoundVerts.Length; t++)
+            for (int t = 0; t < obstacleBoundPolarVerts.Length; t++)
             {
-                Vector2 v1 = obstacleBoundVerts[i];
-                i = (i + 1) % obstacleBoundVerts.Length;
-                Vector2 v2 = obstacleBoundVerts[i];
+                PolarCoord p1 = obstacleBoundPolarVerts[i];
+                i = (i + 1) % obstacleBoundPolarVerts.Length;
+                PolarCoord p2 = obstacleBoundPolarVerts[i];
 
                 PolarCoord pcoord1 = new PolarCoord(Vector2.Distance(v1, origin), VecMath.CounterClockwiseAngle(-direction, v1));
                 PolarCoord pcoord2 = new PolarCoord(Vector2.Distance(v2, origin), VecMath.CounterClockwiseAngle(-direction, v2));
@@ -195,10 +217,7 @@ public class VisibilityCone : MonoBehaviour
                     {
                         PolarCoord activeEdgeStart = activeEdge.Value;
                         PolarCoord activeEdgeEnd = activeEdge.Next.Value;
-                        Vector2 a = new Vector2(activeEdgeStart.x(), activeEdgeEnd.y()) + origin;
-                        Vector2 b = new Vector2(activeEdgeEnd.x(), activeEdgeEnd.y()) + origin;
-                        Vector2 c = (ve.theta / ) * a + (ve.theta / ) * b;
-                        float clipR = Vector2.Distance(c, origin);
+                        float clipR = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, ve.theta);
                         if(clipR < nextClosestVert.r)
                         {
                             nextClosestVert.r = clipR;
