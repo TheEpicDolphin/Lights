@@ -3,42 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using VecUtils;
 using System.Linq;
+using MathUtils;
 
 public class VisibilityCone : MonoBehaviour
 {
-    public struct PolarCoord
-    {
-        public float r;
-        public float theta;
-        public PolarCoord(float r, float theta)
-        {
-            this.r = r;
-            this.theta = theta;
-        }
-
-        public static PolarCoord ToPolarCoords(Vector2 p)
-        {
-            return new PolarCoord(p.magnitude, Mathf.Atan2(p.y, p.x));
-        }
-
-        public float x()
-        {
-            return r * Mathf.Cos(theta);
-        }
-
-        public float y()
-        {
-            return r * Mathf.Sin(theta);
-        }
-
-        public static float Interpolate(PolarCoord p1, PolarCoord p2, float t)
-        {
-            return 0.0f;
-        }
-    }
-
     public float angle = 15.0f;
-    float beamRadius = 10.0f;
+    public int resolution = 5;
+    float coneRadius = 10.0f;
     // Start is called before the first frame update
     void Start()
     {
@@ -62,8 +33,8 @@ public class VisibilityCone : MonoBehaviour
         Vector2 direction = toConeSpace.GetColumn(0);
         Vector2 origin = toConeSpace.GetColumn(3);
 
-        float thetaL = 180.0f + angle / 2;
-        float thetaR = 180.0f - angle / 2;
+        float thetaL = Mathf.PI + Mathf.Deg2Rad * (angle / 2);
+        float thetaR = Mathf.PI - Mathf.Deg2Rad * angle / 2;
         Vector2 coneL = Quaternion.Euler(0, 0,-angle / 2) * direction;
         Vector2 coneR = Quaternion.Euler(0, 0, angle / 2) * direction;
         List<LinkedListNode<PolarCoord>> sortedKeyVertices = new List<LinkedListNode<PolarCoord>>();
@@ -130,12 +101,16 @@ public class VisibilityCone : MonoBehaviour
 
         }
 
-
-        LinkedList<ObstacleVertex> topLightBound = new LinkedList<ObstacleVertex>();
-        Vector2 vts = new Vector2(lims[0].x - 0.1f, beamLength);
-        Vector2 vte = new Vector2(lims[1].x + 0.1f, beamLength);
-        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vts, null)));
-        sortedKeyVertices.Add(topLightBound.AddLast(new ObstacleVertex(vte, null)));
+        //Add outer bounds for cone
+        LinkedList<PolarCoord> coneBound = new LinkedList<PolarCoord>();
+        float phi = thetaL - 0.01f;
+        for (int i = 0; i <= resolution; i++)
+        {
+            PolarCoord p = new PolarCoord(coneRadius, phi);
+            sortedKeyVertices.Add(coneBound.AddLast(p));
+            phi += angle / resolution;
+        }
+        
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices

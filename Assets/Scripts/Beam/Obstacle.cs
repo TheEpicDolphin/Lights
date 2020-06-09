@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using AlgorithmUtils;
+using MathUtils;
 
 
 public abstract class Obstacle : MonoBehaviour
@@ -30,19 +31,14 @@ public abstract class Obstacle : MonoBehaviour
 
     }
 
-    private int Mod(int x, int m)
-    {
-        return (x % m + m) % m;
-    }
-
     public Vector2[] GetWorldMinkowskiBoundVerts(float radius, bool clockwise = false)
     {
         Vector2[] boundVerts = GetWorldBoundVerts();
         Vector2[] minkowskiBoundVerts = new Vector2[boundVerts.Length];
         for(int i = 0; i < boundVerts.Length; i++)
         {
-            Vector2 n1 = -Vector2.Perpendicular(boundVerts[i] - boundVerts[Mod(i - 1, boundVerts.Length)]);
-            Vector2 n2 = -Vector2.Perpendicular(boundVerts[Mod(i + 1, boundVerts.Length)] - boundVerts[i]);
+            Vector2 n1 = -Vector2.Perpendicular(boundVerts[i] - boundVerts[Math.Mod(i - 1, boundVerts.Length)]);
+            Vector2 n2 = -Vector2.Perpendicular(boundVerts[Math.Mod(i + 1, boundVerts.Length)] - boundVerts[i]);
             Vector2 n = (n1 + n2).normalized;
             minkowskiBoundVerts[i] = boundVerts[i] + radius * n;
         }
