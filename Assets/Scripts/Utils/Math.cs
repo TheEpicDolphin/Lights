@@ -65,16 +65,8 @@ namespace MathUtils
             float x1 = p1.x();
             float x2 = p2.x();
 
-            float theta0;
-            if(x2 == x1)
-            {
-                theta0 = Mathf.PI / 2;
-            }
-            else
-            {
-                theta0 = Mathf.Atan((y2 - y1) / (x2 - x1));
-            }
-
+            float theta0 = Mathf.Atan2(y2 - y1, x2 - x1);
+            
             float d0 = p1.r * Mathf.Sin(p1.theta - theta0);
             
             float rInterpolated = d0 / Mathf.Sin(t - theta0);

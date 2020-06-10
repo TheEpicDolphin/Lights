@@ -8,6 +8,7 @@ using AlgorithmUtils;
 
 public class VisibilityCone : MonoBehaviour
 {
+    //In degrees
     public float angle = 15.0f;
     public int resolution = 5;
     float coneRadius = 10.0f;
@@ -39,9 +40,13 @@ public class VisibilityCone : MonoBehaviour
 
         for(int i = 1; i < vertices.Count - 1; i++)
         {
-            indicesList.Add(i);
-            indicesList.Add(i + 1);
+            //indicesList.Add(i);
+            //indicesList.Add(i + 1);
+            //indicesList.Add(0);
+
             indicesList.Add(0);
+            indicesList.Add(i + 1);
+            indicesList.Add(i);
         }
 
         meshFilt.mesh.Clear();
@@ -60,13 +65,14 @@ public class VisibilityCone : MonoBehaviour
         toConeSpace.SetColumn(2, transform.forward);
         Matrix4x4 fromConeSpace = toConeSpace.inverse;
 
-        float thetaL = Mathf.PI + Mathf.Deg2Rad * (angle / 2);
-        float thetaR = Mathf.PI - Mathf.Deg2Rad * (angle / 2);
+        float coneAngle = Mathf.Deg2Rad * angle;
+        float thetaL = Mathf.PI + (coneAngle / 2);
+        float thetaR = Mathf.PI - (coneAngle / 2);
         List<LinkedListNode<PolarCoord>> sortedKeyVertices = new List<LinkedListNode<PolarCoord>>();
 
         foreach (Obstacle obstacle in obstacles)
         {
-            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts();
+            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts(true);
             PolarCoord[] obstacleBoundPolarVerts = new PolarCoord[obstacleBoundVerts.Length];
             //Transform points to cone space
             for(int j = 0; j < obstacleBoundVerts.Length; j++)
@@ -82,7 +88,7 @@ public class VisibilityCone : MonoBehaviour
             {
                 PolarCoord p1 = obstacleBoundPolarVerts[i];
                 PolarCoord p2 = obstacleBoundPolarVerts[(i + 1) % obstacleBoundPolarVerts.Length];
-                if (p1.theta > p2.theta)
+                if (p1.theta < p2.theta)
                 {
                     if (transitionReady)
                     {
@@ -106,7 +112,7 @@ public class VisibilityCone : MonoBehaviour
 
                 bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
                                      (p1.theta < thetaR && p2.theta < thetaR);
-                if (p1.theta > p2.theta && !isOutOfBounds)
+                if (p1.theta < p2.theta && !isOutOfBounds)
                 {
                     //Normal is facing towards beam
                     if (transitionReady)
@@ -126,17 +132,18 @@ public class VisibilityCone : MonoBehaviour
 
         }
 
+        
         //Add outer bounds for cone
-        LinkedList<PolarCoord> coneBound = new LinkedList<PolarCoord>();
-        sortedKeyVertices.Add(coneBound.AddLast(new PolarCoord(coneRadius, thetaL - 0.01f)));
-        float phi = thetaL;
+        LinkedList<PolarCoord> coneBounds = new LinkedList<PolarCoord>();
+        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(coneRadius, thetaR - 0.01f)));
+        float phi = thetaR;
         for (int i = 1; i < resolution; i++)
         {
-            phi += angle / resolution;
+            phi += coneAngle / resolution;
             PolarCoord p = new PolarCoord(coneRadius, phi);
-            sortedKeyVertices.Add(coneBound.AddLast(p));
+            sortedKeyVertices.Add(coneBounds.AddLast(p));
         }
-        sortedKeyVertices.Add(coneBound.AddLast(new PolarCoord(coneRadius, thetaR + 0.01f)));
+        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(coneRadius, thetaL + 0.01f)));
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices
