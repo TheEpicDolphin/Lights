@@ -116,6 +116,8 @@ public class VisibilityCone : MonoBehaviour
                 i = (i + 1) % obstacleBoundPolarVerts.Length;
                 PolarCoord p2 = obstacleBoundPolarVerts[i];
 
+                //TODO: Must clamp here to keep light within certain radius
+
                 bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
                                      (p1.theta < thetaR && p2.theta < thetaR);
                 if (p1.theta < p2.theta && !isOutOfBounds)
@@ -148,15 +150,16 @@ public class VisibilityCone : MonoBehaviour
         
         //Add outer bounds for cone
         LinkedList<PolarCoord> coneBounds = new LinkedList<PolarCoord>();
-        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(coneRadius, thetaR - 0.01f)));
+        float farConeRadius = 100.0f;
+        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaR - 0.01f)));
         float phi = thetaR;
         for (int i = 1; i < resolution; i++)
         {
             phi += coneAngle / resolution;
-            PolarCoord p = new PolarCoord(coneRadius, phi);
+            PolarCoord p = new PolarCoord(farConeRadius, phi);
             sortedKeyVertices.Add(coneBounds.AddLast(p));
         }
-        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(coneRadius, thetaL + 0.01f)));
+        sortedKeyVertices.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaL + 0.01f)));
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices
@@ -289,7 +292,8 @@ public class VisibilityCone : MonoBehaviour
         //Transform points from cone space
         for (int j = 0; j < polarConePoints.Count; j++)
         {
-            Vector2 v = fromConeSpace.MultiplyPoint(polarConePoints[j].ToCartesianCoordinates());
+            PolarCoord p = polarConePoints[j];
+            Vector2 v = fromConeSpace.MultiplyPoint(p.ToCartesianCoordinates());
             conePoints.Add(v);
         }
         return conePoints;
