@@ -43,8 +43,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b83e10359c9e79d4cac925f8607740f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  angle: 15
+  angle: 30
   resolution: 5
+  coneRadius: 20
   beamColor: {r: 1, g: 0, b: 0, a: 0.5}
 --- !u!1 &5075401875981725253
 GameObject:

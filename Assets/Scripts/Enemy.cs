@@ -22,7 +22,7 @@ public class Enemy : MonoBehaviour, INavAgent
     // Update is called once per frame
     void FixedUpdate()
     {
-        NavigateTo(player.transform.position);
+        //NavigateTo(player.transform.position);
     }
 
     void Update()

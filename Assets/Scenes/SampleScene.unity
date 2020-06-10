@@ -515,6 +515,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: NavigationMesh
       objectReference: {fileID: 0}
+    - target: {fileID: 5821739918220864041, guid: 84a8457cb53c4b74d9b5b5c45955118e,
+        type: 3}
+      propertyPath: obstacles.Array.data[0]
+      value: 
+      objectReference: {fileID: 1094748300}
     - target: {fileID: 5821739918220864040, guid: 84a8457cb53c4b74d9b5b5c45955118e,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -570,11 +575,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5821739918220864041, guid: 84a8457cb53c4b74d9b5b5c45955118e,
-        type: 3}
-      propertyPath: obstacles.Array.data[0]
-      value: 
-      objectReference: {fileID: 1094748300}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 84a8457cb53c4b74d9b5b5c45955118e, type: 3}
 --- !u!1001 &6115183603058870136

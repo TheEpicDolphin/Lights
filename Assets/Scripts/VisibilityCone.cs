@@ -11,7 +11,7 @@ public class VisibilityCone : MonoBehaviour
     //In degrees
     public float angle = 15.0f;
     public int resolution = 5;
-    float coneRadius = 10.0f;
+    public float coneRadius = 10.0f;
 
     MeshFilter meshFilt;
     public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
@@ -138,6 +138,13 @@ public class VisibilityCone : MonoBehaviour
 
         }
 
+        foreach (LinkedListNode<PolarCoord> obstacleNode in sortedKeyVertices)
+        {
+            Vector2 v = fromConeSpace.MultiplyPoint(obstacleNode.Value.ToCartesianCoordinates());
+            Vector3 vWorld = transform.TransformPoint(v);
+            Debug.Log(v);
+            Debug.Log(obstacleNode.Next);
+        }
         
         //Add outer bounds for cone
         LinkedList<PolarCoord> coneBounds = new LinkedList<PolarCoord>();
@@ -181,7 +188,7 @@ public class VisibilityCone : MonoBehaviour
 
                 if (prevClosestEdge.Next == null)
                 {
-                    Debug.Log("That one issue");
+                    Debug.LogError("That one issue");
                 }
 
                 PolarCoord clipPrev = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next.Value, vs.theta);

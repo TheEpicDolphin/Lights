@@ -60,6 +60,7 @@ namespace MathUtils
 
         public static PolarCoord Interpolate(PolarCoord p1, PolarCoord p2, float t)
         {
+            
             float y1 = p1.y();
             float y2 = p2.y();
             float x1 = p1.x();
@@ -71,6 +72,7 @@ namespace MathUtils
             
             float rInterpolated = d0 / Mathf.Sin(t - theta0);
             return new PolarCoord(rInterpolated, t);
+
         }
     }
 }
