@@ -28,7 +28,18 @@ public class VisibilityCone : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        List<Vector2> conePoints = Trace(new List<Obstacle>());
+        Collider2D[] obstacleColliders = Physics2D.OverlapCircleAll(transform.position, coneRadius);
+        List<Obstacle> obstacles = new List<Obstacle>();
+        foreach(Collider2D obstacleCol in obstacleColliders)
+        {
+            Obstacle obstacle = obstacleCol.gameObject.GetComponent<Obstacle>();
+            if (obstacle)
+            {
+                obstacles.Add(obstacle);
+            }
+        }
+
+        List<Vector2> conePoints = Trace(obstacles);
         List<Vector3> vertices = new List<Vector3>();
         vertices.Add(Vector3.zero);
         for (int i = 0; i < conePoints.Count; i++)
@@ -40,10 +51,6 @@ public class VisibilityCone : MonoBehaviour
 
         for(int i = 1; i < vertices.Count - 1; i++)
         {
-            //indicesList.Add(i);
-            //indicesList.Add(i + 1);
-            //indicesList.Add(0);
-
             indicesList.Add(0);
             indicesList.Add(i + 1);
             indicesList.Add(i);
@@ -56,14 +63,13 @@ public class VisibilityCone : MonoBehaviour
         meshFilt.mesh.RecalculateBounds();
     }
 
-    //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
     public List<Vector2> Trace(List<Obstacle> obstacles)
     {
-        Matrix4x4 toConeSpace = Matrix4x4.Translate(transform.position);
-        toConeSpace.SetColumn(0, -transform.up);
-        toConeSpace.SetColumn(1, transform.right);
-        toConeSpace.SetColumn(2, transform.forward);
-        Matrix4x4 fromConeSpace = toConeSpace.inverse;
+        Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
+        fromConeSpace.SetColumn(0, -transform.up);
+        fromConeSpace.SetColumn(1, transform.right);
+        fromConeSpace.SetColumn(2, transform.forward);
+        Matrix4x4 toConeSpace = fromConeSpace.inverse;
 
         float coneAngle = Mathf.Deg2Rad * angle;
         float thetaL = Mathf.PI + (coneAngle / 2);
