@@ -53,7 +53,12 @@ namespace MathUtils
             return r * Mathf.Sin(theta);
         }
 
-        public static float Interpolate(PolarCoord p1, PolarCoord p2, float t)
+        public Vector2 ToCartesianCoordinates()
+        {
+            return new Vector2(x(), y());
+        }
+
+        public static PolarCoord Interpolate(PolarCoord p1, PolarCoord p2, float t)
         {
             float y1 = p1.y();
             float y2 = p2.y();
@@ -71,7 +76,9 @@ namespace MathUtils
             }
 
             float d0 = p1.r * Mathf.Sin(p1.theta - theta0);
-            return d0 / Mathf.Sin(t - theta0);
+            
+            float rInterpolated = d0 / Mathf.Sin(t - theta0);
+            return new PolarCoord(rInterpolated, t);
         }
     }
 }

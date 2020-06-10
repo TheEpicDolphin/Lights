@@ -4,6 +4,7 @@ using UnityEngine;
 using VecUtils;
 using System.Linq;
 using MathUtils;
+using AlgorithmUtils;
 
 public class VisibilityCone : MonoBehaviour
 {
@@ -29,6 +30,7 @@ public class VisibilityCone : MonoBehaviour
         toConeSpace.SetColumn(0, -transform.up);
         toConeSpace.SetColumn(1, transform.right);
         toConeSpace.SetColumn(2, transform.forward);
+        Matrix4x4 fromConeSpace = toConeSpace.inverse;
 
         Vector2 direction = toConeSpace.GetColumn(0);
         Vector2 origin = toConeSpace.GetColumn(3);
@@ -145,18 +147,17 @@ public class VisibilityCone : MonoBehaviour
                     Debug.Log("That one issue");
                 }
 
-                float clipPrevR = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next.Value, vs.theta);
-                PolarCoord clipPrev = new PolarCoord(vs.theta, clipPrevR);
+                PolarCoord clipPrev = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next.Value, vs.theta);
 
                 PolarCoord closestVert = new PolarCoord(Mathf.Infinity, vs.theta);
                 foreach (LinkedListNode<PolarCoord> activeEdge in activeEdges)
                 {
                     PolarCoord activeEdgeStart = activeEdge.Value;
                     PolarCoord activeEdgeEnd = activeEdge.Next.Value;
-                    float clipR = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, vs.theta);
-                    if (clipR < closestVert.r)
+                    PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, vs.theta);
+                    if (clip.r < closestVert.r)
                     {
-                        closestVert.r = clipR;
+                        closestVert.r = clip.r;
                         curClosestEdge = activeEdge;
                     }
                 }
@@ -189,10 +190,10 @@ public class VisibilityCone : MonoBehaviour
                     {
                         PolarCoord activeEdgeStart = activeEdge.Value;
                         PolarCoord activeEdgeEnd = activeEdge.Next.Value;
-                        float clipR = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, ve.theta);
-                        if(clipR < nextClosestVert.r)
+                        PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, ve.theta);
+                        if(clip.r < nextClosestVert.r)
                         {
-                            nextClosestVert.r = clipR;
+                            nextClosestVert.r = clip.r;
                             curClosestEdge = activeEdge;
                         }
                     }
@@ -205,69 +206,50 @@ public class VisibilityCone : MonoBehaviour
 
         }
 
-        List<float> beamFunctionXs = new List<float>();
+        List<float> beamFunctionThetas = new List<float>();
         foreach (PolarCoord p in beamFunction)
         {
-            beamFunctionXs.Add(p.v.x);
+            beamFunctionThetas.Add(p.theta);
         }
 
-        List<Vector2> beamComponent = new List<Vector2>();
-        List<Tuple<Obstacle, Vector2[]>> illuminatedEdges = new List<Tuple<Obstacle, Vector2[]>>();
+        List<PolarCoord> polarConePoints = new List<PolarCoord>();
+        polarConePoints.Add(new PolarCoord(0, 0));
 
         //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
-        int s = Algorithm.BinarySearch(beamFunctionXs, CompCondition.LARGEST_LEQUAL, lims[0].x);
-        int e = Algorithm.BinarySearch(beamFunctionXs, CompCondition.SMALLEST_GEQUAL, lims[1].x);
+        int s = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.LARGEST_LEQUAL, thetaR);
+        int e = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.SMALLEST_GEQUAL, thetaL);
 
-        Vector2 dir1 = (beamFunction[s + 1].v - beamFunction[s].v).normalized;
-        Vector2 clipStart = beamFunction[s].v + ((lims[0].x - beamFunction[s].v.x) / dir1.x) * dir1;
-
-        Vector2 dir2 = (beamFunction[e].v - beamFunction[e - 1].v).normalized;
-        Vector2 clipEnd = beamFunction[e - 1].v + ((lims[1].x - beamFunction[e - 1].v.x) / dir2.x) * dir2;
-
-        if (!(lims[0] == clipStart))
-        {
-            beamComponent.Add(lims[0]);
-        }
-        beamComponent.Add(clipStart);
-
+        PolarCoord clipStart = PolarCoord.Interpolate(beamFunction[s], beamFunction[s + 1], thetaR);
+        polarConePoints.Add(clipStart);
         for (int j = s + 1; j < e; j++)
         {
-            Obstacle obs = beamFunction[j].obsRef;
-            Vector2 v = beamFunction[j].v;
-            Vector2 vLast = beamComponent.Last();
+            PolarCoord p = beamFunction[j];
+            polarConePoints.Add(p);
+        }
+        PolarCoord clipEnd = PolarCoord.Interpolate(beamFunction[e - 1], beamFunction[e], thetaL);
+        polarConePoints.Add(clipEnd);
 
-            if (!Mathf.Approximately(v.x, vLast.x))
+        /*
+        List<PolarCoord> aiHidingSpots = new List<PolarCoord>();
+        for(int i = 0; i < polarConePoints.Count - 1; i++)
+        {
+            PolarCoord p1 = polarConePoints[i];
+            PolarCoord p2 = polarConePoints[i + 1];
+            if (Mathf.Approximately(p1.theta, p2.theta))
             {
-                illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(obs,
-                                    new Vector2[] { curToBeamLocal.MultiplyPoint3x4(vLast),
-                                                    curToBeamLocal.MultiplyPoint3x4(v) }));
+                aiHidingSpots.Add();
             }
-
-            beamComponent.Add(v);
         }
+        */
 
-        Obstacle lastObs = beamFunction[e].obsRef;
-        if (!Mathf.Approximately(beamComponent.Last().x, clipEnd.x))
+        List<Vector2> conePoints = new List<Vector2>(); 
+        //Transform points from cone space
+        for (int j = 0; j < polarConePoints.Count; j++)
         {
-            illuminatedEdges.Add(new Tuple<Obstacle, Vector2[]>(lastObs,
-                            new Vector2[] { curToBeamLocal.MultiplyPoint3x4(beamComponent.Last()),
-                                            curToBeamLocal.MultiplyPoint3x4(clipEnd) }));
+            Vector2 v = fromConeSpace.MultiplyPoint(polarConePoints[j].ToCartesianCoordinates());
+            conePoints.Add(v);
         }
-
-
-        beamComponent.Add(clipEnd);
-        if (!(lims[1] == clipEnd))
-        {
-            beamComponent.Add(lims[1]);
-        }
-
-        //Transform every point to beam local coordinates
-        for (int i = 0; i < beamComponent.Count; i++)
-        {
-            beamComponent[i] = curToBeamLocal.MultiplyPoint3x4(beamComponent[i]);
-        }
-
-        return beamComponent;
+        return conePoints;
 
     }
 }
