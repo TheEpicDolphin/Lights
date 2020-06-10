@@ -20,7 +20,8 @@ public class VisibilityCone : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        List<Vector2> conePoints = Trace(new List<Obstacle>());
+
     }
 
     //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
@@ -32,13 +33,8 @@ public class VisibilityCone : MonoBehaviour
         toConeSpace.SetColumn(2, transform.forward);
         Matrix4x4 fromConeSpace = toConeSpace.inverse;
 
-        Vector2 direction = toConeSpace.GetColumn(0);
-        Vector2 origin = toConeSpace.GetColumn(3);
-
         float thetaL = Mathf.PI + Mathf.Deg2Rad * (angle / 2);
-        float thetaR = Mathf.PI - Mathf.Deg2Rad * angle / 2;
-        Vector2 coneL = Quaternion.Euler(0, 0,-angle / 2) * direction;
-        Vector2 coneR = Quaternion.Euler(0, 0, angle / 2) * direction;
+        float thetaR = Mathf.PI - Mathf.Deg2Rad * (angle / 2);
         List<LinkedListNode<PolarCoord>> sortedKeyVertices = new List<LinkedListNode<PolarCoord>>();
 
         foreach (Obstacle obstacle in obstacles)
@@ -105,14 +101,15 @@ public class VisibilityCone : MonoBehaviour
 
         //Add outer bounds for cone
         LinkedList<PolarCoord> coneBound = new LinkedList<PolarCoord>();
-        float phi = thetaL - 0.01f;
-        for (int i = 0; i <= resolution; i++)
+        sortedKeyVertices.Add(coneBound.AddLast(new PolarCoord(coneRadius, thetaL - 0.01f)));
+        float phi = thetaL;
+        for (int i = 1; i < resolution; i++)
         {
+            phi += angle / resolution;
             PolarCoord p = new PolarCoord(coneRadius, phi);
             sortedKeyVertices.Add(coneBound.AddLast(p));
-            phi += angle / resolution;
         }
-        
+        sortedKeyVertices.Add(coneBound.AddLast(new PolarCoord(coneRadius, thetaR + 0.01f)));
 
         //Order by increasing x and then increasing y
         sortedKeyVertices = sortedKeyVertices
@@ -213,7 +210,6 @@ public class VisibilityCone : MonoBehaviour
         }
 
         List<PolarCoord> polarConePoints = new List<PolarCoord>();
-        polarConePoints.Add(new PolarCoord(0, 0));
 
         //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
         int s = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.LARGEST_LEQUAL, thetaR);
