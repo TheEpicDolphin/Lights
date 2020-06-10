@@ -18,6 +18,7 @@ public class Player : MonoBehaviour
     Vector2 lastVelocity = Vector2.zero;
     Vector2 eLast = Vector2.zero;
     public Hand hand;
+    VisibilityCone visibilityCone;
 
     //public Inventory inventory;
 
@@ -34,6 +35,7 @@ public class Player : MonoBehaviour
 
         hand = GetComponentInChildren<Hand>();
 
+        visibilityCone = GetComponentInChildren<VisibilityCone>();
         //inventory.handgunAmmo = 200;
 
 
@@ -74,6 +76,7 @@ public class Player : MonoBehaviour
         }
 
         hand.SetHandDirection(relHandDir);
+
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);

@@ -139,14 +139,6 @@ public class VisibilityCone : MonoBehaviour
             }
 
         }
-
-        foreach (LinkedListNode<PolarCoord> obstacleNode in sortedKeyVertices)
-        {
-            Vector2 v = fromConeSpace.MultiplyPoint(obstacleNode.Value.ToCartesianCoordinates());
-            Vector3 vWorld = transform.TransformPoint(v);
-            Debug.Log(v);
-            Debug.Log(obstacleNode.Next);
-        }
         
         //Add outer bounds for cone
         LinkedList<PolarCoord> coneBounds = new LinkedList<PolarCoord>();
