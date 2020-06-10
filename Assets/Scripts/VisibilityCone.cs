@@ -11,17 +11,44 @@ public class VisibilityCone : MonoBehaviour
     public float angle = 15.0f;
     public int resolution = 5;
     float coneRadius = 10.0f;
+
+    MeshFilter meshFilt;
+    public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
     // Start is called before the first frame update
     void Start()
     {
-        
+        meshFilt = gameObject.AddComponent<MeshFilter>();
+        MeshRenderer meshRend = gameObject.AddComponent<MeshRenderer>();
+        meshRend.material = new Material(Shader.Find("Custom/BeamShader"));
+        //meshRend.material = new Material(Shader.Find("Standard"));
+        meshRend.material.color = beamColor;
     }
 
     // Update is called once per frame
     void Update()
     {
         List<Vector2> conePoints = Trace(new List<Obstacle>());
+        List<Vector3> vertices = new List<Vector3>();
+        vertices.Add(Vector3.zero);
+        for (int i = 0; i < conePoints.Count; i++)
+        {
+            vertices.Add(transform.InverseTransformPoint(conePoints[i]));
+        }
+        
+        List<int> indicesList = new List<int>();
 
+        for(int i = 1; i < vertices.Count - 1; i++)
+        {
+            indicesList.Add(i);
+            indicesList.Add(i + 1);
+            indicesList.Add(0);
+        }
+
+        meshFilt.mesh.Clear();
+        meshFilt.mesh.SetVertices(vertices);
+        meshFilt.mesh.SetTriangles(indicesList.ToArray(), 0);
+        meshFilt.mesh.RecalculateNormals();
+        meshFilt.mesh.RecalculateBounds();
     }
 
     //TODO: add argument for rightHanded/leftHanded coordinate system for appropriate reversing of vertices
