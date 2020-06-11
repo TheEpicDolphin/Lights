@@ -71,9 +71,6 @@ public class VisibilityCone : MonoBehaviour
     public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
     {
         Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
-        //fromConeSpace.SetColumn(0, -transform.up);
-        //fromConeSpace.SetColumn(1, transform.right);
-        //fromConeSpace.SetColumn(2, transform.forward);
         fromConeSpace.SetColumn(0, -direction);
         fromConeSpace.SetColumn(1, -Vector2.Perpendicular(direction));
         fromConeSpace.SetColumn(2, Vector3.forward);
