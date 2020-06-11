@@ -28,9 +28,14 @@ public class VisibilityCone : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+    }
+
+    public void Draw(Vector2 direction)
+    {
         Collider2D[] obstacleColliders = Physics2D.OverlapCircleAll(transform.position, coneRadius);
         List<Obstacle> obstacles = new List<Obstacle>();
-        foreach(Collider2D obstacleCol in obstacleColliders)
+        foreach (Collider2D obstacleCol in obstacleColliders)
         {
             Obstacle obstacle = obstacleCol.gameObject.GetComponent<Obstacle>();
             if (obstacle)
@@ -39,17 +44,17 @@ public class VisibilityCone : MonoBehaviour
             }
         }
 
-        List<Vector2> conePoints = Trace(obstacles);
+        List<Vector2> conePoints = Trace(obstacles, direction);
         List<Vector3> vertices = new List<Vector3>();
         vertices.Add(Vector3.zero);
         for (int i = 0; i < conePoints.Count; i++)
         {
             vertices.Add(transform.InverseTransformPoint(conePoints[i]));
         }
-        
+
         List<int> indicesList = new List<int>();
 
-        for(int i = 1; i < vertices.Count - 1; i++)
+        for (int i = 1; i < vertices.Count - 1; i++)
         {
             indicesList.Add(0);
             indicesList.Add(i + 1);
@@ -63,12 +68,15 @@ public class VisibilityCone : MonoBehaviour
         meshFilt.mesh.RecalculateBounds();
     }
 
-    public List<Vector2> Trace(List<Obstacle> obstacles)
+    public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
     {
         Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
-        fromConeSpace.SetColumn(0, -transform.up);
-        fromConeSpace.SetColumn(1, transform.right);
-        fromConeSpace.SetColumn(2, transform.forward);
+        //fromConeSpace.SetColumn(0, -transform.up);
+        //fromConeSpace.SetColumn(1, transform.right);
+        //fromConeSpace.SetColumn(2, transform.forward);
+        fromConeSpace.SetColumn(0, -direction);
+        fromConeSpace.SetColumn(1, -Vector2.Perpendicular(direction));
+        fromConeSpace.SetColumn(2, Vector3.forward);
         Matrix4x4 toConeSpace = fromConeSpace.inverse;
 
         float coneAngle = Mathf.Deg2Rad * angle;
