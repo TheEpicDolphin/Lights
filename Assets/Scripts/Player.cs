@@ -18,7 +18,7 @@ public class Player : MonoBehaviour
     Vector2 lastVelocity = Vector2.zero;
     Vector2 eLast = Vector2.zero;
     public Hand hand;
-    VisibilityCone visibilityCone;
+    public VisibilityCone visibilityCone;
 
     //public Inventory inventory;
 

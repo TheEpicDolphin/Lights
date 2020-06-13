@@ -4,6 +4,24 @@ using UnityEngine;
 
 namespace GeometryUtils
 {
+    struct Plane2D
+    {
+        Vector2 n;
+        Vector2 p;
+
+        public Plane2D(Vector2 n, Vector2 p)
+        {
+            this.n = n;
+            this.p = p;
+        }
+
+        //Return True if point is on the positive side of the plane. False otherwise
+        public bool GetSide(Vector2 point)
+        {
+            return Vector2.Dot(n, point - p) > 0;
+        }
+    }
+
     public class Geometry
     {
         internal static float Det(Vector2 v1, Vector2 v2)

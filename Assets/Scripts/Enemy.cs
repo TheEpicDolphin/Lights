@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour, INavAgent
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    float radius;
+    public float radius;
     float enemySpeed = 2.0f;
     public Hand hand;
     //UtilityAI uai;
@@ -60,6 +60,18 @@ public class Enemy : MonoBehaviour, INavAgent
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
         Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
+
+        float k = (1 / Time.deltaTime) * 0.4f;
+        Vector2 f = k * (vDesired - rb.velocity);
+        //Prevent unrealistic forces by clamping to range
+        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
+        rb.AddForce(f, ForceMode2D.Force);
+    }
+
+    public void BeelineTo(Vector2 destination)
+    {
+        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
+        Vector2 vDesired = (destination - curPos).normalized * enemySpeed;
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);

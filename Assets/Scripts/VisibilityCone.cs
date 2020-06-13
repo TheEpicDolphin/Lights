@@ -5,6 +5,7 @@ using VecUtils;
 using System.Linq;
 using MathUtils;
 using AlgorithmUtils;
+using GeometryUtils;
 
 public class VisibilityCone : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class VisibilityCone : MonoBehaviour
 
     MeshFilter meshFilt;
     public Color beamColor = new Color(1.0f, 0.0f, 0.0f, 0.5f);
+    List<Vector2> outline = new List<Vector2>();
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,12 +47,11 @@ public class VisibilityCone : MonoBehaviour
             }
         }
 
-        List<Vector2> conePoints = Trace(obstacles, direction);
+        outline = Trace(obstacles, direction);
         List<Vector3> vertices = new List<Vector3>();
-        vertices.Add(Vector3.zero);
-        for (int i = 0; i < conePoints.Count; i++)
+        for (int i = 0; i < outline.Count; i++)
         {
-            vertices.Add(transform.InverseTransformPoint(conePoints[i]));
+            vertices.Add(transform.InverseTransformPoint(outline[i]));
         }
 
         List<int> indicesList = new List<int>();
@@ -83,7 +85,7 @@ public class VisibilityCone : MonoBehaviour
 
         foreach (Obstacle obstacle in obstacles)
         {
-            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts(true);
+            Vector2[] obstacleBoundVerts = obstacle.GetWorldBoundVerts(clockwise: true);
             PolarCoord[] obstacleBoundPolarVerts = new PolarCoord[obstacleBoundVerts.Length];
             //Transform points to cone space
             for(int j = 0; j < obstacleBoundVerts.Length; j++)
@@ -122,9 +124,13 @@ public class VisibilityCone : MonoBehaviour
                 PolarCoord p2 = obstacleBoundPolarVerts[i];
 
                 //TODO: Must clamp here to keep light within certain radius
-
+                /*
                 bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
-                                     (p1.theta < thetaR && p2.theta < thetaR);
+                                     (p1.theta < thetaR && p2.theta < thetaR) ||
+                                     (p1.theta > thetaL && p2.theta < thetaR) ||
+                                     (p1.theta < thetaR && p2.theta > thetaL);
+                */
+                bool isOutOfBounds = false;
                 if (p1.theta < p2.theta && !isOutOfBounds)
                 {
                     //Normal is facing towards beam
@@ -272,28 +278,35 @@ public class VisibilityCone : MonoBehaviour
         PolarCoord clipEnd = PolarCoord.Interpolate(beamFunction[e - 1], beamFunction[e], thetaL);
         polarConePoints.Add(clipEnd);
 
-        /*
-        List<PolarCoord> aiHidingSpots = new List<PolarCoord>();
-        for(int i = 0; i < polarConePoints.Count - 1; i++)
-        {
-            PolarCoord p1 = polarConePoints[i];
-            PolarCoord p2 = polarConePoints[i + 1];
-            if (Mathf.Approximately(p1.theta, p2.theta))
-            {
-                aiHidingSpots.Add();
-            }
-        }
-        */
-
-        List<Vector2> conePoints = new List<Vector2>(); 
+        List<Vector2> coneOutline = new List<Vector2>();
+        coneOutline.Add(transform.position);
         //Transform points from cone space
         for (int j = 0; j < polarConePoints.Count; j++)
         {
             PolarCoord p = polarConePoints[j];
             Vector2 v = fromConeSpace.MultiplyPoint(p.ToCartesianCoordinates());
-            conePoints.Add(v);
+            coneOutline.Add(v);
         }
-        return conePoints;
+        return coneOutline;
 
+    }
+
+    public bool OutlineContainsPoint(Vector2 p)
+    {
+        return Geometry.IsInPolygon(p, outline.ToArray(), counterClockwise: true);
+    }
+
+    public List<Vector2[]> GetBlindSpotEdges()
+    {
+        List<Vector2[]> blindSpots = new List<Vector2[]>();
+        for (int i = 1; i < outline.Count - 1; i++)
+        {
+            Vector2 v1 = outline[i];
+            Vector2 v2 = outline[i + 1];
+            if (Mathf.Approximately(VecMath.Det(v1 - transform.position, v2 - transform.position), 0))
+            {
+                blindSpots.Add(new Vector2[] { v1, v2 });
+            }
+        }
     }
 }

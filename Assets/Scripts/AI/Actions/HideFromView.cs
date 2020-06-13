@@ -1,14 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GeometryUtils;
 
-public class FindCover : UtilityAction
+public class HideFromView : UtilityAction
 {
     Player player;
     Enemy me;
     Collider2D[] coverColliders;
+    float exposureTime;
 
-    public FindCover(string name) : base(name)
+    public HideFromView(string name) : base(name)
     {
         
     }
@@ -58,6 +60,13 @@ public class FindCover : UtilityAction
         float dist = Vector3.Distance(player.transform.position, me.transform.position);
         float proximity = 1 - Mathf.Max(equippedFirearmRange - dist, 0.0f) / equippedFirearmRange;
 
+        //Desire to hide based on whether enemy is inside player's visibility cone
+        float exposure = 0.0f;
+        bool visibility = player.visibilityCone.OutlineContainsPoint(me.transform.position);
+        if (visibility)
+        {
+            exposure = 0.5f;
+        }
 
         float U = 1.0f;
         return U;
@@ -65,45 +74,30 @@ public class FindCover : UtilityAction
 
     public override void Run(Dictionary<string, object> calculated)
     {
+        List<Vector2[]> blindSpots = player.visibilityCone.GetBlindSpotEdges();
+        List<Vector2[]> closeBlindSpots = new List<Vector2[]>();
+
         Vector2 playerDir = player.transform.position - me.transform.position;
-        bool coverFound = false;
-        Vector2 bestCoverLocation = Vector2.zero;
-        float bestPreference = Mathf.NegativeInfinity;
-        foreach(Collider2D coverCollider in coverColliders)
+        Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
+        Plane2D sepBoundary = new Plane2D(playerDir.normalized, midPoint);
+
+        foreach (Vector2[] blindSpot in blindSpots)
         {
-            Cover cover = coverCollider.gameObject.GetComponent<Cover>();
-            if (cover)
+            Vector2 v1 = blindSpot[0];
+            Vector2 v2 = blindSpot[1];
+            if (sepBoundary.GetSide(v1) && sepBoundary.GetSide(v2))
             {
-                Vector2[] boundVerts = cover.GetWorldBoundVerts();
-                for (int i = 0; i < boundVerts.Length; i++)
-                {
-                    Vector2 p1 = boundVerts[i];
-                    Vector2 p2 = boundVerts[(i + 1) % boundVerts.Length];
-                    Vector2 n = Vector2.Perpendicular(p2 - p1).normalized;
-                    float dot = Vector2.Dot(-playerDir, n);
-                    if(dot > 0)
-                    {
-                        float preference = dot + 1 / playerDir.magnitude;
-                        if (preference > bestPreference)
-                        {
-                            bestPreference = preference;
-                            bestCoverLocation = (p1 + p2) / 2 + 2.5f * n;
-                        }
-                    }
-                    
-                }
-                
+                closeBlindSpots.Add(blindSpot);
             }
         }
 
-        if (coverFound)
+        Vector2 obstructedPoint;
+        
+        if (!Physics2D.CircleCast(me.transform.position, me.radius, obstructedPoint, ))
         {
-            me.NavigateToWhileAvoiding(bestCoverLocation, player.transform.position);
-        }
-        else
-        {
-            //TODO: Choose random position
-            me.NavigateToWhileAvoiding(Vector2.zero, player.transform.position);
+            me.NavigateTo(obstructedPoint);
+            //Give this action a large amount of inertia
+
         }
         
     }
