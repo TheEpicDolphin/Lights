@@ -299,14 +299,18 @@ public class VisibilityCone : MonoBehaviour
     public List<Vector2[]> GetBlindSpotEdges()
     {
         List<Vector2[]> blindSpots = new List<Vector2[]>();
+        Vector2 playerPos = transform.position;
         for (int i = 1; i < outline.Count - 1; i++)
         {
             Vector2 v1 = outline[i];
             Vector2 v2 = outline[i + 1];
-            if (Mathf.Approximately(VecMath.Det(v1 - transform.position, v2 - transform.position), 0))
+            
+            if (Mathf.Approximately(VecMath.Det(v1 - playerPos, v2 - playerPos), 0))
             {
                 blindSpots.Add(new Vector2[] { v1, v2 });
             }
         }
+
+        return blindSpots;
     }
 }

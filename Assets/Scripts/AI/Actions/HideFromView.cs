@@ -7,15 +7,14 @@ public class HideFromView : UtilityAction
 {
     Player player;
     Enemy me;
-    Collider2D[] coverColliders;
-    float exposureTime;
+    Vector2 coverPos;
 
     public HideFromView(string name) : base(name)
     {
         
     }
 
-    public override bool CheckPrerequisites(Dictionary<string, object> memory)
+    public override bool CheckPrerequisites(Dictionary<string, object> memory, Dictionary<string, object> decisions)
     {
         if (memory.ContainsKey("player"))
         {
@@ -35,14 +34,14 @@ public class HideFromView : UtilityAction
             return false;
         }
 
-        //Check if AI has gun equipped
-        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if (firearm == null)
+        if (memory.ContainsKey("cover_pos"))
+        {
+            coverPos = (Vector2)memory["cover_pos"];
+        }
+        else
         {
             return false;
         }
-
-        coverColliders = (Collider2D[]) memory["cover_colliders"];
 
         return true;
     }
@@ -72,33 +71,9 @@ public class HideFromView : UtilityAction
         return U;
     }
 
-    public override void Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
     {
-        List<Vector2[]> blindSpots = player.visibilityCone.GetBlindSpotEdges();
-        List<Vector2[]> closeBlindSpots = new List<Vector2[]>();
-
-        Vector2 playerDir = player.transform.position - me.transform.position;
-        Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
-        Plane2D sepBoundary = new Plane2D(playerDir.normalized, midPoint);
-
-        foreach (Vector2[] blindSpot in blindSpots)
-        {
-            Vector2 v1 = blindSpot[0];
-            Vector2 v2 = blindSpot[1];
-            if (sepBoundary.GetSide(v1) && sepBoundary.GetSide(v2))
-            {
-                closeBlindSpots.Add(blindSpot);
-            }
-        }
-
-        Vector2 obstructedPoint;
-        
-        if (!Physics2D.CircleCast(me.transform.position, me.radius, obstructedPoint, ))
-        {
-            me.NavigateTo(obstructedPoint);
-            //Give this action a large amount of inertia
-
-        }
-        
+        me.NavigateTo(coverPos);
+        return 0.0f;
     }
 }

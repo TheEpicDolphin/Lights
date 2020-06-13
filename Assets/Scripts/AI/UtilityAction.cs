@@ -21,7 +21,8 @@ public class UtilityAction
         return 0.0f;
     }
 
-    public virtual void Run(Dictionary<string, object> calculated)
+    //Returns cooldown time until next action can run. "Inertia"
+    public virtual float Run(Dictionary<string, object> calculated)
     {
         
     }
