@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GeometryUtils;
+using AlgorithmUtils;
 
 public class LookForCover : UtilityAction
 {
@@ -74,45 +75,40 @@ public class LookForCover : UtilityAction
 
     public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
     {
-        List<Vector2[]> blindSpots = player.visibilityCone.GetBlindSpotEdges();
-        List<Vector2[]> validBlindSpots = new List<Vector2[]>();
-
+        List<Waypoint> validWaypoints = new List<Waypoint>();
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
-        
-        foreach (Vector2[] blindSpot in blindSpots)
+
+        Collider2D[] waypointColliders = Physics2D.OverlapCircleAll(me.transform.position, 10.0f, 1 << 13);
+        foreach(Collider2D waypointCollider in waypointColliders)
         {
-            Vector2 v1 = blindSpot[0];
-            Vector2 v2 = blindSpot[1];
-            if (sepBoundary.GetSide(v1) && sepBoundary.GetSide(v2))
+            Waypoint waypoint = waypointCollider.GetComponent<Waypoint>();
+            if (sepBoundary.GetSide(waypoint.transform.position))
             {
-                validBlindSpots.Add(blindSpot);
+                validWaypoints.Add(waypoint);
             }
         }
 
-        if (validBlindSpots.Count == 0)
+        if (validWaypoints.Count == 0)
         {
             //There is no cover nearby. Prevent enemy from looking again any time soon
             return 4.0f;
         }
 
-        Vector2 optimalBlindSpot = Vector2.zero;
-        foreach (Vector2[] blindSpot in validBlindSpots)
+        List<KeyValuePair<float, Waypoint>> scoredWaypoints = new List<KeyValuePair<float, Waypoint>>();
+        foreach (Waypoint waypoint in validWaypoints)
         {
+            float score = 0.0f;
 
+            //Calculate how desireable waypoint is
+
+            scoredWaypoints.Add(new KeyValuePair<float, Waypoint>(score, waypoint));
         }
 
-        Vector2 myPos = me.transform.position;
-        Vector2 coverDir = optimalBlindSpot - myPos;
-        if (!Physics2D.CircleCast(me.transform.position, me.radius, coverDir.normalized, coverDir.magnitude))
-        {
-            decisions["cover_pos"] = optimalBlindSpot;
-            //We found one. Don't try looking again anytime soon
-            return 2.0f;
-        }
-
-        //Try again soon
-        return 0.1f;
+        Waypoint optimalCoverSpot = Algorithm.WeightedRandomSelection<Waypoint>(scoredWaypoints);
+        decisions["cover"] = optimalCoverSpot;
+        //We found one. Don't try looking again anytime soon
+        return 2.0f;
     }
 }

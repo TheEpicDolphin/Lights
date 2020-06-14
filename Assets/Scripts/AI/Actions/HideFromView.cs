@@ -7,7 +7,7 @@ public class HideFromView : UtilityAction
 {
     Player player;
     Enemy me;
-    Vector2 coverPos;
+    Waypoint cover;
 
     public HideFromView(string name) : base(name)
     {
@@ -36,7 +36,7 @@ public class HideFromView : UtilityAction
 
         if (memory.ContainsKey("cover_pos"))
         {
-            coverPos = (Vector2)memory["cover_pos"];
+            cover = (Waypoint)memory["cover_pos"];
         }
         else
         {
@@ -73,7 +73,7 @@ public class HideFromView : UtilityAction
 
     public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
     {
-        me.NavigateTo(coverPos);
+        me.NavigateTo(cover.transform.position);
         return 0.0f;
     }
 }

@@ -88,6 +88,30 @@ namespace AlgorithmUtils
             }
         }
 
+        //If key == 0, then it is impossible to select corresponding candidate
+        internal static T WeightedRandomSelection<T>(List<KeyValuePair<float, T>> scoredCandidates)
+        {
+            //Normalize
+            float z = 0.0f;
+            float[] cumScores = new float[scoredCandidates.Count];
+            for (int i = 0; i < cumScores.Length; i++)
+            {
+                KeyValuePair<float, T> scoredCandidate = scoredCandidates[i];
+                z += scoredCandidate.Key;
+                cumScores[i] = z;
+            }
+
+            float x = Random.Range(0, z);
+            for (int i = 0; i < cumScores.Length - 1; i++)
+            {
+                if (x < cumScores[i])
+                {
+                    return scoredCandidates[i].Value;
+                }
+            }
+
+            return scoredCandidates[cumScores.Length - 1].Value;
+        }
     }
 
     
