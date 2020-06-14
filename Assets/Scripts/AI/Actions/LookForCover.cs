@@ -84,6 +84,8 @@ public class LookForCover : UtilityAction
         foreach(Collider2D waypointCollider in waypointColliders)
         {
             Waypoint waypoint = waypointCollider.GetComponent<Waypoint>();
+
+            //Dont include waypoints that are closer to the player than to the enemy
             if (sepBoundary.GetSide(waypoint.transform.position))
             {
                 validWaypoints.Add(waypoint);
@@ -101,7 +103,17 @@ public class LookForCover : UtilityAction
         {
             float score = 0.0f;
 
-            //Calculate how desireable waypoint is
+            //if waypoint is NOT in player's visibility cone, we give it a higher score
+            if (!player.visibilityCone.OutlineContainsPoint(waypoint.transform.position))
+            {
+                score += 10.0f;
+            }
+
+            //Take into account distance from enemy to waypoint
+            float dist = Vector2.Distance(waypoint.transform.position, me.transform.position);
+            score += Mathf.Max(40.0f - dist, 0);
+
+            //Take into account enemy's weapon range
 
             scoredWaypoints.Add(new KeyValuePair<float, Waypoint>(score, waypoint));
         }
