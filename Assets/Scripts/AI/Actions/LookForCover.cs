@@ -75,50 +75,50 @@ public class LookForCover : UtilityAction
 
     public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
     {
-        List<Waypoint> validWaypoints = new List<Waypoint>();
+        List<Landmark> validLandmarks = new List<Landmark>();
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
 
-        Collider2D[] waypointColliders = Physics2D.OverlapCircleAll(me.transform.position, 10.0f, 1 << 13);
-        foreach(Collider2D waypointCollider in waypointColliders)
+        Collider2D[] landmarkColliders = Physics2D.OverlapCircleAll(me.transform.position, 10.0f, 1 << 13);
+        foreach(Collider2D landmarkCollider in landmarkColliders)
         {
-            Waypoint waypoint = waypointCollider.GetComponent<Waypoint>();
+            Landmark landmark = landmarkCollider.GetComponent<Landmark>();
 
             //Dont include waypoints that are closer to the player than to the enemy
-            if (sepBoundary.GetSide(waypoint.transform.position))
+            if (sepBoundary.GetSide(landmark.transform.position))
             {
-                validWaypoints.Add(waypoint);
+                validLandmarks.Add(landmark);
             }
         }
 
-        if (validWaypoints.Count == 0)
+        if (validLandmarks.Count == 0)
         {
             //There is no cover nearby. Prevent enemy from looking again any time soon
             return 4.0f;
         }
 
-        List<KeyValuePair<float, Waypoint>> scoredWaypoints = new List<KeyValuePair<float, Waypoint>>();
-        foreach (Waypoint waypoint in validWaypoints)
+        List<KeyValuePair<float, Landmark>> scoredLandmarks = new List<KeyValuePair<float, Landmark>>();
+        foreach (Landmark landmark in validLandmarks)
         {
             float score = 0.0f;
 
             //if waypoint is NOT in player's visibility cone, we give it a higher score
-            if (!player.visibilityCone.OutlineContainsPoint(waypoint.transform.position))
+            if (!player.visibilityCone.OutlineContainsPoint(landmark.transform.position))
             {
                 score += 10.0f;
             }
 
             //Take into account distance from enemy to waypoint
-            float dist = Vector2.Distance(waypoint.transform.position, me.transform.position);
+            float dist = Vector2.Distance(landmark.transform.position, me.transform.position);
             score += Mathf.Max(40.0f - dist, 0);
 
             //Take into account enemy's weapon range
 
-            scoredWaypoints.Add(new KeyValuePair<float, Waypoint>(score, waypoint));
+            scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
-        Waypoint optimalCoverSpot = Algorithm.WeightedRandomSelection<Waypoint>(scoredWaypoints);
+        Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection<Landmark>(scoredLandmarks);
         decisions["cover"] = optimalCoverSpot;
         //We found one. Don't try looking again anytime soon
         return 2.0f;

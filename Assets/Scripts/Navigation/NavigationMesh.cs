@@ -125,8 +125,8 @@ public class NavigationMesh : MonoBehaviour
     public List<Obstacle> obstacles;
     Graph<Triangle> navMeshGraph;
     DelaunayMesh mesh;
-    Waypoint[] waypoints;
     Material mat;
+    LandmarkSystem landmarkSystem;
 
     private void Awake()
     {
