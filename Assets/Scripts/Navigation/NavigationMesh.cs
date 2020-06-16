@@ -330,6 +330,12 @@ public class NavigationMesh : MonoBehaviour
         return mesh.FindContainingTriangle(p);
     }
 
+    public bool IsLocationValid(Vector2 p)
+    {
+        Triangle tri = FindContainingTriangle(p);
+        return !tri.isIntersectingHole;
+    }
+
     public void Draw()
     {
         if (!mat)
