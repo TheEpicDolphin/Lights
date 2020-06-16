@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   navMesh: {fileID: 0}
   player: {fileID: 0}
+  radius: 0
   hand: {fileID: 0}
 --- !u!50 &1472143787609314778
 Rigidbody2D:
@@ -162,6 +163,6 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.5}
+  m_Offset: {x: 0, y: 0.3}
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 0.6

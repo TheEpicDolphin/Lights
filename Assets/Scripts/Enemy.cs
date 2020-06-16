@@ -7,7 +7,6 @@ public class Enemy : MonoBehaviour, INavAgent
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    public float radius;
     float enemySpeed = 2.0f;
     public Hand hand;
     //UtilityAI uai;
@@ -16,7 +15,7 @@ public class Enemy : MonoBehaviour, INavAgent
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        radius = GetComponent<Collider2D>().bounds.extents[0];
+        GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
     }
 
     // Update is called once per frame

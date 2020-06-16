@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   obstacles:
   - {fileID: 0}
+  aiRadius: 0.6
 --- !u!212 &5821739918220864043
 SpriteRenderer:
   m_ObjectHideFlags: 0

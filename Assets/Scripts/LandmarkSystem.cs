@@ -48,7 +48,7 @@ public class LandmarkSystem
 
         /* Using Poisson Disk sampling, insert more landmarks around the obstacle */
         int k = 30;
-        int maxLandmarks = 30;
+        int maxLandmarks = 50;
         int landmarkCount = 0;
         while(active.Count > 0 && landmarkCount < maxLandmarks)
         {
@@ -158,12 +158,12 @@ public class LandmarkSystem
         return nearbyLandmarks;
     }
 
-    public void DrawLandmarks()
+    public void DrawLandmarks(float radius)
     {
-        Gizmos.color = Color.yellow;
+        Gizmos.color = Color.red;
         foreach (Landmark lm in spatialHashedGrid.Values)
         {
-            Gizmos.DrawSphere(lm.p, 0.1f);
+            Gizmos.DrawSphere(lm.p, radius);
         }
         
         
