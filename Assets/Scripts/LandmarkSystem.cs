@@ -30,7 +30,7 @@ public class LandmarkSystem
             Vector2 p1 = outline[(i + 1) % outline.Length];
             float T = (p1 - p0).magnitude;
 
-            float t = r;
+            float t = 2 * r;
             while (t / T < 1)
             {
                 Vector2 p = Vector2.Lerp(p0, p1, t / T);
