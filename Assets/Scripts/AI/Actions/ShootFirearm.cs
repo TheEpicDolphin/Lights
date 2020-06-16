@@ -14,7 +14,7 @@ public class ShootFirearm : UtilityAction
         this.range = range;
     }
 
-    public override bool CheckPrerequisites(Dictionary<string, object> memory)
+    private bool CheckPrerequisites(Dictionary<string, object> memory)
     {
         if (memory.ContainsKey("player"))
         {
@@ -50,8 +50,13 @@ public class ShootFirearm : UtilityAction
         return true;
     }
 
-    public override float Score(Dictionary<string, object> calculated)
+    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
+        if (!CheckPrerequisites(memory))
+        {
+            return 0.0f;
+        }
+
         //Desire is measured as value in range [0, 1], where 0 is low desire and 1 is high desire.
 
         //TODO: Desire to shoot based on ammo remaining
@@ -72,7 +77,7 @@ public class ShootFirearm : UtilityAction
         return U;
     }
 
-    public override float Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         me.Attack();
         return 1 / firearm.GetFireRate();

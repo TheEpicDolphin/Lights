@@ -43,8 +43,13 @@ public class AimAtPlayer : UtilityAction
         return true;
     }
 
-    public override float Score(Dictionary<string, object> calculated)
+    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
+        if (!CheckPrerequisites(memory))
+        {
+            return 0.0f;
+        }
+
         //Desire to aim based on current aiming direction
         Vector2 handDir = me.hand.GetHandDirection();
         Vector2 playerDir = player.transform.position - me.transform.position;
@@ -58,7 +63,7 @@ public class AimAtPlayer : UtilityAction
         return U;
     }
 
-    public override float Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         Vector2 curHandDir = me.hand.GetHandDirection();
         Vector2 targetHandDir = (player.transform.position - me.transform.position).normalized;

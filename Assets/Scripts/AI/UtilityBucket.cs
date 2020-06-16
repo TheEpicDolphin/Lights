@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using AlgorithmUtils;
 
 public class UtilityBucket
 {
@@ -21,40 +22,17 @@ public class UtilityBucket
 
     public void RunOptimalAction(Dictionary<string, object> memory)
     {
-        List<UtilityAction> validUtilityActions = new List<UtilityAction>();
-        foreach(UtilityAction action in utilityActions)
-        {
-            if (action.CheckPrerequisites(memory))
-            {
-                validUtilityActions.Add(action);
-            }
-        }
-
         Dictionary<string, object> calculated = new Dictionary<string, object>();
 
-        List<UtilityAction> sortedActions = validUtilityActions.OrderByDescending(action => action.Score(calculated)).ToList();
-        List<UtilityAction> highestScoringSubset = sortedActions.GetRange(0, Mathf.Min(3, sortedActions.Count));
-
-        float z = 0.0f;
-        float[] cumScores = new float[highestScoringSubset.Count];
-        for(int i = 0; i < cumScores.Length; i++)
+        List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
+        foreach(UtilityAction action in utilityActions)
         {
-            UtilityAction action = highestScoringSubset[i];
-            z += action.Score(calculated);
-            cumScores[i] = z;
+            scoredActions.Add(new KeyValuePair<float, UtilityAction>(action.Score(memory, calculated), action));
         }
 
-        float x = Random.Range(0, z);
-        for(int i = 0; i < cumScores.Length - 1; i++)
-        {
-            if(x < cumScores[i])
-            {
-                //This action was randomly chosen out of the best for the AI to take
-                highestScoringSubset[i].Run(calculated);
-                return;
-            }
-        }
+        scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
+        List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
 
-        highestScoringSubset[cumScores.Length - 1].Run(memory);
+        Algorithm.WeightedRandomSelection<UtilityAction>(highestScoringSubset).Run(memory, calculated);
     }
 }

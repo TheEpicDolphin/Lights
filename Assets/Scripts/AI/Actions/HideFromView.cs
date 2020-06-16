@@ -14,7 +14,7 @@ public class HideFromView : UtilityAction
         
     }
 
-    public override bool CheckPrerequisites(Dictionary<string, object> memory)
+    private bool CheckPrerequisites(Dictionary<string, object> memory)
     {
         if (memory.ContainsKey("player"))
         {
@@ -46,8 +46,13 @@ public class HideFromView : UtilityAction
         return true;
     }
 
-    public override float Score(Dictionary<string, object> calculated)
+    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
+        if (!CheckPrerequisites(memory))
+        {
+            return 0.0f;
+        }
+
         //Desire is measured as value in range [0, 1], where 0 is low desire and 1 is high desire.
 
         //TODO: Desire to hide based on ammo remaining
@@ -71,7 +76,7 @@ public class HideFromView : UtilityAction
         return U;
     }
 
-    public override float Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         me.NavigateTo(cover.p);
         return 0.0f;
