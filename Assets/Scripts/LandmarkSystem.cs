@@ -48,7 +48,7 @@ public class LandmarkSystem
 
         /* Using Poisson Disk sampling, insert more landmarks around the obstacle */
         int k = 30;
-        int maxLandmarks = 50;
+        int maxLandmarks = 200;
         int landmarkCount = 0;
         while(active.Count > 0 && landmarkCount < maxLandmarks)
         {
@@ -86,7 +86,6 @@ public class LandmarkSystem
             }
 
         }
-
     }
 
     bool IsPointRoughlyValid(Vector2 p, float d)
