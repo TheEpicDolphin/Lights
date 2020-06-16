@@ -64,13 +64,8 @@ public class HideFromView : UtilityAction
         float dist = Vector3.Distance(player.transform.position, me.transform.position);
         float proximity = 1 - Mathf.Max(equippedFirearmRange - dist, 0.0f) / equippedFirearmRange;
 
-        //Desire to hide based on whether enemy is inside player's visibility cone
-        float exposure = 0.0f;
-        bool visibility = player.visibilityCone.OutlineContainsPoint(me.transform.position);
-        if (visibility)
-        {
-            exposure = 0.5f;
-        }
+        //Desire to hide based on how long the enemy has been exposed in the player's FOV
+        float exposure = me.DangerExposureTime();
 
         float U = 1.0f;
         return U;

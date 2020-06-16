@@ -67,11 +67,16 @@ public class ShootFirearm : UtilityAction
         float aim = 1 - (Vector2.Angle(handDir, playerDir) / 180.0f);
 
         //Desire to shoot based on proximity to target
-        float dist = Vector3.Distance(player.transform.position, me.transform.position);
+        float dist = Vector2.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Max(range - dist, 0.0f) / range;
 
-        //Check if there is anything blocking player from enemy
-        //TODO: Raycast
+
+        //Check if there is anything blocking line of sight from AI to player
+        RaycastHit2D hit = Physics2D.Linecast(me.transform.position, player.transform.position);
+        if (hit.collider.GetComponent<Player>() != null)
+        {
+            
+        }
 
         float U = 1.0f;
         return U;
@@ -83,3 +88,10 @@ public class ShootFirearm : UtilityAction
         return 1 / firearm.GetFireRate();
     }
 }
+
+/*
+ * (Dimsum) (2) 1, (2) 2, 5, (2) 7, 16, 17, 18, 23, 38
+ * (noodles) N101
+ * (fried rice) (2) F103
+ * (beijing duck) P112
+ */
