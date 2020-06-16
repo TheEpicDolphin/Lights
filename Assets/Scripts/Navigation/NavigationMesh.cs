@@ -152,18 +152,22 @@ public class NavigationMesh : MonoBehaviour
             }
         }
 
-        float s = 2 * aiRadius / Mathf.Sqrt(2);
-        landmarkSystem = new LandmarkSystem(s, this);
         List<Vector2[]> constrainedPoints = new List<Vector2[]>();
         foreach (Obstacle obstacle in obstacles)
         {
             obstacle.InitializeEdges();
             constrainedPoints.Add(obstacle.GetWorldMinkowskiBoundVerts(aiRadius, true));
-            landmarkSystem.AddLandmarksAroundObstacle(obstacle);
         }
 
         mesh = new DelaunayMesh(verts.ToArray(), constrainedPoints);
         navMeshGraph = new Graph<Triangle>(mesh.tris);
+
+        float s = 2 * aiRadius / Mathf.Sqrt(2);
+        landmarkSystem = new LandmarkSystem(s, this);
+        foreach (Obstacle obstacle in obstacles)
+        {
+            landmarkSystem.AddLandmarksAroundObstacle(obstacle);
+        }
     }
 
     List<Vector2> CentroidPath(List<Triangle> triPath, Vector2 startPos, Vector2 targetPos)
@@ -325,6 +329,7 @@ public class NavigationMesh : MonoBehaviour
     public bool IsLocationValid(Vector2 p)
     {
         Triangle tri = FindContainingTriangle(p);
+        Debug.Log(tri);
         return !tri.isIntersectingHole;
     }
 
