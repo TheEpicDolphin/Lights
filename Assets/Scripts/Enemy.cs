@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour, INavAgent
     Rigidbody2D rb;
     float enemySpeed = 2.0f;
     public Hand hand;
+    float timeSinceLastExposure;
     //UtilityAI uai;
 
     // Start is called before the first frame update
@@ -16,6 +17,7 @@ public class Enemy : MonoBehaviour, INavAgent
     {
         rb = GetComponent<Rigidbody2D>();
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
+        timeSinceLastExposure = Time.time;
     }
 
     // Update is called once per frame
@@ -91,8 +93,16 @@ public class Enemy : MonoBehaviour, INavAgent
 
     public void Sense()
     {
-        //uai.AddMemory("cover_colliders", Physics2D.OverlapCircleAll(transform.position, 10.0f, 1 << 12));
-
+        bool visibleToPlayer = player.visibilityCone.OutlineContainsPoint(transform.position);
+        if (!visibleToPlayer)
+        {
+            timeSinceLastExposure = Time.time;
+        }
     }    
+
+    public float DangerExposureTime()
+    {
+        return Time.time - timeSinceLastExposure;
+    }
     
 }

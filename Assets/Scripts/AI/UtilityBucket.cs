@@ -33,6 +33,6 @@ public class UtilityBucket
         scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
         List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
 
-        Algorithm.WeightedRandomSelection<UtilityAction>(highestScoringSubset).Run(memory, calculated);
+        Algorithm.WeightedRandomSelection(highestScoringSubset).Run(memory, calculated);
     }
 }
