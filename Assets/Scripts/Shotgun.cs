@@ -80,4 +80,9 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
     {
         return range;
     }
+
+    public float GetFireRate()
+    {
+        return firerate;
+    }
 }

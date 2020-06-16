@@ -73,24 +73,12 @@ public class LookForCover : UtilityAction
         return U;
     }
 
-    public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> calculated)
     {
-        List<Landmark> validLandmarks = new List<Landmark>();
+        List<Landmark> validLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position, 15.0f);
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
-
-        Collider2D[] landmarkColliders = Physics2D.OverlapCircleAll(me.transform.position, 10.0f, 1 << 13);
-        foreach(Collider2D landmarkCollider in landmarkColliders)
-        {
-            Landmark landmark = landmarkCollider.GetComponent<Landmark>();
-
-            //Dont include waypoints that are closer to the player than to the enemy
-            if (sepBoundary.GetSide(landmark.transform.position))
-            {
-                validLandmarks.Add(landmark);
-            }
-        }
 
         if (validLandmarks.Count == 0)
         {
@@ -104,13 +92,13 @@ public class LookForCover : UtilityAction
             float score = 0.0f;
 
             //if waypoint is NOT in player's visibility cone, we give it a higher score
-            if (!player.visibilityCone.OutlineContainsPoint(landmark.transform.position))
+            if (!player.visibilityCone.OutlineContainsPoint(landmark.p))
             {
                 score += 10.0f;
             }
 
             //Take into account distance from enemy to waypoint
-            float dist = Vector2.Distance(landmark.transform.position, me.transform.position);
+            float dist = Vector2.Distance(landmark.p, me.transform.position);
             score += Mathf.Max(40.0f - dist, 0);
 
             //Take into account enemy's weapon range
@@ -119,7 +107,7 @@ public class LookForCover : UtilityAction
         }
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection<Landmark>(scoredLandmarks);
-        decisions["cover"] = optimalCoverSpot;
+        //decisions["cover"] = optimalCoverSpot;
         //We found one. Don't try looking again anytime soon
         return 2.0f;
     }

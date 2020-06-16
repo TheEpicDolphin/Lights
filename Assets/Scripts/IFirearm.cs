@@ -8,5 +8,7 @@ public interface IFirearm
 
     float GetRange();
 
+    float GetFireRate();
+
     bool ReadyToFire();
 }

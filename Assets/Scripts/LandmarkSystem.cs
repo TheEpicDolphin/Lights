@@ -7,6 +7,7 @@ public class LandmarkSystem
     NavigationMesh navMesh;
     Dictionary<Vector2Int, Landmark> spatialHashedGrid;
     float s;
+    float maxDistFromObstacle = 10.0f;
 
     public LandmarkSystem(float s, NavigationMesh navMesh)
     {
@@ -47,7 +48,9 @@ public class LandmarkSystem
 
         /* Using Poisson Disk sampling, insert more landmarks around the obstacle */
         int k = 30;
-        while(active.Count > 0)
+        int maxLandmarks = 30;
+        int landmarkCount = 0;
+        while(active.Count > 0 && landmarkCount < maxLandmarks)
         {
             int ri = Random.Range(0, active.Count);
             Landmark lm = active[ri];
@@ -64,13 +67,15 @@ public class LandmarkSystem
                 Vector2 pNew = new Vector2(newX, newY);
                 
                 /* Check if new point is roughly valid */
-                if(IsPointRoughlyValid(pNew, d))
+                if(IsPointRoughlyValid(pNew, d) && 
+                    Vector2.Distance(pNew, obstacle.transform.position) < maxDistFromObstacle)
                 {
                     Landmark newL = new Landmark(pNew);
                     Vector2Int gridCoords = ToGridCoordinates(pNew);
                     spatialHashedGrid[gridCoords] = newL;
                     active.Add(newL);
                     found = true;
+                    landmarkCount += 1;
                     break;
                 }
             }
@@ -127,9 +132,12 @@ public class LandmarkSystem
     public List<Landmark> GetLandmarksWithinRadius(Vector2 p, float radius)
     {
         Vector2Int gridCoords = ToGridCoordinates(p);
-        float k = radius / this.s;
-
         
+        int k = Mathf.FloorToInt(radius / s);
+        int i0 = gridCoords.x - k;
+        int i1 = gridCoords.x + k;
+        int j0 = gridCoords.y - k;
+        int j1 = gridCoords.y + k;
 
         List<Landmark> nearbyLandmarks = new List<Landmark>();
 
@@ -146,10 +154,18 @@ public class LandmarkSystem
 
             }
         }
+
+        return nearbyLandmarks;
     }
 
     public void DrawLandmarks()
     {
+        Gizmos.color = Color.yellow;
+        foreach (Landmark lm in spatialHashedGrid.Values)
+        {
+            Gizmos.DrawSphere(lm.p, 0.1f);
+        }
+        
         
     }
 

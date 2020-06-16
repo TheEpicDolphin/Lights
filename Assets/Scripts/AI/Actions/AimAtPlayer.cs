@@ -58,11 +58,12 @@ public class AimAtPlayer : UtilityAction
         return U;
     }
 
-    public override void Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> calculated)
     {
         Vector2 curHandDir = me.hand.GetHandDirection();
         Vector2 targetHandDir = (player.transform.position - me.transform.position).normalized;
         Vector2 interpolatedHandDir = Vector2.Lerp(curHandDir, targetHandDir, Time.deltaTime).normalized;
         me.hand.SetHandDirection(interpolatedHandDir);
+        return 1.0f;
     }
 }

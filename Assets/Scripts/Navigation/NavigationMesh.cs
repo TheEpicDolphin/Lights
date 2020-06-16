@@ -127,6 +127,7 @@ public class NavigationMesh : MonoBehaviour
     DelaunayMesh mesh;
     Material mat;
     LandmarkSystem landmarkSystem;
+    float aiRadius = 2.0f;
 
     private void Awake()
     {
@@ -150,24 +151,15 @@ public class NavigationMesh : MonoBehaviour
                 verts.Add(new Vector2(x, y));
             }
         }
-        //mesh = new DelaunayMesh(verts.ToArray());
 
-        /*
-        mesh = new DelaunayMesh(verts.ToArray(),
-            new List<Vector2[]> {
-                new Vector2[] {
-                    new Vector2(-1.5f, 2.3f),
-                    new Vector2(3.3f, 3.7f),
-                    new Vector2(3.2f, -2.9f)
-                }
-            });
-        */
-
+        float s = 2 * aiRadius / Mathf.Sqrt(2);
+        landmarkSystem = new LandmarkSystem(s, this);
         List<Vector2[]> constrainedPoints = new List<Vector2[]>();
         foreach (Obstacle obstacle in obstacles)
         {
             obstacle.InitializeEdges();
-            constrainedPoints.Add(obstacle.GetWorldMinkowskiBoundVerts(2.0f, true));
+            constrainedPoints.Add(obstacle.GetWorldMinkowskiBoundVerts(aiRadius, true));
+            landmarkSystem.AddLandmarksAroundObstacle(obstacle);
         }
 
         mesh = new DelaunayMesh(verts.ToArray(), constrainedPoints);
@@ -336,6 +328,11 @@ public class NavigationMesh : MonoBehaviour
         return !tri.isIntersectingHole;
     }
 
+    public List<Landmark> GetLandmarksWithinRadius(Vector2 p, float radius)
+    {
+        return landmarkSystem.GetLandmarksWithinRadius(p, radius);
+    }
+
     public void Draw()
     {
         if (!mat)
@@ -357,6 +354,13 @@ public class NavigationMesh : MonoBehaviour
         GL.End();
 
         GL.PopMatrix();
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // Draw a yellow sphere at the transform's position
+        landmarkSystem.DrawLandmarks();
+        
     }
 
 }

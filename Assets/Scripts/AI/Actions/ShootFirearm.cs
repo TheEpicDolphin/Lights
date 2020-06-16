@@ -6,6 +6,7 @@ public class ShootFirearm : UtilityAction
 {
     Player player;
     Enemy me;
+    IFirearm firearm;
 
     float range;
     public ShootFirearm(string name, float range) : base(name)
@@ -34,7 +35,7 @@ public class ShootFirearm : UtilityAction
         }
 
         //Check if AI has gun equipped
-        IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
+        firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm == null)
         {
             return false;
@@ -71,8 +72,9 @@ public class ShootFirearm : UtilityAction
         return U;
     }
 
-    public override void Run(Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> calculated)
     {
         me.Attack();
+        return 1 / firearm.GetFireRate();
     }
 }

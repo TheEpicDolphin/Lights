@@ -7,14 +7,14 @@ public class HideFromView : UtilityAction
 {
     Player player;
     Enemy me;
-    Waypoint cover;
+    Landmark cover;
 
     public HideFromView(string name) : base(name)
     {
         
     }
 
-    public override bool CheckPrerequisites(Dictionary<string, object> memory, Dictionary<string, object> decisions)
+    public override bool CheckPrerequisites(Dictionary<string, object> memory)
     {
         if (memory.ContainsKey("player"))
         {
@@ -34,9 +34,9 @@ public class HideFromView : UtilityAction
             return false;
         }
 
-        if (memory.ContainsKey("cover_pos"))
+        if (memory.ContainsKey("cover"))
         {
-            cover = (Waypoint)memory["cover_pos"];
+            cover = (Landmark)memory["cover"];
         }
         else
         {
@@ -71,9 +71,9 @@ public class HideFromView : UtilityAction
         return U;
     }
 
-    public override float Run(Dictionary<string, object> decisions, Dictionary<string, object> calculated)
+    public override float Run(Dictionary<string, object> calculated)
     {
-        me.NavigateTo(cover.transform.position);
+        me.NavigateTo(cover.p);
         return 0.0f;
     }
 }
