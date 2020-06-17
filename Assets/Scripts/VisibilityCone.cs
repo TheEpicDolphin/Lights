@@ -6,6 +6,7 @@ using System.Linq;
 using MathUtils;
 using AlgorithmUtils;
 using GeometryUtils;
+using System;
 
 public class VisibilityCone : MonoBehaviour
 {
@@ -70,6 +71,221 @@ public class VisibilityCone : MonoBehaviour
         meshFilt.mesh.RecalculateBounds();
     }
 
+    public class EdgeNode<T>
+    {
+        public T Value;
+        EdgeNode<T> next;
+        WeakReference prev;
+        public EdgeNode(T val)
+        {
+            this.Value = val;
+        }
+
+        public void ConnectTo(EdgeNode<T> next)
+        {
+            this.next = next;
+            next.prev = new WeakReference(prev);
+        }
+
+        public EdgeNode<T> Next()
+        {
+            return next;
+        }
+
+        public EdgeNode<T> Previous()
+        {
+            return prev.Target as EdgeNode<T>;
+        }
+    }
+
+    public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
+    {
+        float coneAngle = Mathf.Deg2Rad * angle;
+        float thetaL = Mathf.PI + (coneAngle / 2);
+        float thetaR = Mathf.PI - (coneAngle / 2);
+        List<EdgeNode<PolarCoord>> sortedEdgeNodes = new List<EdgeNode<PolarCoord>>();
+
+        foreach (Obstacle obstacle in obstacles)
+        {
+            Vector2[] obstacleOutlinePoints = obstacle.GetWorldBoundVerts(clockwise: true);
+            EdgeNode<PolarCoord>[] obstacleOutlineNodes = new EdgeNode<PolarCoord>[obstacleOutlinePoints.Length];
+            
+            //Transform points to cone space
+            for (int j = 0; j < obstacleOutlinePoints.Length; j++)
+            {
+                Vector2 v = toConeSpace.MultiplyPoint(obstacleOutlinePoints[j]);
+                obstacleOutlineNodes[j] = new EdgeNode<PolarCoord>(PolarCoord.ToPolarCoords(v));
+            }
+
+            for (int i = 0; i < obstacleOutlineNodes.Length; i++)
+            {
+                EdgeNode<PolarCoord> n1 = obstacleOutlineNodes[i];
+                EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[(i + 1) % obstacleOutlineNodes.Length];
+
+                //if (p1.theta < p2.theta)
+                if (Math.Mod(n1.Value.theta, Mathf.PI) < Math.Mod(n2.Value.theta, Mathf.PI))
+                {
+                    //Normal is facing towards beam
+                    n1.ConnectTo(n2);
+                    sortedEdgeNodes.Add(n1);
+                }
+            }
+        }
+
+        //Add outer bounds for cone
+        float farConeRadius = 100.0f;
+        sortedEdgeNodes.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaR - 0.01f)));
+        float phi = thetaR;
+        for (int i = 1; i < resolution; i++)
+        {
+            phi += coneAngle / resolution;
+            PolarCoord p = new PolarCoord(farConeRadius, phi);
+            sortedEdgeNodes.Add(coneBounds.AddLast(p));
+        }
+        sortedEdgeNodes.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaL + 0.01f)));
+
+        //Order by increasing x and then increasing y
+        sortedEdgeNodes = sortedEdgeNodes
+                            .OrderBy(node => node.Value.theta)
+                            .ThenBy(node => node.Value.r).ToList();
+
+        List<EdgeNode<PolarCoord>> activeEdges = new List<EdgeNode<PolarCoord>>();
+        List<PolarCoord> beamFunction = new List<PolarCoord>();
+
+        EdgeNode<PolarCoord> curClosestEdge = sortedEdgeNodes[0];
+        foreach ()
+        {
+            if ()
+            {
+                activeEdges.Add();
+
+                PolarCoord activeEdgeStart = activeEdge.Value;
+                PolarCoord activeEdgeEnd = activeEdge.Next.Value;
+                PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, 0.0f);
+                if (clip.r < curClosestEdge.Value.r)
+                {
+                    curClosestEdge = activeEdge;
+                }
+            }
+        }
+
+        foreach (EdgeNode<PolarCoord> edgeNode in sortedEdgeNodes)
+        {
+            if (edgeNode.Next() != null)
+            {
+                //This is not an end node
+                PolarCoord vs = edgeNode.Value;
+                if (edgeNode.Previous() == null)
+                {
+                    activeEdges.Add(edgeNode);
+                }
+                else
+                {
+                    int j = activeEdges.IndexOf(edgeNode.Previous());
+                    activeEdges[j] = edgeNode;
+                }
+
+                EdgeNode<PolarCoord> prevClosestEdge = curClosestEdge;
+
+                if (prevClosestEdge.Next() == null)
+                {
+                    Debug.LogError("That one issue");
+                }
+
+                PolarCoord clipPrev = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next().Value, vs.theta);
+
+                PolarCoord closestVert = new PolarCoord(Mathf.Infinity, vs.theta);
+                foreach (EdgeNode<PolarCoord> activeEdge in activeEdges)
+                {
+                    PolarCoord activeEdgeStart = activeEdge.Value;
+                    PolarCoord activeEdgeEnd = activeEdge.Next().Value;
+                    PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, vs.theta);
+                    if (clip.r < closestVert.r)
+                    {
+                        closestVert.r = clip.r;
+                        curClosestEdge = activeEdge;
+                    }
+                }
+
+                if (prevClosestEdge.Next() != curClosestEdge && edgeNode == curClosestEdge)
+                {
+                    //A new edge has started that is closer than the previous closest edge.
+                    beamFunction.Add(clipPrev);
+                    beamFunction.Add(closestVert);
+
+                }
+                else if (edgeNode == curClosestEdge)
+                {
+                    //We are continuing a chain of connected edges
+                    beamFunction.Add(closestVert);
+                }
+
+            }
+            else if (edgeNode.Previous() != null)
+            {
+                activeEdges.Remove(edgeNode.Previous());
+                if (edgeNode.Previous() == curClosestEdge)
+                {
+                    //This is an end node
+                    PolarCoord ve = edgeNode.Value;
+
+                    //Check if this is the end node of the currently closest edge
+                    PolarCoord nextClosestVert = new PolarCoord(Mathf.Infinity, ve.theta);
+                    foreach (EdgeNode<PolarCoord> activeEdge in activeEdges)
+                    {
+                        PolarCoord activeEdgeStart = activeEdge.Value;
+                        PolarCoord activeEdgeEnd = activeEdge.Next().Value;
+                        PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, ve.theta);
+                        if (clip.r < nextClosestVert.r)
+                        {
+                            nextClosestVert.r = clip.r;
+                            curClosestEdge = activeEdge;
+                        }
+                    }
+
+                    beamFunction.Add(edgeNode.Value);
+                    beamFunction.Add(nextClosestVert);
+
+                }
+            }
+
+        }
+
+        List<float> beamFunctionThetas = new List<float>();
+        foreach (PolarCoord p in beamFunction)
+        {
+            beamFunctionThetas.Add(p.theta);
+        }
+
+        List<PolarCoord> polarConePoints = new List<PolarCoord>();
+
+        //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
+        int s = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.LARGEST_LEQUAL, thetaR);
+        int e = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.SMALLEST_GEQUAL, thetaL);
+
+        PolarCoord clipStart = PolarCoord.Interpolate(beamFunction[s], beamFunction[s + 1], thetaR);
+        polarConePoints.Add(clipStart);
+        for (int j = s + 1; j < e; j++)
+        {
+            PolarCoord p = beamFunction[j];
+            polarConePoints.Add(p);
+        }
+        PolarCoord clipEnd = PolarCoord.Interpolate(beamFunction[e - 1], beamFunction[e], thetaL);
+        polarConePoints.Add(clipEnd);
+
+        List<Vector2> coneOutline = new List<Vector2>();
+        coneOutline.Add(transform.position);
+
+        for (int j = 0; j < polarConePoints.Count; j++)
+        {
+            Vector2 v = polarConePoints[j].ToCartesianCoordinates();
+            coneOutline.Add(v);
+        }
+        return coneOutline;
+
+    }
+
+    /*
     public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
     {
         Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
@@ -102,8 +318,6 @@ public class VisibilityCone : MonoBehaviour
                 PolarCoord p1 = obstacleBoundPolarVerts[i];
                 PolarCoord p2 = obstacleBoundPolarVerts[(i + 1) % obstacleBoundPolarVerts.Length];
                 //if (p1.theta < p2.theta)
-                Mathf.Abs(10 - 350) < 180
-                350 < 10
                 if(Math.Mod(p1.theta, Mathf.PI) < Math.Mod(p2.theta, Mathf.PI))
                 {
                     if (transitionReady)
@@ -126,14 +340,7 @@ public class VisibilityCone : MonoBehaviour
                 i = (i + 1) % obstacleBoundPolarVerts.Length;
                 PolarCoord p2 = obstacleBoundPolarVerts[i];
 
-                /*
-                bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
-                                     (p1.theta < thetaR && p2.theta < thetaR) ||
-                                     (p1.theta > thetaL && p2.theta < thetaR) ||
-                                     (p1.theta < thetaR && p2.theta > thetaL);
-                */
-                bool isOutOfBounds = false;
-                //if (p1.theta < p2.theta && !isOutOfBounds)
+                //if (p1.theta < p2.theta)
                 if (Math.Mod(p1.theta, Mathf.PI) < Math.Mod(p2.theta, Mathf.PI))
                 {
                     //Normal is facing towards beam
@@ -176,6 +383,21 @@ public class VisibilityCone : MonoBehaviour
         List<PolarCoord> beamFunction = new List<PolarCoord>();
 
         LinkedListNode<PolarCoord> curClosestEdge = sortedKeyVertices[0];
+        foreach ()
+        {
+            if ()
+            {
+                activeEdges.Add();
+
+                PolarCoord activeEdgeStart = activeEdge.Value;
+                PolarCoord activeEdgeEnd = activeEdge.Next.Value;
+                PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, 0.0f);
+                if (clip.r < curClosestEdge.Value.r)
+                {
+                    curClosestEdge = activeEdge;
+                }
+            }
+        }
 
         foreach (LinkedListNode<PolarCoord> vertNode in sortedKeyVertices)
         {
@@ -293,6 +515,7 @@ public class VisibilityCone : MonoBehaviour
         return coneOutline;
 
     }
+    */
 
     public bool OutlineContainsPoint(Vector2 p)
     {
