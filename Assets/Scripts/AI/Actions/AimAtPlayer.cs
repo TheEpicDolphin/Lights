@@ -13,7 +13,7 @@ public class AimAtPlayer : UtilityAction
         this.range = range;
     }
 
-    public override bool CheckPrerequisites(Dictionary<string, object> memory)
+    private bool CheckPrerequisites(Dictionary<string, object> memory)
     {
         if (memory.ContainsKey("player"))
         {

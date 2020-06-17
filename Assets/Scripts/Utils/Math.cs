@@ -75,4 +75,24 @@ namespace MathUtils
 
         }
     }
+
+    public struct Angle
+    {
+        float theta;
+        public Angle(float theta)
+        {
+            this.theta = theta;
+        }
+
+        //Override standard subtraction
+        float Subtraction()
+        {
+
+        }
+    }
+
+    
 }
+
+//210 > 90
+//90 >

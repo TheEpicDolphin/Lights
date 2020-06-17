@@ -101,7 +101,10 @@ public class VisibilityCone : MonoBehaviour
             {
                 PolarCoord p1 = obstacleBoundPolarVerts[i];
                 PolarCoord p2 = obstacleBoundPolarVerts[(i + 1) % obstacleBoundPolarVerts.Length];
-                if (p1.theta < p2.theta)
+                //if (p1.theta < p2.theta)
+                Mathf.Abs(10 - 350) < 180
+                350 < 10
+                if(Math.Mod(p1.theta, Mathf.PI) < Math.Mod(p2.theta, Mathf.PI))
                 {
                     if (transitionReady)
                     {
@@ -123,7 +126,6 @@ public class VisibilityCone : MonoBehaviour
                 i = (i + 1) % obstacleBoundPolarVerts.Length;
                 PolarCoord p2 = obstacleBoundPolarVerts[i];
 
-                //TODO: Must clamp here to keep light within certain radius
                 /*
                 bool isOutOfBounds = (p1.theta > thetaL && p2.theta > thetaL) || 
                                      (p1.theta < thetaR && p2.theta < thetaR) ||
@@ -131,7 +133,8 @@ public class VisibilityCone : MonoBehaviour
                                      (p1.theta < thetaR && p2.theta > thetaL);
                 */
                 bool isOutOfBounds = false;
-                if (p1.theta < p2.theta && !isOutOfBounds)
+                //if (p1.theta < p2.theta && !isOutOfBounds)
+                if (Math.Mod(p1.theta, Mathf.PI) < Math.Mod(p2.theta, Mathf.PI))
                 {
                     //Normal is facing towards beam
                     if (transitionReady)
@@ -293,24 +296,8 @@ public class VisibilityCone : MonoBehaviour
 
     public bool OutlineContainsPoint(Vector2 p)
     {
-        return Geometry.IsInPolygon(p, outline.ToArray(), counterClockwise: true);
+        return Vector2.Distance(p, transform.position) < coneRadius && 
+                Geometry.IsInPolygon(p, outline.ToArray(), counterClockwise: true);
     }
 
-    public List<Vector2[]> GetBlindSpotEdges()
-    {
-        List<Vector2[]> blindSpots = new List<Vector2[]>();
-        Vector2 playerPos = transform.position;
-        for (int i = 1; i < outline.Count - 1; i++)
-        {
-            Vector2 v1 = outline[i];
-            Vector2 v2 = outline[i + 1];
-            
-            if (Mathf.Approximately(VecMath.Det(v1 - playerPos, v2 - playerPos), 0))
-            {
-                blindSpots.Add(new Vector2[] { v1, v2 });
-            }
-        }
-
-        return blindSpots;
-    }
 }
