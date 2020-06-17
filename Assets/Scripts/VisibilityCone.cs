@@ -6,7 +6,6 @@ using System.Linq;
 using MathUtils;
 using AlgorithmUtils;
 using GeometryUtils;
-using System;
 
 public class VisibilityCone : MonoBehaviour
 {
@@ -75,7 +74,7 @@ public class VisibilityCone : MonoBehaviour
     {
         public T Value;
         EdgeNode<T> next;
-        WeakReference prev;
+        System.WeakReference prev;
         public EdgeNode(T val)
         {
             this.Value = val;
@@ -84,7 +83,7 @@ public class VisibilityCone : MonoBehaviour
         public void ConnectTo(EdgeNode<T> next)
         {
             this.next = next;
-            next.prev = new WeakReference(prev);
+            next.prev = new System.WeakReference(prev);
         }
 
         public EdgeNode<T> Next()
@@ -117,10 +116,10 @@ public class VisibilityCone : MonoBehaviour
             EdgeNode<PolarCoord>[] obstacleOutlineNodes = new EdgeNode<PolarCoord>[obstacleOutlinePoints.Length];
             
             //Convert to nodes
-            for (int j = 0; j < obstacleOutlinePoints.Length; j++)
+            for (int i = 0; i < obstacleOutlineNodes.Length; i++)
             {
-                Vector2 v = toConeSpace.MultiplyPoint(obstacleOutlinePoints[j]);
-                obstacleOutlineNodes[j] = new EdgeNode<PolarCoord>(PolarCoord.ToPolarCoords(v));
+                Vector2 v = toConeSpace.MultiplyPoint(obstacleOutlinePoints[i]);
+                obstacleOutlineNodes[i] = new EdgeNode<PolarCoord>(PolarCoord.ToPolarCoords(v));
             }
 
             bool transitionReady = false;
@@ -129,8 +128,8 @@ public class VisibilityCone : MonoBehaviour
                 EdgeNode<PolarCoord> n1 = obstacleOutlineNodes[i];
                 EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[(i + 1) % obstacleOutlineNodes.Length];
 
-                //TODO: FIX THIS
-                if (PolarCoord.Subtraction(n2.Value.theta, n1.Value.theta) < Mathf.PI)
+                float dt = Math.DeltaAngle(n1.Value.theta, n2.Value.theta);
+                if (dt < Mathf.PI && dt > 0.0f)
                 {
                     //Normal is facing towards beam
                     n1.ConnectTo(n2);
@@ -176,7 +175,7 @@ public class VisibilityCone : MonoBehaviour
         foreach (EdgeNode<PolarCoord> eNode in sortedEdgeNodes)
         {
             //TODO: check if eNode intersects 0 angle line
-            if ()
+            if (Math.DeltaAngle())
             {
                 activeEdges.Add(eNode);
                 PolarCoord eStart = eNode.Value;

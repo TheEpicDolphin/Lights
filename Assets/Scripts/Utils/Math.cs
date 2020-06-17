@@ -20,6 +20,11 @@ namespace MathUtils
             return (x % m + m) % m;
         }
 
+        /* angles are in radians */
+        internal static float DeltaAngle(float t1, float t2)
+        {
+            return Mod(t2 - t1, 2 * Mathf.PI);
+        }
 
     }
 
@@ -75,22 +80,6 @@ namespace MathUtils
 
         }
     }
-
-    public struct Angle
-    {
-        float theta;
-        public Angle(float theta)
-        {
-            this.theta = theta;
-        }
-
-        //Override standard subtraction
-        float Subtraction()
-        {
-
-        }
-    }
-
     
 }
 
