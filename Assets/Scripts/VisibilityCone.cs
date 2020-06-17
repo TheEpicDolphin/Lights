@@ -100,9 +100,15 @@ public class VisibilityCone : MonoBehaviour
 
     public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
     {
+        Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
+        fromConeSpace.SetColumn(0, Vector2.Perpendicular(direction));
+        fromConeSpace.SetColumn(1, direction);
+        fromConeSpace.SetColumn(2, Vector3.forward);
+        Matrix4x4 toConeSpace = fromConeSpace.inverse;
+
         float coneAngle = Mathf.Deg2Rad * angle;
-        float thetaL = Mathf.PI + (coneAngle / 2);
-        float thetaR = Mathf.PI - (coneAngle / 2);
+        float thetaL = Mathf.PI / 2 + (coneAngle / 2);
+        float thetaR = Mathf.PI / 2 - (coneAngle / 2);
         List<EdgeNode<PolarCoord>> sortedEdgeNodes = new List<EdgeNode<PolarCoord>>();
 
         foreach (Obstacle obstacle in obstacles)
@@ -110,41 +116,61 @@ public class VisibilityCone : MonoBehaviour
             Vector2[] obstacleOutlinePoints = obstacle.GetWorldBoundVerts(clockwise: true);
             EdgeNode<PolarCoord>[] obstacleOutlineNodes = new EdgeNode<PolarCoord>[obstacleOutlinePoints.Length];
             
-            //Transform points to cone space
+            //Convert to nodes
             for (int j = 0; j < obstacleOutlinePoints.Length; j++)
             {
                 Vector2 v = toConeSpace.MultiplyPoint(obstacleOutlinePoints[j]);
                 obstacleOutlineNodes[j] = new EdgeNode<PolarCoord>(PolarCoord.ToPolarCoords(v));
             }
 
+            bool transitionReady = false;
             for (int i = 0; i < obstacleOutlineNodes.Length; i++)
             {
                 EdgeNode<PolarCoord> n1 = obstacleOutlineNodes[i];
                 EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[(i + 1) % obstacleOutlineNodes.Length];
 
-                //if (p1.theta < p2.theta)
-                if (Math.Mod(n1.Value.theta, Mathf.PI) < Math.Mod(n2.Value.theta, Mathf.PI))
+                //TODO: FIX THIS
+                if (PolarCoord.Subtraction(n2.Value.theta, n1.Value.theta) < Mathf.PI)
                 {
+                    //Check if n1 and n2 are on different sides of 2pi
+                    if ()
+                    {
+
+                    }
+
                     //Normal is facing towards beam
                     n1.ConnectTo(n2);
-                    sortedEdgeNodes.Add(n1);
+                    if (transitionReady)
+                    {
+                        sortedEdgeNodes.Add(n1);
+                        transitionReady = false;
+                    }
+                    sortedEdgeNodes.Add(n2);
+                }
+                else
+                {
+                    transitionReady = true;
                 }
             }
         }
 
         //Add outer bounds for cone
         float farConeRadius = 100.0f;
-        sortedEdgeNodes.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaR - 0.01f)));
-        float phi = thetaR;
+        float deltaTheta = 2 * Mathf.PI / resolution;
+        float phi = deltaTheta;
+        EdgeNode<PolarCoord> startingBoundNode = new EdgeNode<PolarCoord>(new PolarCoord(farConeRadius, phi));
+        sortedEdgeNodes.Add(startingBoundNode);
         for (int i = 1; i < resolution; i++)
         {
-            phi += coneAngle / resolution;
-            PolarCoord p = new PolarCoord(farConeRadius, phi);
-            sortedEdgeNodes.Add(coneBounds.AddLast(p));
+            phi += deltaTheta;
+            EdgeNode<PolarCoord> boundNode = new EdgeNode<PolarCoord>(new PolarCoord(farConeRadius, phi));
+            sortedEdgeNodes.Last().ConnectTo(boundNode);
+            sortedEdgeNodes.Add(boundNode);
+            
         }
-        sortedEdgeNodes.Add(coneBounds.AddLast(new PolarCoord(farConeRadius, thetaL + 0.01f)));
+        sortedEdgeNodes.Last().ConnectTo(startingBoundNode);
 
-        //Order by increasing x and then increasing y
+        //Order by increasing theta and then increasing radius
         sortedEdgeNodes = sortedEdgeNodes
                             .OrderBy(node => node.Value.theta)
                             .ThenBy(node => node.Value.r).ToList();
@@ -152,19 +178,19 @@ public class VisibilityCone : MonoBehaviour
         List<EdgeNode<PolarCoord>> activeEdges = new List<EdgeNode<PolarCoord>>();
         List<PolarCoord> beamFunction = new List<PolarCoord>();
 
-        EdgeNode<PolarCoord> curClosestEdge = sortedEdgeNodes[0];
-        foreach ()
+        EdgeNode<PolarCoord> curClosestEdge = startingBoundNode.Previous();
+        foreach (EdgeNode<PolarCoord> eNode in sortedEdgeNodes)
         {
+            //TODO: check if eNode intersects 0 angle line
             if ()
             {
-                activeEdges.Add();
-
-                PolarCoord activeEdgeStart = activeEdge.Value;
-                PolarCoord activeEdgeEnd = activeEdge.Next.Value;
-                PolarCoord clip = PolarCoord.Interpolate(activeEdgeStart, activeEdgeEnd, 0.0f);
+                activeEdges.Add(eNode);
+                PolarCoord eStart = eNode.Value;
+                PolarCoord eEnd = eNode.Next().Value;
+                PolarCoord clip = PolarCoord.Interpolate(eStart, eEnd, 0.0f);
                 if (clip.r < curClosestEdge.Value.r)
                 {
-                    curClosestEdge = activeEdge;
+                    curClosestEdge = eNode;
                 }
             }
         }
@@ -251,6 +277,7 @@ public class VisibilityCone : MonoBehaviour
 
         }
 
+        /*
         List<float> beamFunctionThetas = new List<float>();
         foreach (PolarCoord p in beamFunction)
         {
@@ -275,10 +302,18 @@ public class VisibilityCone : MonoBehaviour
 
         List<Vector2> coneOutline = new List<Vector2>();
         coneOutline.Add(transform.position);
-
-        for (int j = 0; j < polarConePoints.Count; j++)
+        for (int i = 0; i < polarConePoints.Count; i++)
         {
-            Vector2 v = polarConePoints[j].ToCartesianCoordinates();
+            Vector2 v = fromConeSpace.MultiplyPoint(polarConePoints[i].ToCartesianCoordinates());
+            coneOutline.Add(v);
+        }
+        */
+
+        List<Vector2> coneOutline = new List<Vector2>();
+        //coneOutline.Add(transform.position);
+        for (int i = 0; i < beamFunction.Count; i++)
+        {
+            Vector2 v = fromConeSpace.MultiplyPoint(beamFunction[i].ToCartesianCoordinates());
             coneOutline.Add(v);
         }
         return coneOutline;
