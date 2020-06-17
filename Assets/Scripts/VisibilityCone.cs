@@ -132,12 +132,6 @@ public class VisibilityCone : MonoBehaviour
                 //TODO: FIX THIS
                 if (PolarCoord.Subtraction(n2.Value.theta, n1.Value.theta) < Mathf.PI)
                 {
-                    //Check if n1 and n2 are on different sides of 2pi
-                    if ()
-                    {
-
-                    }
-
                     //Normal is facing towards beam
                     n1.ConnectTo(n2);
                     if (transitionReady)
