@@ -113,15 +113,16 @@ public class VisibilityCone : MonoBehaviour
         Matrix4x4 toConeSpace = fromConeSpace.inverse;
 
         float coneAngle = Mathf.Deg2Rad * angle;
-        float thetaL = Mathf.PI / 2 + (coneAngle / 2);
-        float thetaR = Mathf.PI / 2 - (coneAngle / 2);
+        float thetaL = Mathf.PI + (coneAngle / 2);
+        float thetaR = Mathf.PI - (coneAngle / 2);
         List<EdgeNode<PolarCoord>> sortedEdgeNodes = new List<EdgeNode<PolarCoord>>();
 
         foreach (Obstacle obstacle in obstacles)
         {
             Vector2[] obstacleOutlinePoints = obstacle.GetWorldBoundVerts(clockwise: true);
             EdgeNode<PolarCoord>[] obstacleOutlineNodes = new EdgeNode<PolarCoord>[obstacleOutlinePoints.Length];
-            
+
+            bool[] bits = new bool[obstacleOutlineNodes.Length];
             //Convert to nodes
             for (int i = 0; i < obstacleOutlineNodes.Length; i++)
             {
@@ -129,29 +130,30 @@ public class VisibilityCone : MonoBehaviour
                 obstacleOutlineNodes[i] = new EdgeNode<PolarCoord>(PolarCoord.ToPolarCoords(v));
             }
 
-            bool transitionReady = false;
-            for (int i = 0; i < obstacleOutlineNodes.Length; i++)
+            for(int i = 0; i < bits.Length; i++)
             {
                 EdgeNode<PolarCoord> n1 = obstacleOutlineNodes[i];
-                EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[(i + 1) % obstacleOutlineNodes.Length];
-
+                EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[Math.Mod(i + 1, obstacleOutlineNodes.Length)];
                 float dt = Math.DeltaAngle(n1.Value.theta, n2.Value.theta);
-                if (dt < Mathf.PI && dt > 0.0f)
+                //True if normal of edge is facing towards origin
+                bits[i] = dt < Mathf.PI && dt > 0.0f;
+            }
+
+            for (int i = 0; i < bits.Length; i++)
+            {
+                if (bits[i])
                 {
-                    //Normal is facing towards beam
+                    EdgeNode<PolarCoord> n1 = obstacleOutlineNodes[i];
+                    EdgeNode<PolarCoord> n2 = obstacleOutlineNodes[Math.Mod(i + 1, obstacleOutlineNodes.Length)];
                     n1.ConnectTo(n2);
-                    if (transitionReady)
+                    sortedEdgeNodes.Add(n1);
+                    if (!bits[Math.Mod(i + 1, bits.Length)])
                     {
-                        sortedEdgeNodes.Add(n1);
-                        transitionReady = false;
+                        sortedEdgeNodes.Add(n2);
                     }
-                    sortedEdgeNodes.Add(n2);
-                }
-                else
-                {
-                    transitionReady = true;
                 }
             }
+
         }
 
         //Add outer bounds for cone
@@ -213,12 +215,6 @@ public class VisibilityCone : MonoBehaviour
                 }
 
                 EdgeNode<PolarCoord> prevClosestEdge = curClosestEdge;
-
-                if (prevClosestEdge.Next() == null)
-                {
-                    Debug.LogError("That one issue");
-                }
-
                 PolarCoord clipPrev = PolarCoord.Interpolate(prevClosestEdge.Value, prevClosestEdge.Next().Value, vs.theta);
 
                 PolarCoord closestVert = new PolarCoord(Mathf.Infinity, vs.theta);
