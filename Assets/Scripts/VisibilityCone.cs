@@ -174,12 +174,12 @@ public class VisibilityCone : MonoBehaviour
         EdgeNode<PolarCoord> curClosestEdge = startingBoundNode.Previous();
         foreach (EdgeNode<PolarCoord> eNode in sortedEdgeNodes)
         {
+            PolarCoord eStart = eNode.Value;
+            PolarCoord eEnd = eNode.Next().Value;
             //TODO: check if eNode intersects 0 angle line
-            if (Math.DeltaAngle())
+            if (eStart.theta > Mathf.PI && eEnd.theta > 0.0f)
             {
                 activeEdges.Add(eNode);
-                PolarCoord eStart = eNode.Value;
-                PolarCoord eEnd = eNode.Next().Value;
                 PolarCoord clip = PolarCoord.Interpolate(eStart, eEnd, 0.0f);
                 if (clip.r < curClosestEdge.Value.r)
                 {
@@ -303,7 +303,7 @@ public class VisibilityCone : MonoBehaviour
         */
 
         List<Vector2> coneOutline = new List<Vector2>();
-        //coneOutline.Add(transform.position);
+        coneOutline.Add(transform.position);
         for (int i = 0; i < beamFunction.Count; i++)
         {
             Vector2 v = fromConeSpace.MultiplyPoint(beamFunction[i].ToCartesianCoordinates());
