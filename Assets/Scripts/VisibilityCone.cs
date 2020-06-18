@@ -80,10 +80,10 @@ public class VisibilityCone : MonoBehaviour
             this.Value = val;
         }
 
-        public void ConnectTo(EdgeNode<T> next)
+        public void ConnectTo(EdgeNode<T> node)
         {
-            this.next = next;
-            next.prev = new System.WeakReference(prev);
+            this.next = node;
+            node.prev = new System.WeakReference(this);
         }
 
         public EdgeNode<T> Next()
@@ -159,7 +159,6 @@ public class VisibilityCone : MonoBehaviour
             EdgeNode<PolarCoord> boundNode = new EdgeNode<PolarCoord>(new PolarCoord(farConeRadius, phi));
             sortedEdgeNodes.Last().ConnectTo(boundNode);
             sortedEdgeNodes.Add(boundNode);
-            
         }
         sortedEdgeNodes.Last().ConnectTo(startingBoundNode);
 
@@ -175,15 +174,18 @@ public class VisibilityCone : MonoBehaviour
         foreach (EdgeNode<PolarCoord> eNode in sortedEdgeNodes)
         {
             PolarCoord eStart = eNode.Value;
-            PolarCoord eEnd = eNode.Next().Value;
-            //TODO: check if eNode intersects 0 angle line
-            if (eStart.theta > Mathf.PI && eEnd.theta > 0.0f)
+            if(eNode.Next() != null)
             {
-                activeEdges.Add(eNode);
-                PolarCoord clip = PolarCoord.Interpolate(eStart, eEnd, 0.0f);
-                if (clip.r < curClosestEdge.Value.r)
+                PolarCoord eEnd = eNode.Next().Value;
+                //TODO: check if eNode intersects 0 angle line
+                if (eStart.theta > Mathf.PI && eEnd.theta > 0.0f)
                 {
-                    curClosestEdge = eNode;
+                    activeEdges.Add(eNode);
+                    PolarCoord clip = PolarCoord.Interpolate(eStart, eEnd, 0.0f);
+                    if (clip.r < curClosestEdge.Value.r)
+                    {
+                        curClosestEdge = eNode;
+                    }
                 }
             }
         }
