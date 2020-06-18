@@ -79,6 +79,11 @@ namespace MathUtils
             return new PolarCoord(rInterpolated, t);
 
         }
+
+        public override string ToString()
+        {
+            return r.ToString() + ", " + (theta * Mathf.Rad2Deg).ToString();
+        }
     }
     
 }

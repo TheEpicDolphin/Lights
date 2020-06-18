@@ -63,6 +63,13 @@ public class VisibilityCone : MonoBehaviour
             indicesList.Add(i);
         }
 
+        if(Mathf.Approximately(angle, 360.0f))
+        {
+            indicesList.Add(0);
+            indicesList.Add(1);
+            indicesList.Add(vertices.Count - 1);
+        }
+
         meshFilt.mesh.Clear();
         meshFilt.mesh.SetVertices(vertices);
         meshFilt.mesh.SetTriangles(indicesList.ToArray(), 0);
@@ -93,15 +100,18 @@ public class VisibilityCone : MonoBehaviour
 
         public EdgeNode<T> Previous()
         {
-            return prev.Target as EdgeNode<T>;
+            return prev?.Target as EdgeNode<T>;
         }
     }
 
     public List<Vector2> Trace(List<Obstacle> obstacles, Vector2 direction)
     {
         Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
-        fromConeSpace.SetColumn(0, Vector2.Perpendicular(direction));
-        fromConeSpace.SetColumn(1, direction);
+        //fromConeSpace.SetColumn(0, -Vector2.Perpendicular(direction));
+        //fromConeSpace.SetColumn(1, direction);
+        //fromConeSpace.SetColumn(2, Vector3.forward);
+        fromConeSpace.SetColumn(0, -direction);
+        fromConeSpace.SetColumn(1, -Vector2.Perpendicular(direction));
         fromConeSpace.SetColumn(2, Vector3.forward);
         Matrix4x4 toConeSpace = fromConeSpace.inverse;
 
@@ -150,7 +160,7 @@ public class VisibilityCone : MonoBehaviour
         //Add outer bounds for cone
         float farConeRadius = 100.0f;
         float deltaTheta = 2 * Mathf.PI / resolution;
-        float phi = deltaTheta;
+        float phi = deltaTheta / 2;
         EdgeNode<PolarCoord> startingBoundNode = new EdgeNode<PolarCoord>(new PolarCoord(farConeRadius, phi));
         sortedEdgeNodes.Add(startingBoundNode);
         for (int i = 1; i < resolution; i++)
@@ -168,7 +178,7 @@ public class VisibilityCone : MonoBehaviour
                             .ThenBy(node => node.Value.r).ToList();
 
         List<EdgeNode<PolarCoord>> activeEdges = new List<EdgeNode<PolarCoord>>();
-        List<PolarCoord> beamFunction = new List<PolarCoord>();
+        List<PolarCoord> visibilityFunction = new List<PolarCoord>();
 
         EdgeNode<PolarCoord> curClosestEdge = startingBoundNode.Previous();
         foreach (EdgeNode<PolarCoord> eNode in sortedEdgeNodes)
@@ -177,8 +187,7 @@ public class VisibilityCone : MonoBehaviour
             if(eNode.Next() != null)
             {
                 PolarCoord eEnd = eNode.Next().Value;
-                //TODO: check if eNode intersects 0 angle line
-                if (eStart.theta > Mathf.PI && eEnd.theta > 0.0f)
+                if (eStart.theta > Mathf.PI && eEnd.theta < Mathf.PI)
                 {
                     activeEdges.Add(eNode);
                     PolarCoord clip = PolarCoord.Interpolate(eStart, eEnd, 0.0f);
@@ -231,14 +240,14 @@ public class VisibilityCone : MonoBehaviour
                 if (prevClosestEdge.Next() != curClosestEdge && edgeNode == curClosestEdge)
                 {
                     //A new edge has started that is closer than the previous closest edge.
-                    beamFunction.Add(clipPrev);
-                    beamFunction.Add(closestVert);
+                    visibilityFunction.Add(clipPrev);
+                    visibilityFunction.Add(closestVert);
 
                 }
                 else if (edgeNode == curClosestEdge)
                 {
                     //We are continuing a chain of connected edges
-                    beamFunction.Add(closestVert);
+                    visibilityFunction.Add(closestVert);
                 }
 
             }
@@ -264,14 +273,13 @@ public class VisibilityCone : MonoBehaviour
                         }
                     }
 
-                    beamFunction.Add(edgeNode.Value);
-                    beamFunction.Add(nextClosestVert);
+                    visibilityFunction.Add(edgeNode.Value);
+                    visibilityFunction.Add(nextClosestVert);
 
                 }
             }
 
         }
-
         /*
         List<float> beamFunctionThetas = new List<float>();
         foreach (PolarCoord p in beamFunction)
@@ -306,11 +314,12 @@ public class VisibilityCone : MonoBehaviour
 
         List<Vector2> coneOutline = new List<Vector2>();
         coneOutline.Add(transform.position);
-        for (int i = 0; i < beamFunction.Count; i++)
+        for (int i = 0; i < visibilityFunction.Count; i++)
         {
-            Vector2 v = fromConeSpace.MultiplyPoint(beamFunction[i].ToCartesianCoordinates());
+            Vector2 v = fromConeSpace.MultiplyPoint(visibilityFunction[i].ToCartesianCoordinates());
             coneOutline.Add(v);
         }
+
         return coneOutline;
 
     }

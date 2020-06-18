@@ -76,7 +76,8 @@ public class Player : MonoBehaviour
         }
 
         hand.SetHandDirection(relHandDir);
-        visibilityCone.Draw(relHandDir);
+        //visibilityCone.Draw(relHandDir);
+        visibilityCone.Draw(Vector2.up);
 
 
         float k = (1 / Time.deltaTime) * 0.4f;
