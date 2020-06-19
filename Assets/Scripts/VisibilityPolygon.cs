@@ -47,6 +47,7 @@ public class VisibilityPolygon : MonoBehaviour
 
         outline = Trace(obstacles);
         List<Vector3> vertices = new List<Vector3>();
+        vertices.Add(Vector2.zero);
         for (int i = 0; i < outline.Count; i++)
         {
             vertices.Add(transform.InverseTransformPoint(outline[i]));
@@ -64,6 +65,43 @@ public class VisibilityPolygon : MonoBehaviour
         indicesList.Add(0);
         indicesList.Add(1);
         indicesList.Add(vertices.Count - 1);
+
+        meshFilt.mesh.Clear();
+        meshFilt.mesh.SetVertices(vertices);
+        meshFilt.mesh.SetTriangles(indicesList.ToArray(), 0);
+        meshFilt.mesh.RecalculateNormals();
+        meshFilt.mesh.RecalculateBounds();
+    }
+
+    public void DrawSlice(Vector2 direction, float angle)
+    {
+        Collider2D[] obstacleColliders = Physics2D.OverlapCircleAll(transform.position, radius);
+        List<Obstacle> obstacles = new List<Obstacle>();
+        foreach (Collider2D obstacleCol in obstacleColliders)
+        {
+            Obstacle obstacle = obstacleCol.gameObject.GetComponent<Obstacle>();
+            if (obstacle)
+            {
+                obstacles.Add(obstacle);
+            }
+        }
+
+        outline = Trace(obstacles);
+        List<Vector2> slice = Sliced(direction, angle);
+        List<Vector3> vertices = new List<Vector3>();
+        for (int i = 0; i < slice.Count; i++)
+        {
+            vertices.Add(transform.InverseTransformPoint(slice[i]));
+        }
+
+        List<int> indicesList = new List<int>();
+
+        for (int i = 1; i < vertices.Count - 1; i++)
+        {
+            indicesList.Add(0);
+            indicesList.Add(i + 1);
+            indicesList.Add(i);
+        }
 
         meshFilt.mesh.Clear();
         meshFilt.mesh.SetVertices(vertices);
@@ -96,51 +134,6 @@ public class VisibilityPolygon : MonoBehaviour
         public EdgeNode<T> Previous()
         {
             return prev?.Target as EdgeNode<T>;
-        }
-    }
-
-    //This can be used for flashlights
-    public List<Vector2> Sliced(Vector2 direction, float angle)
-    {
-        Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
-        fromConeSpace.SetColumn(0, -direction);
-        fromConeSpace.SetColumn(1, -Vector2.Perpendicular(direction));
-        fromConeSpace.SetColumn(2, Vector3.forward);
-        Matrix4x4 toConeSpace = fromConeSpace.inverse;
-
-        float coneAngle = Math.Mod(Mathf.Deg2Rad * angle, 2 * Mathf.PI);
-        float thetaL = Mathf.PI + (coneAngle / 2);
-        float thetaR = Mathf.PI - (coneAngle / 2);
-
-
-        List<float> beamFunctionThetas = new List<float>();
-        foreach (PolarCoord p in beamFunction)
-        {
-            beamFunctionThetas.Add(p.theta);
-        }
-
-        List<PolarCoord> polarConePoints = new List<PolarCoord>();
-
-        //Binary search for left and right bounds (demarcations[i] and demarcations[i + 1])
-        int s = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.LARGEST_LEQUAL, thetaR);
-        int e = Algorithm.BinarySearch(beamFunctionThetas, CompCondition.SMALLEST_GEQUAL, thetaL);
-
-        PolarCoord clipStart = PolarCoord.Interpolate(beamFunction[s], beamFunction[s + 1], thetaR);
-        polarConePoints.Add(clipStart);
-        for (int j = s + 1; j < e; j++)
-        {
-            PolarCoord p = beamFunction[j];
-            polarConePoints.Add(p);
-        }
-        PolarCoord clipEnd = PolarCoord.Interpolate(beamFunction[e - 1], beamFunction[e], thetaL);
-        polarConePoints.Add(clipEnd);
-
-        List<Vector2> coneOutline = new List<Vector2>();
-        coneOutline.Add(transform.position);
-        for (int i = 0; i < polarConePoints.Count; i++)
-        {
-            Vector2 v = fromConeSpace.MultiplyPoint(polarConePoints[i].ToCartesianCoordinates());
-            coneOutline.Add(v);
         }
     }
 
@@ -308,15 +301,69 @@ public class VisibilityPolygon : MonoBehaviour
 
         }
 
-        List<Vector2> coneOutline = new List<Vector2>();
-        coneOutline.Add(transform.position);
+        List<Vector2> outline = new List<Vector2>();
         for (int i = 0; i < visibilityFunction.Count; i++)
         {
             Vector2 v = fromConeSpace.MultiplyPoint(visibilityFunction[i].ToCartesianCoordinates());
-            coneOutline.Add(v);
+            outline.Add(v);
         }
 
-        return coneOutline;
+        return outline;
+    }
+
+    //This can be used for flashlights
+    public List<Vector2> Sliced(Vector2 direction, float angle)
+    {
+        Matrix4x4 fromConeSpace = Matrix4x4.Translate(transform.position);
+        fromConeSpace.SetColumn(0, -direction);
+        fromConeSpace.SetColumn(1, -Vector2.Perpendicular(direction));
+        fromConeSpace.SetColumn(2, Vector3.forward);
+        Matrix4x4 toConeSpace = fromConeSpace.inverse;
+
+        float coneAngle = Math.Mod(Mathf.Deg2Rad * angle, 2 * Mathf.PI);
+        float thetaL = Mathf.PI + (coneAngle / 2);
+        float thetaR = Mathf.PI - (coneAngle / 2);
+
+        List<PolarCoord> visibilityFunction = new List<PolarCoord>();
+        List<float> visibilityFunctionThetas = new List<float>();
+        foreach (Vector2 v in outline)
+        {
+            PolarCoord p = PolarCoord.ToPolarCoords(toConeSpace.MultiplyPoint(v));
+            visibilityFunction.Add(p);
+        }
+
+        visibilityFunction.OrderBy(p => p.theta)
+                          .ThenBy(p => p.r).ToList();
+
+        foreach (PolarCoord p in visibilityFunction)
+        {
+            visibilityFunctionThetas.Add(p.theta);
+        }
+
+        List<PolarCoord> polarSliceOutline = new List<PolarCoord>();
+
+        //Binary search for left and right bounds
+        int s = Algorithm.BinarySearch(visibilityFunctionThetas, CompCondition.LARGEST_LEQUAL, thetaR);
+        int e = Algorithm.BinarySearch(visibilityFunctionThetas, CompCondition.SMALLEST_GEQUAL, thetaL);
+
+        PolarCoord clipStart = PolarCoord.Interpolate(visibilityFunction[s], visibilityFunction[s + 1], thetaR);
+        polarSliceOutline.Add(clipStart);
+        for (int j = s + 1; j < e; j++)
+        {
+            PolarCoord p = visibilityFunction[j];
+            polarSliceOutline.Add(p);
+        }
+        PolarCoord clipEnd = PolarCoord.Interpolate(visibilityFunction[e - 1], visibilityFunction[e], thetaL);
+        polarSliceOutline.Add(clipEnd);
+
+        List<Vector2> sliceOutline = new List<Vector2>();
+        sliceOutline.Add(transform.position);
+        for (int i = 0; i < polarSliceOutline.Count; i++)
+        {
+            Vector2 v = fromConeSpace.MultiplyPoint(polarSliceOutline[i].ToCartesianCoordinates());
+            sliceOutline.Add(v);
+        }
+        return sliceOutline;
     }
 
     public bool OutlineContainsPoint(Vector2 p)

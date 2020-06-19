@@ -77,8 +77,8 @@ public class Player : MonoBehaviour
         }
 
         hand.SetHandDirection(relHandDir);
-        visibilityPolygon.Draw();
-
+        //visibilityPolygon.Draw();
+        visibilityPolygon.DrawSlice(relHandDir, FOVAngle);
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);
