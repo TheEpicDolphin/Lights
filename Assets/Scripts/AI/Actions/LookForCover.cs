@@ -95,7 +95,7 @@ public class LookForCover : UtilityAction
             }
 
             //if waypoint is NOT in player's visibility cone, we give it a higher score
-            if (!player.visibilityCone.OutlineContainsPoint(landmark.p))
+            if (!player.visibilityPolygon.OutlineContainsPoint(landmark.p))
             {
                 score += 10.0f;
             }

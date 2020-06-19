@@ -501,6 +501,11 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4906254678441937272, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
+        type: 3}
+      propertyPath: m_Name
+      value: VisibilityPolygon
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b1d4431b11cb6a84e9b01ad04c0468c3, type: 3}
 --- !u!1001 &5821739917335052665

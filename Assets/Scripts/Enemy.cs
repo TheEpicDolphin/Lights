@@ -93,7 +93,7 @@ public class Enemy : MonoBehaviour, INavAgent
 
     public void Sense()
     {
-        bool visibleToPlayer = player.visibilityCone.OutlineContainsPoint(transform.position);
+        bool visibleToPlayer = player.FOVContains(transform.position);
         if (!visibleToPlayer)
         {
             timeSinceLastExposure = Time.time;

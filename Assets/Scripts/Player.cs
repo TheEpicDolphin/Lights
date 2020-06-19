@@ -6,6 +6,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public float radius;
+    public float FOVAngle = 120.0f;
 
     float playerSpeed = 8.0f;
 
@@ -18,7 +19,7 @@ public class Player : MonoBehaviour
     Vector2 lastVelocity = Vector2.zero;
     Vector2 eLast = Vector2.zero;
     public Hand hand;
-    public VisibilityCone visibilityCone;
+    public VisibilityPolygon visibilityPolygon;
 
     //public Inventory inventory;
 
@@ -35,7 +36,7 @@ public class Player : MonoBehaviour
 
         hand = GetComponentInChildren<Hand>();
 
-        visibilityCone = GetComponentInChildren<VisibilityCone>();
+        visibilityPolygon = GetComponentInChildren<VisibilityPolygon>();
         //inventory.handgunAmmo = 200;
 
 
@@ -76,8 +77,7 @@ public class Player : MonoBehaviour
         }
 
         hand.SetHandDirection(relHandDir);
-        //visibilityCone.Draw(relHandDir);
-        visibilityCone.Draw(Vector2.up);
+        visibilityPolygon.Draw();
 
 
         float k = (1 / Time.deltaTime) * 0.4f;
@@ -98,5 +98,9 @@ public class Player : MonoBehaviour
         rb.AddForce(strength * dir, ForceMode2D.Impulse);
     }
 
+    public bool FOVContains(Vector2 p)
+    {
+        return visibilityPolygon.SliceContainsPoint(p, transform.up, FOVAngle);
+    }
 }
 
