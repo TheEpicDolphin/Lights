@@ -294,8 +294,9 @@ public class VisibilityPolygon : MonoBehaviour
 
     public bool SliceContainsPoint(Vector2 p, Vector2 dir, float angle)
     {
-        //TODO: complete this
-        return OutlineContainsPoint(p);
+        Vector2 origin = transform.position;
+        float theta = Vector2.Angle(p - origin, dir);
+        return OutlineContainsPoint(p) && (theta < angle / 2);
     }
 
 }

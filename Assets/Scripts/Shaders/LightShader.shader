@@ -34,7 +34,6 @@ Shader "Custom/LightShader"
 
 				struct v2f {
 					float4 pos : SV_POSITION;
-					float2 tex : TEXCOORD0;
 					float3 lpos : TEXCOORD2;
 				};
 
@@ -58,7 +57,6 @@ Shader "Custom/LightShader"
 
 					o.lpos = pos - float3(_origin.x, _origin.y, 0);
 					o.pos = UnityObjectToClipPos(pos);
-					o.tex = input.texcoord;
 					return o;
 				}
 
