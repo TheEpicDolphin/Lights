@@ -43,9 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b83e10359c9e79d4cac925f8607740f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  angle: 360
   resolution: 5
-  coneRadius: 20
+  radius: 10
   beamColor: {r: 1, g: 0, b: 0, a: 0.5}
 --- !u!1 &5075401875981725253
 GameObject:
@@ -160,8 +159,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 0
+  FOVAngle: 60
   hand: {fileID: 0}
-  visibilityCone: {fileID: 0}
+  visibilityPolygon: {fileID: 0}
 --- !u!50 &5075401876883390779
 Rigidbody2D:
   serializedVersion: 4
