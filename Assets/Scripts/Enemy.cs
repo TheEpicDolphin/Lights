@@ -11,6 +11,7 @@ public class Enemy : MonoBehaviour, INavAgent
     public Hand hand;
     float timeSinceLastExposure;
     //UtilityAI uai;
+    UtilityAction action;
 
     // Start is called before the first frame update
     void Start()
@@ -18,6 +19,11 @@ public class Enemy : MonoBehaviour, INavAgent
         rb = GetComponent<Rigidbody2D>();
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
         timeSinceLastExposure = Time.time;
+
+        action = new AimAtDynamicTarget(this, player.transform);
+
+        Instantiate();
+        hand.EquipObject();
     }
 
     // Update is called once per frame
@@ -29,7 +35,8 @@ public class Enemy : MonoBehaviour, INavAgent
     void Update()
     {
         //Sense();
-        
+        hand.Animate();
+        action.Run();
     }
 
     public void NavigateTo(Vector2 destination)

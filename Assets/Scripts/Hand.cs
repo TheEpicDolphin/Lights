@@ -90,4 +90,15 @@ public class Hand : MonoBehaviour
         }
 
     }
+
+    public Vector2 AimingDirection()
+    {
+        IFirearm firearm = GetEquippedObject()?.GetComponent<IFirearm>();
+        if (firearm != null)
+        {
+            Transform barrelExit = firearm.GetBarrelExit();
+            return barrelExit.up;
+        }
+        return transform.up;
+    }
 }
