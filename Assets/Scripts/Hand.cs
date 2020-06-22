@@ -7,10 +7,12 @@ public class Hand : MonoBehaviour
 {
     Animator animator;
     GameObject equippedObject;
+    Vector3 aimTarget;
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
+        aimTarget = Vector2.zero;
     }
 
     public void Animate()
@@ -66,11 +68,12 @@ public class Hand : MonoBehaviour
         return equippedObject;
     }
 
-    public void AimWeaponAtTarget(Vector3 aimTarget)
+    public void AimWeaponAtTarget(Vector3 target)
     {
         IFirearm firearm = GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm != null)
         {
+            this.aimTarget = target;
             Transform barrelExit = firearm.GetBarrelExit();
             Vector2 aimTarget2D = aimTarget;
 
@@ -83,22 +86,11 @@ public class Hand : MonoBehaviour
                 Vector2 aimDir = aimTarget2D - tangent;
                 transform.rotation = Quaternion.LookRotation(Vector3.forward, aimDir);
             }
-            
-            float length = (aimTarget - barrelExit.transform.position).magnitude;
-            Debug.DrawRay(barrelExit.transform.position, 
-                length * barrelExit.transform.up, Color.red, 0.0f, false);
         }
-
     }
 
-    public Vector2 AimingDirection()
+    public Vector2 AimTarget()
     {
-        IFirearm firearm = GetEquippedObject()?.GetComponent<IFirearm>();
-        if (firearm != null)
-        {
-            Transform barrelExit = firearm.GetBarrelExit();
-            return barrelExit.up;
-        }
-        return transform.up;
+        return aimTarget;
     }
 }

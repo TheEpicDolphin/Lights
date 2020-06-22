@@ -22,8 +22,10 @@ public class Enemy : MonoBehaviour, INavAgent
 
         action = new AimAtDynamicTarget(this, player.transform);
 
-        Instantiate();
-        hand.EquipObject();
+        hand = GetComponentInChildren<Hand>();
+        
+        GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
+        hand.EquipObject(firearm);
     }
 
     // Update is called once per frame

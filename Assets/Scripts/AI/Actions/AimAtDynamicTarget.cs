@@ -25,15 +25,8 @@ public class AimAtDynamicTarget : UtilityAction
 
     public override void Run()
     {
-
-        Vector3 curAimingDir = me.hand.AimingDirection();
-
-        Vector3 diff = target.position - me.transform.position;
-        Vector3 targetAimingDir = diff.normalized;
-        Vector3 interpolatedAimingDir = Vector3.Slerp(curAimingDir, targetAimingDir, Time.deltaTime).normalized;
-
-        Vector3 newAimingTarget = me.transform.position + diff.magnitude * interpolatedAimingDir;
+        Vector3 newAimingTarget = Vector3.Lerp(me.hand.AimTarget(), me.player.transform.position, 5.0f * Time.deltaTime);
         me.hand.AimWeaponAtTarget(newAimingTarget);
-        
+
     }
 }
