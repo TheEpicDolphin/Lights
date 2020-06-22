@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AimAtPlayer : UtilityAction
+public class AimAtPlayer : UtilityDecision
 {
     Player player;
     Enemy me;
@@ -59,16 +59,19 @@ public class AimAtPlayer : UtilityAction
         float dist = Vector3.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Max(range - dist, 0.0f) / range;
 
+        //Check if there is anything blocking line of sight from AI to player
+        RaycastHit2D hit = Physics2D.Linecast(me.transform.position, player.transform.position);
+        if (hit.collider.GetComponent<Player>() != null)
+        {
+
+        }
+
         float U = 1.0f;
         return U;
     }
 
-    public override float Run(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        Vector2 curHandDir = me.hand.GetHandDirection();
-        Vector2 targetHandDir = (player.transform.position - me.transform.position).normalized;
-        Vector2 interpolatedHandDir = Vector2.Lerp(curHandDir, targetHandDir, Time.deltaTime).normalized;
-        me.hand.SetHandDirection(interpolatedHandDir);
-        return 1.0f;
+        return new AimAtDynamicTarget(me, player.transform);
     }
 }

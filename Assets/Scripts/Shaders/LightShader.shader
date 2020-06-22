@@ -66,7 +66,8 @@ Shader "Custom/LightShader"
 					float theta = acos(dot(_dir, fragDir));
 					
 					if (theta < _angle/2 && length(input.lpos) < _radius) {
-						return fixed4(1, 0, 0, 1);
+						//TODO: make color fade away over distance
+						return _Color;
 					}
 					else {
 						return fixed4(0, 0, 0, 0);

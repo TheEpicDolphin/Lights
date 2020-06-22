@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class UtilityAction
 {
-    protected string name;
-    
-    public UtilityAction(string name)
+    public UtilityAction()
     {
-        this.name = name;
+
     }
 
-    public virtual float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    /*
+     * Perform weight decay here
+     */
+    public virtual float Score()
     {
         return 0.0f;
     }
 
-    //Returns cooldown time until next action can run. "Inertia"
-    public virtual float Run(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public virtual void Run()
     {
-        return 0.0f;
+        
     }
 }

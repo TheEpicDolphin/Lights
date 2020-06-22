@@ -7,12 +7,14 @@ using AlgorithmUtils;
 public class UtilityBucket
 {
     string name;
-    List<UtilityAction> utilityActions;
+    List<UtilityDecision> utilityDecisions;
+    UtilityAction currentAction;
 
-    public UtilityBucket(string name, List<UtilityAction> actions)
+    public UtilityBucket(string name, List<UtilityDecision> decisions)
     {
         this.name = name;
-        this.utilityActions = actions;
+        this.utilityDecisions = decisions;
+        this.currentAction = new Wait(0.0f);
     }
 
     public virtual float EvaluatePriority(Dictionary<string, object> memory)
@@ -24,15 +26,24 @@ public class UtilityBucket
     {
         Dictionary<string, object> calculated = new Dictionary<string, object>();
 
-        List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
-        foreach(UtilityAction action in utilityActions)
+        List<KeyValuePair<float, UtilityDecision>> scoredDecisions = new List<KeyValuePair<float, UtilityDecision>>();
+        float currentActionScore = currentAction.Score();
+        foreach (UtilityDecision decision in utilityDecisions)
         {
-            scoredActions.Add(new KeyValuePair<float, UtilityAction>(action.Score(memory, calculated), action));
+            float decisionScore = decision.Score(memory, calculated);
+            if(decisionScore > currentActionScore)
+            {
+                scoredDecisions.Add(new KeyValuePair<float, UtilityDecision>(decisionScore, decision));
+            }
         }
 
-        scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
-        List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
+        if(scoredDecisions.Count > 0)
+        {
+            scoredDecisions = scoredDecisions.OrderByDescending(action => action.Key).ToList();
+            List<KeyValuePair<float, UtilityDecision>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
+            currentAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory, calculated);
+        }
 
-        Algorithm.WeightedRandomSelection(highestScoringSubset).Run(memory, calculated);
+        currentAction.Run();
     }
 }

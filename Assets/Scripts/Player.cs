@@ -76,7 +76,7 @@ public class Player : MonoBehaviour
             vDesired = movement * playerSpeed;
         }
 
-        hand.SetHandDirection(relHandDir);
+        //hand.SetHandDirection(relHandDir);
         //visibilityPolygon.Draw();
         visibilityPolygon.DrawSlice(relHandDir, FOVAngle);
 
@@ -101,6 +101,16 @@ public class Player : MonoBehaviour
     public bool FOVContains(Vector2 p)
     {
         return visibilityPolygon.SliceContainsPoint(p, transform.up, FOVAngle);
+    }
+
+    public Vector2 GetAimingDirection()
+    {
+
+    }
+
+    public Vector2 SetAimingDirection(Vector2 dir)
+    {
+        //Set hand direction necessary to achieve aiming direction
     }
 }
 
