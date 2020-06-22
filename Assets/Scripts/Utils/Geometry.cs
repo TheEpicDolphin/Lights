@@ -20,6 +20,11 @@ namespace GeometryUtils
         {
             return Vector2.Dot(n, point - p) > 0;
         }
+
+        public float DistanceToPoint(Vector2 point)
+        {
+            return Mathf.Abs(Vector2.Dot(point - p, n));
+        }
     }
 
     public class Geometry
@@ -265,6 +270,27 @@ namespace GeometryUtils
                 return new Vector2[] { p1 + c_origin, p2 + c_origin };
             }
 
+        }
+
+
+        internal static bool CircleTangent(Vector2 c_origin, float c_radius, Vector2 source, Vector3 axis, out Vector2 tangent)
+        {
+            Vector2 dp = c_origin - source;
+            if (dp.magnitude > c_radius)
+            {
+                float phi = Mathf.Acos(c_radius / dp.magnitude) * Mathf.Rad2Deg;
+                Vector2 b = (Quaternion.AngleAxis(phi, axis) * dp).normalized;
+                tangent = c_origin + Vector2.Dot(dp, b) * b;
+                return true;
+            }
+            else if (dp.magnitude == c_radius)
+            {
+                tangent = source;
+                return true;
+            }
+
+            tangent = Vector2.zero;
+            return false;
         }
     }
 }

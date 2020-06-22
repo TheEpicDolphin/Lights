@@ -25,17 +25,11 @@ public class AimAtDynamicTarget : UtilityAction
 
     public override void Run()
     {
-
-        //Use PD controller for aiming
-        float k = (1 / Time.deltaTime) * 0.4f;
-        Vector2 f = k * (vDesired - rb.velocity);
-        //Prevent unrealistic forces by clamping to range
-        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
-        rb.AddForce(f, ForceMode2D.Force);
-
+        /*
         Vector2 curHandDir = me.hand.GetHandDirection();
         Vector2 targetHandDir = (player.transform.position - me.transform.position).normalized;
         Vector2 interpolatedHandDir = Vector2.Lerp(curHandDir, targetHandDir, Time.deltaTime).normalized;
         me.hand.SetHandDirection(interpolatedHandDir);
+        */
     }
 }

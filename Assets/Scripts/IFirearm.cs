@@ -4,11 +4,13 @@ using UnityEngine;
 
 public interface IFirearm
 {
-    void Shoot(Vector2 target);
+    void Shoot();
 
     float GetRange();
 
     float GetFireRate();
 
     bool ReadyToFire();
+
+    Transform GetBarrelExit();
 }

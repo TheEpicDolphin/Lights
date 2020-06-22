@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GeometryUtils;
 
 public class Hand : MonoBehaviour
 {
-    Vector2 direction = Vector2.zero;
     Animator animator;
     GameObject equippedObject;
     // Start is called before the first frame update
@@ -13,9 +13,9 @@ public class Hand : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Animate()
     {
+        Vector2 direction = transform.up;
         animator.SetFloat("facingY", direction.y);
         animator.SetFloat("facingX", direction.x);
 
@@ -36,15 +36,8 @@ public class Hand : MonoBehaviour
         IFirearm firearm = equippedObject?.GetComponent<IFirearm>();
         if (firearm != null)
         {
-            firearm.Shoot(direction);
+            firearm.Shoot();
         }
-    }
-
-
-    private void LateUpdate()
-    {
-        Vector3 relHandDir = new Vector3(direction.x, direction.y, 0.0f);
-        transform.rotation = Quaternion.LookRotation(Vector3.forward, relHandDir);
     }
 
     public void EquipObject(GameObject equippedObject)
@@ -73,13 +66,28 @@ public class Hand : MonoBehaviour
         return equippedObject;
     }
 
-    public void SetHandDirection(Vector2 handDir)
+    public void AimWeaponAtTarget(Vector3 aimTarget)
     {
-        direction = handDir;
-    } 
+        IFirearm firearm = GetEquippedObject()?.GetComponent<IFirearm>();
+        if (firearm != null)
+        {
+            Transform barrelExit = firearm.GetBarrelExit();
+            Vector2 aimTarget2D = aimTarget;
 
-    public Vector2 GetHandDirection()
-    {
-        return direction;
+            Vector2 n = Vector2.Perpendicular(barrelExit.up);
+            Plane2D plane = new Plane2D(n, barrelExit.position);
+            float r = plane.DistanceToPoint(transform.position);
+            Vector2 tangent;
+            if (Geometry.CircleTangent(transform.position, r, aimTarget, -Vector3.forward, out tangent))
+            {
+                Vector2 aimDir = aimTarget2D - tangent;
+                transform.rotation = Quaternion.LookRotation(Vector3.forward, aimDir);
+            }
+            
+            float length = (aimTarget - barrelExit.transform.position).magnitude;
+            Debug.DrawRay(barrelExit.transform.position, 
+                length * barrelExit.transform.up, Color.red, 0.0f, false);
+        }
+
     }
 }

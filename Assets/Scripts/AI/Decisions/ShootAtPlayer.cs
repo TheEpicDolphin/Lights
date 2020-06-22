@@ -62,9 +62,9 @@ public class ShootAtPlayer : UtilityDecision
         //TODO: Desire to shoot based on ammo remaining
 
         //Desire to shoot based on how close AI is aiming at player
-        Vector2 handDir = me.hand.GetHandDirection();
-        Vector2 playerDir = player.transform.position - me.transform.position;
-        float aim = 1 - (Vector2.Angle(handDir, playerDir) / 180.0f);
+        //Vector2 handDir = me.hand.GetHandDirection();
+        //Vector2 playerDir = player.transform.position - me.transform.position;
+        //float aim = 1 - (Vector2.Angle(handDir, playerDir) / 180.0f);
 
         //Desire to shoot based on proximity to target
         float dist = Vector2.Distance(player.transform.position, me.transform.position);

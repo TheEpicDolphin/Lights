@@ -53,7 +53,8 @@ public class Player : MonoBehaviour
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
-        Vector2 relMousePos = Input.mousePosition - Camera.main.WorldToScreenPoint(hand.transform.position);
+        Vector3 aimTarget = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 relMousePos = aimTarget - hand.transform.position;
         Vector2 relHandDir = relMousePos.normalized;
 
         Vector2 vDesired = Vector2.zero;
@@ -76,9 +77,11 @@ public class Player : MonoBehaviour
             vDesired = movement * playerSpeed;
         }
 
-        //hand.SetHandDirection(relHandDir);
+        
+        hand.AimWeaponAtTarget(aimTarget);
+        hand.Animate();
         //visibilityPolygon.Draw();
-        visibilityPolygon.DrawSlice(relHandDir, FOVAngle);
+        //visibilityPolygon.DrawSlice(relHandDir, FOVAngle);
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);
@@ -103,14 +106,6 @@ public class Player : MonoBehaviour
         return visibilityPolygon.SliceContainsPoint(p, transform.up, FOVAngle);
     }
 
-    public Vector2 GetAimingDirection()
-    {
-
-    }
-
-    public Vector2 SetAimingDirection(Vector2 dir)
-    {
-        //Set hand direction necessary to achieve aiming direction
-    }
+    
 }
 

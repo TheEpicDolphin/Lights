@@ -51,9 +51,9 @@ public class AimAtPlayer : UtilityDecision
         }
 
         //Desire to aim based on current aiming direction
-        Vector2 handDir = me.hand.GetHandDirection();
-        Vector2 playerDir = player.transform.position - me.transform.position;
-        float aim = Vector2.Angle(handDir, playerDir) / 180.0f;
+        //Vector2 handDir = me.hand.GetHandDirection();
+        //Vector2 playerDir = player.transform.position - me.transform.position;
+        //float aim = Vector2.Angle(handDir, playerDir) / 180.0f;
 
         //Desire to shoot based on proximity to target
         float dist = Vector3.Distance(player.transform.position, me.transform.position);

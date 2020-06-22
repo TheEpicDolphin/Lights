@@ -33,8 +33,9 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
         anim.SetFloat("GunAngle", angle);
     }
 
-    public void Shoot(Vector2 dir)
+    public void Shoot()
     {
+        Vector2 dir = transform.up;
         float t = Time.time;
         if(t - lastT > 1 / firerate)
         {
@@ -42,7 +43,7 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
             lastT = t;
 
             Player player = transform.parent.GetComponentInParent<Player>();
-            player.AddKnockback(knockbackStrength, -transform.up);
+            player.AddKnockback(knockbackStrength, -dir);
 
             Vector2 start = barrelExit.position;
             float angle = blast.shape.angle;
@@ -84,5 +85,10 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
     public float GetFireRate()
     {
         return firerate;
+    }
+
+    public Transform GetBarrelExit()
+    {
+        return barrelExit;
     }
 }
