@@ -40,12 +40,6 @@ public class ShootAtPlayer : UtilityDecision
             return false;
         }
 
-        //Check if gun is ready to fire another round
-        if (!firearm.ReadyToFire())
-        {
-            return false;
-        }
-
         return true;
     }
 
@@ -59,6 +53,12 @@ public class ShootAtPlayer : UtilityDecision
         //Check if there is anything blocking line of sight from AI to player
         RaycastHit2D hit = Physics2D.Linecast(me.transform.position, player.transform.position);
         if (hit.collider.GetComponent<Player>() != null)
+        {
+            return 0.0f;
+        }
+
+        //Check if gun is ready to fire another round
+        if (!firearm.ReadyToFire())
         {
             return 0.0f;
         }

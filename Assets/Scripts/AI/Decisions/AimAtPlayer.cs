@@ -9,10 +9,9 @@ public class AimAtPlayer : UtilityDecision
     Enemy me;
     IFirearm firearm;
 
-    float range;
-    public AimAtPlayer(string name, float range) : base(name)
+    public AimAtPlayer(string name) : base(name)
     {
-        this.range = range;
+
     }
 
     private bool CheckPrerequisites(Dictionary<string, object> memory)

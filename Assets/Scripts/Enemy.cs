@@ -12,6 +12,7 @@ public class Enemy : MonoBehaviour, INavAgent
     float timeSinceLastExposure;
     //UtilityAI uai;
     UtilityAction action;
+    UtilityBucket combatBucket;
 
     // Start is called before the first frame update
     void Start()
@@ -20,12 +21,15 @@ public class Enemy : MonoBehaviour, INavAgent
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
         timeSinceLastExposure = Time.time;
 
-        action = new AimAtDynamicTarget(this, player.transform);
+        
 
         hand = GetComponentInChildren<Hand>();
         
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
+
+        action = new AimAtDynamicTarget(this, player.transform);
+        CreateCombatUtilityBucket();
     }
 
     // Update is called once per frame
@@ -114,4 +118,14 @@ public class Enemy : MonoBehaviour, INavAgent
         return Time.time - timeSinceLastExposure;
     }
     
+    public void CreateCombatUtilityBucket()
+    {
+        combatBucket = new UtilityBucket(
+            "Combat Bucket",
+            new List<UtilityDecision>()
+            {
+                new ShootAtPlayer("shoot"),
+                new AimAtPlayer("aim")
+            });
+    }
 }
