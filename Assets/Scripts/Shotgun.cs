@@ -42,8 +42,9 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
             blast.Play();
             lastT = t;
 
-            Player player = transform.parent.GetComponentInParent<Player>();
-            player.AddKnockback(knockbackStrength, -dir);
+            //TODO: fix to work with enemies
+            IHitable shooter = transform.parent.GetComponentInParent<IHitable>();
+            shooter.AddKnockback(knockbackStrength, -dir);
 
             Vector2 start = barrelExit.position;
             float angle = blast.shape.angle;
@@ -58,10 +59,11 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
                 
                 foreach (RaycastHit2D hit in hits)
                 {
-                    Enemy enemy = hit.collider.GetComponent<Enemy>();
-                    if(enemy != null)
+                    //TODO: fix to work with player
+                    IHitable hitByPellet = hit.collider.GetComponent<IHitable>();
+                    if(hitByPellet != null && hitByPellet != shooter)
                     {
-                        enemy.AddKnockback((knockbackStrength / numPellets) * (1 - hit.distance / range),
+                        hitByPellet.AddKnockback((knockbackStrength / numPellets) * (1 - hit.distance / range),
                                            pelletDir);
                     }
                 }

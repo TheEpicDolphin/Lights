@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, INavAgent
+public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
     public NavigationMesh navMesh;
     public Player player;
@@ -10,6 +10,9 @@ public class Enemy : MonoBehaviour, INavAgent
     float enemySpeed = 2.0f;
     public Hand hand;
     float timeSinceLastExposure;
+
+    Vector2 vDesired = Vector2.zero;
+
     //UtilityAI uai;
     UtilityAction action;
     UtilityBucket combatBucket;
@@ -36,18 +39,15 @@ public class Enemy : MonoBehaviour, INavAgent
         CreateCombatUtilityBucket();
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        //NavigateTo(player.transform.position);
-    }
-
     void Update()
     {
+        vDesired = Vector2.zero;
         //Sense();
         hand.Animate();
         //action.Run();
         combatBucket.RunOptimalAction(memory);
+
+        DampMovement();
     }
 
     public void NavigateTo(Vector2 destination)
@@ -56,14 +56,7 @@ public class Enemy : MonoBehaviour, INavAgent
 
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
-
-        float k = (1 / Time.deltaTime) * 0.4f;
-        Vector2 f = k * (vDesired - rb.velocity);
-        //Prevent unrealistic forces by clamping to range
-        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
-        rb.AddForce(f, ForceMode2D.Force);
-        
+        vDesired = (nextPoint - curPos).normalized * enemySpeed;        
     }
 
     public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
@@ -78,20 +71,11 @@ public class Enemy : MonoBehaviour, INavAgent
 
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        Vector2 vDesired = (nextPoint - curPos).normalized * enemySpeed;
-
-        float k = (1 / Time.deltaTime) * 0.4f;
-        Vector2 f = k * (vDesired - rb.velocity);
-        //Prevent unrealistic forces by clamping to range
-        f = Mathf.Clamp(f.magnitude, 0, 250.0f) * f.normalized;
-        rb.AddForce(f, ForceMode2D.Force);
+        vDesired = (nextPoint - curPos).normalized * enemySpeed;
     }
 
-    public void BeelineTo(Vector2 destination)
+    private void DampMovement()
     {
-        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        Vector2 vDesired = (destination - curPos).normalized * enemySpeed;
-
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);
         //Prevent unrealistic forces by clamping to range
