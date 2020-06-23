@@ -1,17 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GeometryUtils;
 
 public class ShootAtPlayer : UtilityDecision
 {
     Player player;
     Enemy me;
     IFirearm firearm;
-
-    float range;
-    public ShootAtPlayer(string name, float range) : base(name)
+    public ShootAtPlayer(string name) : base(name)
     {
-        this.range = range;
+        
     }
 
     private bool CheckPrerequisites(Dictionary<string, object> memory)
@@ -57,20 +56,26 @@ public class ShootAtPlayer : UtilityDecision
             return 0.0f;
         }
 
-        //Desire is measured as value in range [0, 1], where 0 is low desire and 1 is high desire.
+        //Check if there is anything blocking line of sight from AI to player
+        RaycastHit2D hit = Physics2D.Linecast(me.transform.position, player.transform.position);
+        if (hit.collider.GetComponent<Player>() != null)
+        {
+            return 0.0f;
+        }
 
         //TODO: Desire to shoot based on ammo remaining
 
         //Desire to shoot based on how close AI is aiming at player
-        //Vector2 handDir = me.hand.GetHandDirection();
-        //Vector2 playerDir = player.transform.position - me.transform.position;
-        //float aim = 1 - (Vector2.Angle(handDir, playerDir) / 180.0f);
+        Transform barrelExit = firearm.GetBarrelExit();
+        Plane2D los = new Plane2D(barrelExit.up, barrelExit.position);
+        float aimError = Mathf.Min(los.DistanceToPoint(player.transform.position) / (1.5f * player.radius), 
+                                    1.0f);
 
         //Desire to shoot based on proximity to target
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
-        float proximity = Mathf.Max(range - dist, 0.0f) / range;
+        float proximity = Mathf.Min(dist / firearm.GetRange(), 1.0f);
 
-        float U = 1.0f;
+        float U = (1 - aimError) * (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
         return U;
     }
 
