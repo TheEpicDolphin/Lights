@@ -81,7 +81,6 @@ public class ShootAtPlayer : UtilityDecision
 
     public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        Debug.Log("SHOOT");
         return new ShootFirearm(me);
     }
 }

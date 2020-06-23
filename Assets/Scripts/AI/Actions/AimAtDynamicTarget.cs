@@ -27,7 +27,6 @@ public class AimAtDynamicTarget : UtilityAction
 
     public override void Run()
     {
-        Debug.Log("AIM");
         Vector3 newAimingTarget = Vector3.Lerp(me.hand.AimTarget(), me.player.transform.position, 5.0f * Time.deltaTime);
         me.hand.AimWeaponAtTarget(newAimingTarget);
 
