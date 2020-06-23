@@ -13,6 +13,7 @@ public class Enemy : MonoBehaviour, INavAgent
     //UtilityAI uai;
     UtilityAction action;
     UtilityBucket combatBucket;
+    Dictionary<string, object> memory;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +30,9 @@ public class Enemy : MonoBehaviour, INavAgent
         hand.EquipObject(firearm);
 
         action = new AimAtDynamicTarget(this, player.transform);
+        memory = new Dictionary<string, object>();
+        memory["player"] = player;
+        memory["me"] = this;
         CreateCombatUtilityBucket();
     }
 
@@ -42,7 +46,8 @@ public class Enemy : MonoBehaviour, INavAgent
     {
         //Sense();
         hand.Animate();
-        action.Run();
+        //action.Run();
+        combatBucket.RunOptimalAction(memory);
     }
 
     public void NavigateTo(Vector2 destination)

@@ -53,7 +53,7 @@ public class AimAtPlayer : UtilityDecision
 
         //Desire to shoot based on how close AI is aiming at player
         Transform barrelExit = firearm.GetBarrelExit();
-        Plane2D los = new Plane2D(barrelExit.up, barrelExit.position);
+        Plane2D los = new Plane2D(Vector2.Perpendicular(barrelExit.up), barrelExit.position);
         float aimError = Mathf.Min(los.DistanceToPoint(player.transform.position) / (1.5f * player.radius),
                                     1.0f);
 

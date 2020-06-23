@@ -19,12 +19,15 @@ public class AimAtDynamicTarget : UtilityAction
     {
         Vector2 myPos = me.transform.position;
         float dist = Vector2.Distance(myPos, target.position);
-        
-        return Mathf.Exp(-(Time.time - t0));
+        float t = Time.time - t0;
+        float maxT = 10.0f;
+        float U = Mathf.Exp(-4 * (t / maxT));
+        return U;
     }
 
     public override void Run()
     {
+        Debug.Log("AIM");
         Vector3 newAimingTarget = Vector3.Lerp(me.hand.AimTarget(), me.player.transform.position, 5.0f * Time.deltaTime);
         me.hand.AimWeaponAtTarget(newAimingTarget);
 

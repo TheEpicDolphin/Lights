@@ -38,7 +38,7 @@ public class Player : MonoBehaviour
 
         visibilityPolygon = GetComponentInChildren<VisibilityPolygon>();
         //inventory.handgunAmmo = 200;
-
+        radius = GetComponent<CircleCollider2D>().radius;
 
     }
 

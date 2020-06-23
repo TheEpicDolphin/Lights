@@ -5,10 +5,9 @@ using UnityEngine;
 public class ShootFirearm : UtilityAction
 {
     Enemy me;
-    IFirearm firearm;
-    public ShootFirearm()
+    public ShootFirearm(Enemy me)
     {
-        
+        this.me = me;
     }
 
     //Guaranteed to occur once
