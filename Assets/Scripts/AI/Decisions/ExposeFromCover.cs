@@ -1,17 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using GeometryUtils;
-using AlgorithmUtils;
 
-public class LookForCover : UtilityDecision
+public class ExposeFromCover : UtilityDecision
 {
     Player player;
     Enemy me;
-    float exposureTime;
-    float maxExposureTime = 10.0f;
+    float maxHideTime = 7.0f;
 
-    public LookForCover(string name) : base(name)
+    public ExposeFromCover(string name) : base(name)
     {
 
     }
@@ -48,7 +45,7 @@ public class LookForCover : UtilityDecision
 
     public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        if(!CheckPrerequisites(memory))
+        if (!CheckPrerequisites(memory))
         {
             return 0.0f;
         }
@@ -60,12 +57,12 @@ public class LookForCover : UtilityDecision
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         float equippedFirearmRange = firearm.GetRange();
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
-        float proximity = Mathf.Max(dist / equippedFirearmRange, 1);
+        float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
 
         //Desire to hide based on how long the enemy has been exposed in the player's FOV
         float exposure = Mathf.Max(me.DangerExposureTime() / maxExposureTime, 1);
 
-        float U = (1 - proximity) * exposure;
+        float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f))) * exposure;
         return U;
     }
 

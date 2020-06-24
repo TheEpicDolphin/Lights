@@ -9,7 +9,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     Rigidbody2D rb;
     float enemySpeed = 2.0f;
     public Hand hand;
-    float timeSinceLastExposure;
+    float exposureStartTime;
+    float hidingStartTime;
+    
 
     Vector2 vDesired = Vector2.zero;
 
@@ -23,8 +25,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     {
         rb = GetComponent<Rigidbody2D>();
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
-        timeSinceLastExposure = Time.time;
-
+        exposureStartTime = Time.time;
+        hidingStartTime = Time.time;
         
 
         hand = GetComponentInChildren<Hand>();
@@ -98,13 +100,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         bool visibleToPlayer = player.FOVContains(transform.position);
         if (!visibleToPlayer)
         {
-            timeSinceLastExposure = Time.time;
+            exposureStartTime = Time.time;
         }
     }    
 
     public float DangerExposureTime()
     {
-        return Time.time - timeSinceLastExposure;
+        return Time.time - exposureStartTime;
     }
     
     public void CreateCombatUtilityBucket()
