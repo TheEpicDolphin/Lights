@@ -44,9 +44,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     void Update()
     {
         vDesired = Vector2.zero;
-        //Sense();
+        Sense();
         hand.Animate();
-        //action.Run();
         combatBucket.RunOptimalAction(memory);
 
         DampMovement();
@@ -102,11 +101,20 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         {
             exposureStartTime = Time.time;
         }
+        else
+        {
+            hidingStartTime = Time.time;
+        }
     }    
 
     public float DangerExposureTime()
     {
         return Time.time - exposureStartTime;
+    }
+
+    public float HiddenTime()
+    {
+        return Time.time - hidingStartTime;
     }
     
     public void CreateCombatUtilityBucket()
@@ -116,7 +124,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
             new List<UtilityDecision>()
             {
                 new ShootAtPlayer("shoot"),
-                new AimAtPlayer("aim")
+                new AimAtPlayer("aim"),
+                new TakeCover("take cover"),
+                new ExposeFromCover("expose")
             });
     }
 }

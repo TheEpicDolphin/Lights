@@ -157,6 +157,16 @@ public class LandmarkSystem
         return nearbyLandmarks;
     }
 
+    public Landmark GetLandmarkAt(Vector2 p)
+    {
+        Vector2Int gridCoords = ToGridCoordinates(p);
+        if (spatialHashedGrid.ContainsKey(gridCoords))
+        {
+            return spatialHashedGrid[gridCoords];
+        }
+        return null;
+    }
+
     public void DrawLandmarks(float radius)
     {
         Gizmos.color = Color.red;

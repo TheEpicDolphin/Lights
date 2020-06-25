@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GeometryUtils;
+using AlgorithmUtils;
 
 public class ExposeFromCover : UtilityDecision
 {
@@ -33,13 +35,6 @@ public class ExposeFromCover : UtilityDecision
             return false;
         }
 
-        //Check if AI has gun equipped
-        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if (firearm == null)
-        {
-            return false;
-        }
-
         return true;
     }
 
@@ -59,8 +54,8 @@ public class ExposeFromCover : UtilityDecision
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
 
-        //Desire to hide based on how long the enemy has been exposed in the player's FOV
-        float exposure = Mathf.Max(me.DangerExposureTime() / maxExposureTime, 1);
+        //Desire to hide based on how long the enemy has been hiding from player's FOV
+        float exposure = Mathf.Max(me.HiddenTime() / maxHideTime, 1);
 
         float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f))) * exposure;
         return U;
@@ -90,8 +85,8 @@ public class ExposeFromCover : UtilityDecision
                 score += 10.0f;
             }
 
-            /* if waypoint is NOT in player's visibility cone, we give it a higher score */
-            if (!player.visibilityPolygon.OutlineContainsPoint(landmark.p))
+            /* if AI can see player from landmark, give it a higher score */
+            if (player.IsVisibleFrom(landmark.p))
             {
                 score += 10.0f;
             }
@@ -100,7 +95,7 @@ public class ExposeFromCover : UtilityDecision
             float dist = Vector2.Distance(landmark.p, me.transform.position);
             score += Mathf.Max(40.0f - dist, 0);
 
-            /* Take into account enemy's weapon range */
+            /* Take into account AI's weapon range */
 
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }

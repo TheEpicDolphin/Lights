@@ -223,6 +223,11 @@ public class NavigationMesh : MonoBehaviour
         return landmarkSystem.GetLandmarksWithinRadius(p, radius);
     }
 
+    public Landmark GetLandmarkAt(Vector2 p)
+    {
+        return landmarkSystem.GetLandmarkAt(p);
+    }
+
     public void Draw()
     {
         if (!mat)

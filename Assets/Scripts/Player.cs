@@ -106,6 +106,11 @@ public class Player : MonoBehaviour, IHitable
         return visibilityPolygon.SliceContainsPoint(p, transform.up, FOVAngle);
     }
 
+    public bool IsVisibleFrom(Vector2 p)
+    {
+        return visibilityPolygon.OutlineContainsPoint(p);
+    }
+
     
 }
 
