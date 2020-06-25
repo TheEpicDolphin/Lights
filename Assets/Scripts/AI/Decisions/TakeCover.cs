@@ -35,13 +35,6 @@ public class TakeCover : UtilityDecision
             return false;
         }
 
-        //Check if player has gun equipped
-        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if (firearm == null)
-        {
-            return false;
-        }
-
         return true;
     }
 
@@ -57,6 +50,11 @@ public class TakeCover : UtilityDecision
 
         //Desire to hide based on player's gun range
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
+        if (firearm == null)
+        {
+            //If player does not have firearm, do not take cover
+            return 0.0f;
+        }
         float equippedFirearmRange = firearm.GetRange();
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Min(dist / equippedFirearmRange, 1);

@@ -45,11 +45,21 @@ public class ExposeFromCover : UtilityDecision
             return 0.0f;
         }
 
-        //TODO: Desire to hide based on ammo remaining
+        //No need to expose from cover when already exposed
+        if (player.IsVisibleFrom(me.transform.position))
+        {
+            return 0.0f;
+        }
 
+        //TODO: Desire to hide based on ammo remaining
 
         //Desire to hide based on proximity to target
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
+        if(firearm == null)
+        {
+            //Expose to attack player
+            return 1.0f;
+        }
         float equippedFirearmRange = firearm.GetRange();
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
@@ -76,6 +86,7 @@ public class ExposeFromCover : UtilityDecision
                 validLandmarks.Add(landmark);
             }
         }
+        Debug.Log(validLandmarks.Count);
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
@@ -99,6 +110,7 @@ public class ExposeFromCover : UtilityDecision
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
+        Debug.Log(scoredLandmarks.Count);
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         /* We found one. Don't try looking again anytime soon */
