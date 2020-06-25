@@ -86,7 +86,12 @@ public class ExposeFromCover : UtilityDecision
                 validLandmarks.Add(landmark);
             }
         }
-        Debug.Log(validLandmarks.Count);
+
+        if (validLandmarks.Count == 0)
+        {
+            /* There is no where for AI to expose itself nearby. Decide again later */
+            return new Wait(0.0f);
+        }
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
