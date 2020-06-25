@@ -18,12 +18,17 @@ namespace GeometryUtils
         //Return True if point is on the positive side of the plane. False otherwise
         public bool GetSide(Vector2 point)
         {
-            return Vector2.Dot(n, point - p) > 0;
+            return SignedDistanceToPoint(point) > 0;
         }
 
         public float DistanceToPoint(Vector2 point)
         {
             return Mathf.Abs(Vector2.Dot(point - p, n));
+        }
+
+        public float SignedDistanceToPoint(Vector2 point)
+        {
+            return Vector2.Dot(point - p, n);
         }
     }
 

@@ -35,7 +35,7 @@ public class TakeCover : UtilityDecision
             return false;
         }
 
-        //Check if AI has gun equipped
+        //Check if player has gun equipped
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm == null)
         {
@@ -70,7 +70,20 @@ public class TakeCover : UtilityDecision
 
     public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        List<Landmark> validLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position, 15.0f);
+        float maxLandmarkDist = 15.0f;
+        List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
+                                        maxLandmarkDist);
+        List<Landmark> validLandmarks = new List<Landmark>();
+        foreach (Landmark landmark in nearbyLandmarks)
+        {
+            /* if landmark is NOT in player's visibility cone, it is valid */
+            if (!player.FOVContains(landmark.p))
+            {
+                validLandmarks.Add(landmark);
+            }
+        }
+
+        
         if (validLandmarks.Count == 0)
         {
             /* There is no cover nearby. Decide again later */
@@ -86,32 +99,24 @@ public class TakeCover : UtilityDecision
         List<KeyValuePair<float, Landmark>> scoredLandmarks = new List<KeyValuePair<float, Landmark>>();
         foreach (Landmark landmark in validLandmarks)
         {
-            float score = 0.0f;
-
-            if(landmark == currentCover)
-            {
-                //AI prefers to stay in place but may change cover if other options are
-                //significantly better
-                score += 10.0f;
-            }
-
             /* Check if landmark is closer to AI than to player */
-            if (sepBoundary.GetSide(landmark.p))
-            {
-                score += 10.0f;
-            }
-
-            /* if waypoint is NOT in player's visibility cone, we give it a higher score */
-            if (!player.FOVContains(landmark.p))
-            {
-                score += 10.0f;
-            }
+            float c = sepBoundary.SignedDistanceToPoint(landmark.p);
 
             /* Take into account distance from AI to landmark */
             float dist = Vector2.Distance(landmark.p, me.transform.position);
-            score += Mathf.Max(40.0f - dist, 0);
+            float proximity = Mathf.Min(dist / maxLandmarkDist, 1);
 
-            /* Take into account enemy's weapon range */
+            /* TODO: Take into account AI's weapon range */
+
+            /* Score landmark */
+            float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
+
+            if (landmark == currentCover)
+            {
+                //AI prefers to stay in place but may change cover if other options are
+                //significantly better
+                score += 1.0f;
+            }
 
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
