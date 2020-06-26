@@ -7,6 +7,7 @@ public class Player : MonoBehaviour, IHitable
 {
     public float radius;
     public float FOVAngle = 120.0f;
+    public float FOVRadius = 20.0f;
 
     float playerSpeed = 8.0f;
 
@@ -81,7 +82,7 @@ public class Player : MonoBehaviour, IHitable
         hand.AimWeaponAtTarget(aimTarget);
         hand.Animate();
         //visibilityPolygon.Draw();
-        visibilityPolygon.DrawSlice(relHandDir, FOVAngle);
+        visibilityPolygon.DrawSlice(LookDir(), FOVAngle, FOVRadius);
 
         float k = (1 / Time.deltaTime) * 0.4f;
         Vector2 f = k * (vDesired - rb.velocity);
@@ -103,7 +104,7 @@ public class Player : MonoBehaviour, IHitable
 
     public bool FOVContains(Vector2 p)
     {
-        return visibilityPolygon.SliceContainsPoint(p, transform.up, FOVAngle);
+        return visibilityPolygon.SliceContainsPoint(p, LookDir(), FOVAngle, FOVRadius);
     }
 
     public bool IsVisibleFrom(Vector2 p)
@@ -111,6 +112,10 @@ public class Player : MonoBehaviour, IHitable
         return visibilityPolygon.OutlineContainsPoint(p);
     }
 
-    
+    public Vector2 LookDir()
+    {
+        Vector2 playerPos = transform.position;
+        return (hand.AimTarget() - playerPos).normalized;
+    }
 }
 

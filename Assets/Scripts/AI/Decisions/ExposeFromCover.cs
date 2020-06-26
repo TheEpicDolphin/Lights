@@ -67,7 +67,7 @@ public class ExposeFromCover : UtilityDecision
         //Desire to hide based on how long the enemy has been hiding from player's FOV
         float exposure = Mathf.Max(me.HiddenTime() / maxHideTime, 1);
 
-        float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f))) * exposure;
+        float U = exposure * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
         return U;
     }
 
@@ -115,7 +115,6 @@ public class ExposeFromCover : UtilityDecision
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
-        Debug.Log(scoredLandmarks.Count);
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         /* We found one. Don't try looking again anytime soon */

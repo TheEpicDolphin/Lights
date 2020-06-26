@@ -87,6 +87,12 @@ public class Hand : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(Vector3.forward, aimDir);
             }
         }
+        else
+        {
+            this.aimTarget = target;
+            Vector2 aimDir = this.aimTarget - transform.position;
+            transform.rotation = Quaternion.LookRotation(Vector3.forward, aimDir);
+        }
     }
 
     public Vector2 AimTarget()

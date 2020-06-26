@@ -10,7 +10,6 @@ using GeometryUtils;
 public class VisibilityPolygon : MonoBehaviour
 {
     public int resolution = 5;
-    public float radius = 10.0f;
 
     MeshFilter meshFilt;
     Material mat;
@@ -26,7 +25,7 @@ public class VisibilityPolygon : MonoBehaviour
         mat = meshRend.material;
         mat.color = beamColor;
         mat.SetVector("_origin", Vector4.zero);
-        mat.SetFloat("_radius", radius);
+        
     }
 
     // Update is called once per frame
@@ -37,7 +36,7 @@ public class VisibilityPolygon : MonoBehaviour
 
     public void Draw()
     {
-        Collider2D[] obstacleColliders = Physics2D.OverlapCircleAll(transform.position, radius);
+        Collider2D[] obstacleColliders = Physics2D.OverlapCircleAll(transform.position, 20.0f);
         List<Obstacle> obstacles = new List<Obstacle>();
         foreach (Collider2D obstacleCol in obstacleColliders)
         {
@@ -77,11 +76,12 @@ public class VisibilityPolygon : MonoBehaviour
     }
 
     
-    public void DrawSlice(Vector2 direction, float angle)
+    public void DrawSlice(Vector2 direction, float angle, float radius)
     {
         Draw();
         mat.SetVector("_dir", direction);
         mat.SetFloat("_angle", angle * Mathf.Deg2Rad);
+        mat.SetFloat("_radius", radius);
     }
     
 
@@ -276,27 +276,27 @@ public class VisibilityPolygon : MonoBehaviour
 
         }
 
-        List<Vector2> outline = new List<Vector2>();
+        List<Vector2> polyOutline = new List<Vector2>();
         for (int i = 0; i < visibilityFunction.Count; i++)
         {
             Vector2 v = fromConeSpace.MultiplyPoint(visibilityFunction[i].ToCartesianCoordinates());
-            outline.Add(v);
+            polyOutline.Add(v);
         }
 
-        return outline;
+        return polyOutline;
     }
 
     public bool OutlineContainsPoint(Vector2 p)
     {
-        return Vector2.Distance(p, transform.position) < radius && 
-                Geometry.IsInPolygon(p, outline.ToArray(), counterClockwise: true);
+        return Geometry.IsInPolygon(p, outline.ToArray(), counterClockwise: true);
     }
 
-    public bool SliceContainsPoint(Vector2 p, Vector2 dir, float angle)
+    public bool SliceContainsPoint(Vector2 p, Vector2 dir, float angle, float radius)
     {
         Vector2 origin = transform.position;
         float theta = Vector2.Angle(p - origin, dir);
-        return OutlineContainsPoint(p) && (theta < angle / 2);
+        return Vector2.Distance(p, transform.position) < radius &&
+                OutlineContainsPoint(p) && (theta < angle / 2);
     }
 
 }

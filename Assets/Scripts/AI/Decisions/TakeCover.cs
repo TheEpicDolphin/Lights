@@ -62,7 +62,8 @@ public class TakeCover : UtilityDecision
         //Desire to hide based on how long the enemy has been exposed in the player's FOV
         float exposure = Mathf.Min(me.DangerExposureTime() / maxExposureTime, 1);
 
-        float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f))) * exposure;
+        float U = exposure * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
+        Debug.Log(exposure);
         return U;
     }
 

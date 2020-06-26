@@ -48,7 +48,7 @@ public class LandmarkSystem
 
         /* Using Poisson Disk sampling, insert more landmarks around the obstacle */
         int k = 30;
-        int maxLandmarks = 200;
+        int maxLandmarks = 100;
         int landmarkCount = 0;
         while(active.Count > 0 && landmarkCount < maxLandmarks)
         {
