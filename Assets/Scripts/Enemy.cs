@@ -47,6 +47,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         Sense();
         hand.Animate();
         combatBucket.RunOptimalAction(memory);
+        //NavigateTo(player.transform.position);
 
         DampMovement();
     }

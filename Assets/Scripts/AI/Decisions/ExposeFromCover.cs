@@ -65,9 +65,10 @@ public class ExposeFromCover : UtilityDecision
         float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
 
         //Desire to hide based on how long the enemy has been hiding from player's FOV
-        float exposure = Mathf.Max(me.HiddenTime() / maxHideTime, 1);
+        float exposure = Mathf.Min(me.HiddenTime() / maxHideTime, 1);
 
         float U = exposure * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
+        Debug.Log(exposure);
         return U;
     }
 
