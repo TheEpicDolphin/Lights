@@ -89,7 +89,8 @@ public class TakeCover : UtilityDecision
             return new Wait(0.0f);
         }
 
-        Landmark currentCover = me.navMesh.GetLandmarkAt(me.transform.position);
+        Landmark currentCover = memory.ContainsKey("cover") ? (Landmark) memory["cover"] : 
+                                me.navMesh.GetLandmarkAt(me.transform.position);
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
@@ -114,20 +115,15 @@ public class TakeCover : UtilityDecision
             {
                 //AI prefers to stay in place but may change cover if other options are
                 //significantly better
-                score += 1.0f;
+                score += 3.0f;
             }
 
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
-        if(optimalCoverSpot == currentCover)
-        {
-            //The preferred cover spot is still the current cover spot
-            return new Wait(0.0f);
-        }
 
-        /* We found one. Don't try looking again anytime soon */
+        memory["cover"] = optimalCoverSpot;
         return new NavigateToStaticTarget(me, optimalCoverSpot.p);
     }
 }

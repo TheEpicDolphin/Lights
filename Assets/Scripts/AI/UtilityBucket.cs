@@ -43,6 +43,7 @@ public class UtilityBucket
             List<KeyValuePair<float, UtilityDecision>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
             currentAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory, calculated);
         }
+        //Debug.Log(currentAction.GetType());      
 
         currentAction.Run();
     }

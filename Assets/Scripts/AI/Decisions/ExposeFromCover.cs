@@ -98,6 +98,8 @@ public class ExposeFromCover : UtilityDecision
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
 
+        //TODO: discourage from choosing landmark that has path through player's FOV
+
         List<KeyValuePair<float, Landmark>> scoredLandmarks = new List<KeyValuePair<float, Landmark>>();
         foreach (Landmark landmark in validLandmarks)
         {

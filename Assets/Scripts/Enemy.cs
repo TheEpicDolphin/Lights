@@ -87,7 +87,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public void AddKnockback(float strength, Vector2 dir)
     {
-        rb.AddForce(strength * dir, ForceMode2D.Impulse);
+        //rb.AddForce(strength * dir, ForceMode2D.Impulse);
     }
 
     public void Attack()
