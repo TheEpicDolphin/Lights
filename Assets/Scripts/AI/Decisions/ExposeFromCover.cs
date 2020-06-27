@@ -8,7 +8,7 @@ public class ExposeFromCover : UtilityDecision
 {
     Player player;
     Enemy me;
-    float maxHideTime = 7.0f;
+    float maxHideTime = 10.0f;
 
     public ExposeFromCover(string name) : base(name)
     {
@@ -68,7 +68,7 @@ public class ExposeFromCover : UtilityDecision
         float exposure = Mathf.Min(me.HiddenTime() / maxHideTime, 1);
 
         float U = exposure * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
-        Debug.Log(exposure);
+        //Debug.Log(exposure);
         return U;
     }
 

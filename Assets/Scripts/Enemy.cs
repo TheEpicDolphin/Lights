@@ -11,6 +11,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public Hand hand;
     float exposureStartTime;
     float hidingStartTime;
+    public float radius;
     
 
     Vector2 vDesired = Vector2.zero;
@@ -25,6 +26,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     {
         rb = GetComponent<Rigidbody2D>();
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
+        this.radius = GetComponent<CircleCollider2D>().radius;
+
         exposureStartTime = Time.time;
         hidingStartTime = Time.time;
         
@@ -46,8 +49,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        //combatBucket.RunOptimalAction(memory);
-        NavigateTo(player.transform.position);
+        combatBucket.RunOptimalAction(memory);
+        //NavigateTo(player.transform.position);
 
         DampMovement();
     }
