@@ -46,8 +46,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        combatBucket.RunOptimalAction(memory);
-        //NavigateTo(player.transform.position);
+        //combatBucket.RunOptimalAction(memory);
+        NavigateTo(player.transform.position);
 
         DampMovement();
     }

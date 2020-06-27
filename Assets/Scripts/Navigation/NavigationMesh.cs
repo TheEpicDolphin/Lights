@@ -121,15 +121,17 @@ public class NavigationMesh : MonoBehaviour
             Vector2 newFunnelL = edgePortals[ep] - breadCrumbs[breadCrumbs.Count - 1];
             if (VecMath.Det(newFunnelL, funnelL) >= 0)
             {
+                /* The new left funnel is more clockwise than current left funnel */
                 if (edgePortals[ep] == edgePortals[epL] || VecMath.Det(funnelR, newFunnelL) >= 0)
                 {
+                    /* New left funnel does NOT cross over right funnel */
                     funnelL = newFunnelL;
                     epL = ep;
                 }
                 else
                 {
-                    breadCrumbs.Add(breadCrumbs[breadCrumbs.Count - 1] + funnelR);
-                    ep = epR;
+                    breadCrumbs.Add(edgePortals[epR + 1]);
+                    ep = epR + 2;
                     epL = ep;
                     epR = ep;
                     funnelL = edgePortals[epL] - breadCrumbs[breadCrumbs.Count - 1];
@@ -142,15 +144,17 @@ public class NavigationMesh : MonoBehaviour
             Vector2 newFunnelR = edgePortals[ep + 1] - breadCrumbs[breadCrumbs.Count - 1];
             if (VecMath.Det(funnelR, newFunnelR) >= 0)
             {
+                /* The new right funnel is more counter-clockwise than current right funnel */
                 if (edgePortals[ep + 1] == edgePortals[epR + 1] || VecMath.Det(newFunnelR, funnelL) >= 0)
                 {
+                    /* New right funnel does NOT cross over left funnel */
                     funnelR = newFunnelR;
                     epR = ep;
                 }
                 else
                 {
-                    breadCrumbs.Add(breadCrumbs[breadCrumbs.Count - 1] + funnelL);
-                    ep = epL;
+                    breadCrumbs.Add(edgePortals[epL]);
+                    ep = epL + 2;
                     epL = ep;
                     epR = ep;
                     funnelL = edgePortals[epL] - breadCrumbs[breadCrumbs.Count - 1];
@@ -158,7 +162,6 @@ public class NavigationMesh : MonoBehaviour
                     continue;
                 }
             }
-
             ep += 2;
         }
 
