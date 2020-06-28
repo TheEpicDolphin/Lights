@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    float enemySpeed = 2.0f;
+    public float speed = 2.0f;
     public Hand hand;
     float exposureStartTime;
     float hidingStartTime;
@@ -61,7 +61,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        vDesired = (nextPoint - curPos).normalized * enemySpeed;        
+        vDesired = (nextPoint - curPos).normalized * speed;        
+    }
+
+    public void MoveTo(Vector2 destination)
+    {
+        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
+        vDesired = (destination - curPos).normalized * speed;
     }
 
     public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
@@ -76,7 +82,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         Vector2 nextPoint = shortestPath[0];
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        vDesired = (nextPoint - curPos).normalized * enemySpeed;
+        vDesired = (nextPoint - curPos).normalized * speed;
     }
 
     private void DampMovement()
@@ -130,7 +136,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
                 new ShootAtPlayer("shoot"),
                 new AimAtPlayer("aim"),
                 new TakeCover("take cover"),
-                new ExposeFromCover("expose")
+                new ExposeFromCover("expose"),
+                new Strafe("strafe")
             });
     }
 }

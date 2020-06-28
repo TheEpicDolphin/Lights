@@ -50,23 +50,40 @@ public class Strafe : UtilityDecision
             return 0.0f;
         }
 
-        float strafeSpace;
+        Vector2 playerDir = (player.transform.position - me.transform.position).normalized;
+
+        float strafeDist = maxStrafeDistance;
+        bool right = Random.Range(0.0f, 1.0f) > 0.5f;
+        Vector2 strafeDir;
+        if (right)
+        {
+            strafeDir = 2.0f * Vector2.Perpendicular(playerDir) +
+                            Random.Range(-2.0f, 2.0f) * playerDir;
+        }
+        else
+        {
+            strafeDir = -2.0f * Vector2.Perpendicular(playerDir) +
+                            Random.Range(-2.0f, 2.0f) * playerDir;
+        }
+        strafeDir.Normalize();
+
         Vector2 myPos = me.transform.position;
-        RaycastHit2D hit = Physics2D.CircleCast(myPos, me.radius, , 3.0f);
+        RaycastHit2D hit = Physics2D.CircleCast(myPos, me.radius, strafeDir, maxStrafeDistance, (1 << 12));
         if(hit)
         {
-            strafeSpace = hit.centroid - myPos;
+            strafeDist = (hit.centroid - myPos).magnitude;
         }
 
-        //Desire to hide based on how long the enemy has been exposed in the player's FOV
-        float exposure = Mathf.Min(me.DangerExposureTime() / maxExposureTime, 1);
+        memory["strafe_target"] = myPos + strafeDist * strafeDir;
 
-        float U = Mathf.Min(strafeSpace / maxStrafeDistance, 1);
+        float exposure = Mathf.Min(me.DangerExposureTime() / 3.0f, 1);
+
+        float U = 0.5f * exposure * Mathf.Min(strafeDist / maxStrafeDistance, 1);
         return U;
     }
 
     public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        return new Move();
+        return new MoveTo(me, (Vector2) memory["strafe_target"]);
     }
 }
