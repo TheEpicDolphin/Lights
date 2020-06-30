@@ -4,13 +4,12 @@ using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
 
-public class ExposeFromCover : UtilityDecision
+public class ChangeCover : UtilityDecision
 {
     Player player;
     Enemy me;
-    float maxHideTime = 10.0f;
 
-    public ExposeFromCover(string name) : base(name)
+    public ChangeCover(string name) : base(name)
     {
 
     }
@@ -47,12 +46,13 @@ public class ExposeFromCover : UtilityDecision
 
         //TODO: Desire to hide based on ammo remaining
 
-        //Desire to hide based on proximity to target
+
+        //Desire to hide based on player's gun range
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if(firearm == null)
+        if (firearm == null)
         {
-            //Expose to attack player
-            return 1.0f;
+            //If player does not have firearm, do not take cover
+            return 0.0f;
         }
         float equippedFirearmRange = firearm.GetRange();
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
@@ -65,36 +65,37 @@ public class ExposeFromCover : UtilityDecision
     public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         float maxLandmarkDist = 15.0f;
-
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
                                         maxLandmarkDist);
         List<Landmark> validLandmarks = new List<Landmark>();
         foreach (Landmark landmark in nearbyLandmarks)
         {
-            /* if AI can see player from landmark, it is valid */
-            if (player.IsVisibleFrom(landmark.p))
+            /* if landmark is NOT in player's visibility cone, it is valid */
+            if (!player.FOVContains(landmark.p))
             {
                 validLandmarks.Add(landmark);
             }
         }
 
+
         if (validLandmarks.Count == 0)
         {
-            /* There is no where for AI to expose itself nearby. Decide again later */
+            /* There is no cover nearby. Decide again later */
             return new Wait(0.0f);
         }
+
+        Landmark currentCover = memory.ContainsKey("cover") ? (Landmark)memory["cover"] :
+                                me.navMesh.GetLandmarkAt(me.transform.position);
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
 
-        //TODO: discourage from choosing landmark that has path through player's FOV
-
         List<KeyValuePair<float, Landmark>> scoredLandmarks = new List<KeyValuePair<float, Landmark>>();
         foreach (Landmark landmark in validLandmarks)
         {
             /* Check if landmark is closer to AI than to player */
-            float c = sepBoundary.SignedDistanceToPoint(landmark.p); 
+            float c = sepBoundary.SignedDistanceToPoint(landmark.p);
 
             /* Take into account distance from AI to landmark */
             float dist = Vector2.Distance(landmark.p, me.transform.position);
@@ -105,12 +106,19 @@ public class ExposeFromCover : UtilityDecision
             /* Score landmark */
             float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
 
+            if (landmark == currentCover)
+            {
+                //AI prefers to stay in place but may change cover if other options are
+                //significantly better
+                score += 3.0f;
+            }
+
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
-        /* We found one. Don't try looking again anytime soon */
+        memory["cover"] = optimalCoverSpot;
         return new NavigateToStaticTarget(me, optimalCoverSpot.p);
     }
 }

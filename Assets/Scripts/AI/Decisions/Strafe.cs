@@ -76,9 +76,7 @@ public class Strafe : UtilityDecision
 
         memory["strafe_target"] = myPos + strafeDist * strafeDir;
 
-        float exposure = Mathf.Min(me.DangerExposureTime() / 3.0f, 1);
-
-        float U = 0.5f * exposure * Mathf.Min(strafeDist / maxStrafeDistance, 1);
+        float U = 0.5f * Mathf.Min(strafeDist / maxStrafeDistance, 1);
         return U;
     }
 

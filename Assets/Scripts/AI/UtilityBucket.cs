@@ -7,13 +7,13 @@ using AlgorithmUtils;
 public class UtilityBucket
 {
     string name;
-    List<UtilityDecision> utilityDecisions;
-    UtilityAction currentAction;
+    protected List<UtilityDecision> utilityDecisions;
+    protected UtilityAction currentAction;
 
-    public UtilityBucket(string name, List<UtilityDecision> decisions)
+    public UtilityBucket(string name)
     {
         this.name = name;
-        this.utilityDecisions = decisions;
+        this.utilityDecisions = new List<UtilityDecision>();
         this.currentAction = new Wait(0.0f);
     }
 
@@ -22,7 +22,7 @@ public class UtilityBucket
         return 0.0f;
     }
 
-    public void RunOptimalAction(Dictionary<string, object> memory)
+    public UtilityAction OptimalAction(Dictionary<string, object> memory)
     {
         Dictionary<string, object> calculated = new Dictionary<string, object>();
 
@@ -44,7 +44,6 @@ public class UtilityBucket
             currentAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory, calculated);
         }
         //Debug.Log(currentAction.GetType());      
-
-        currentAction.Run();
+        return currentAction;
     }
 }

@@ -28,6 +28,39 @@ namespace MathUtils
 
     }
 
+    public struct WeightedMovingAverage
+    {
+        public int M;
+        Queue<float> dataQueue;
+        float total;
+        float numerator;
+        int wTotal;
+
+        public WeightedMovingAverage(int M)
+        {
+            this.M = M;
+            this.dataQueue = new Queue<float>();
+            this.total = 0.0f;
+            this.numerator = 0.0f;
+            this.wTotal = M * (M + 1) / 2;
+        }
+
+        public float Update(float p_M)
+        {
+            if (dataQueue.Count < M)
+            {
+                dataQueue.Enqueue(p_M);
+                return 0.0f;
+            }
+            float p_0 = dataQueue.Dequeue();
+            numerator += M * p_M - total;
+            total += p_M - p_0;
+            dataQueue.Enqueue(p_M);
+            return numerator / wTotal;
+        }
+
+    }
+
     public struct PolarCoord
     {
         public float r;

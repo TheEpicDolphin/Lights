@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MathUtils;
 
 public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
@@ -9,10 +10,11 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     Rigidbody2D rb;
     public float speed = 2.0f;
     public Hand hand;
-    float exposureStartTime;
-    float hidingStartTime;
     public float radius;
-    
+
+    //(less exposed) 0 --> 1 (more exposed)
+    public float exposure = 0.0f;
+    WeightedMovingAverage wma = new WeightedMovingAverage(10);
 
     Vector2 vDesired = Vector2.zero;
 
@@ -27,10 +29,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         rb = GetComponent<Rigidbody2D>();
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
         this.radius = GetComponent<CircleCollider2D>().radius;
-
-        exposureStartTime = Time.time;
-        hidingStartTime = Time.time;
-        
 
         hand = GetComponentInChildren<Hand>();
         
@@ -107,25 +105,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public void Sense()
     {
         bool visibleToPlayer = player.FOVContains(transform.position);
-        if (!visibleToPlayer)
-        {
-            exposureStartTime = Time.time;
-        }
-        else
-        {
-            hidingStartTime = Time.time;
-        }
+        this.exposure = wma.Update(visibleToPlayer ? 1.0f : 0.0f);
     }    
-
-    public float DangerExposureTime()
-    {
-        return Time.time - exposureStartTime;
-    }
-
-    public float HiddenTime()
-    {
-        return Time.time - hidingStartTime;
-    }
     
     public void CreateCombatUtilityBucket()
     {

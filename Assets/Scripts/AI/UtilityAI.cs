@@ -6,6 +6,7 @@ public class UtilityAI
 {
     public Dictionary<string, object> utilityMemory;
     private List<UtilityBucket> utilityBuckets;
+    UtilityAction currentAction;
 
     public UtilityAI(List<UtilityBucket> utilityBuckets)
     {
@@ -15,7 +16,20 @@ public class UtilityAI
 
     public void RunOptimalAction()
     {
-        utilityBuckets[0].RunOptimalAction(utilityMemory);
+        UtilityBucket optimalBucket = new UtilityBucket("default");
+        float bestScore = 0.0f;
+        foreach (UtilityBucket bucket in utilityBuckets)
+        {
+            float score = bucket.EvaluatePriority(utilityMemory);
+            if (score < bestScore)
+            {
+                bestScore = score;
+                optimalBucket = bucket;
+            }
+        }
+
+        currentAction = optimalBucket.OptimalAction(utilityMemory);
+        currentAction.Run();
     }
 
     public void AddMemory(string key, object obj)
