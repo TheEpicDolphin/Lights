@@ -6,15 +6,13 @@ using AlgorithmUtils;
 
 public class UtilityBucket
 {
-    string name;
+    public string name;
     protected List<UtilityDecision> utilityDecisions;
-    protected UtilityAction currentAction;
 
     public UtilityBucket(string name)
     {
         this.name = name;
         this.utilityDecisions = new List<UtilityDecision>();
-        this.currentAction = new Wait(0.0f);
     }
 
     public virtual float EvaluatePriority(Dictionary<string, object> memory)
@@ -22,7 +20,7 @@ public class UtilityBucket
         return 0.0f;
     }
 
-    public UtilityAction OptimalAction(Dictionary<string, object> memory)
+    public UtilityAction OptimalAction(UtilityAction currentAction, Dictionary<string, object> memory)
     {
         Dictionary<string, object> calculated = new Dictionary<string, object>();
 

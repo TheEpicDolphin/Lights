@@ -15,7 +15,6 @@ public class InCoverBucket : UtilityBucket
             new ChangeCover("change_cover"),
             new IdleDecision("idle")
         };
-        this.currentAction = new Wait(0.0f);
     }
 
     private bool CheckPrerequisites(Dictionary<string, object> memory)

@@ -18,10 +18,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     Vector2 vDesired = Vector2.zero;
 
-    //UtilityAI uai;
-    UtilityAction action;
-    UtilityBucket combatBucket;
-    Dictionary<string, object> memory;
+    UtilityAI utilAI;
 
     // Start is called before the first frame update
     void Start()
@@ -35,11 +32,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
 
-        action = new AimAtDynamicTarget(this, player.transform);
-        memory = new Dictionary<string, object>();
-        memory["player"] = player;
-        memory["me"] = this;
-        CreateCombatUtilityBucket();
+        utilAI = new UtilityAI(new List<UtilityBucket>()
+        {
+            new InCombatBucket("combat"),
+            new InCoverBucket("cover")
+        });
+        utilAI.AddMemory("player", player);
+        utilAI.AddMemory("me", this);
     }
 
     void Update()
@@ -47,7 +46,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        combatBucket.RunOptimalAction(memory);
+        utilAI.RunOptimalAction();
         //NavigateTo(player.transform.position);
 
         DampMovement();
@@ -108,17 +107,4 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         this.exposure = wma.Update(visibleToPlayer ? 1.0f : 0.0f);
     }    
     
-    public void CreateCombatUtilityBucket()
-    {
-        combatBucket = new UtilityBucket(
-            "Combat Bucket",
-            new List<UtilityDecision>()
-            {
-                new ShootAtPlayer("shoot"),
-                new AimAtPlayer("aim"),
-                new TakeCover("take cover"),
-                new ExposeFromCover("expose"),
-                new Strafe("strafe")
-            });
-    }
 }

@@ -47,10 +47,13 @@ namespace MathUtils
 
         public float Update(float p_M)
         {
-            if (dataQueue.Count < M)
+            int n = dataQueue.Count;
+            if (n < M)
             {
+                total += p_M;
+                numerator += (n + 1) * p_M;
                 dataQueue.Enqueue(p_M);
-                return 0.0f;
+                return numerator / wTotal;
             }
             float p_0 = dataQueue.Dequeue();
             numerator += M * p_M - total;

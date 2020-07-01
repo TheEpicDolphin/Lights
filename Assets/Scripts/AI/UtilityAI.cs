@@ -12,6 +12,7 @@ public class UtilityAI
     {
         this.utilityMemory = new Dictionary<string, object>();
         this.utilityBuckets = utilityBuckets;
+        this.currentAction = new Wait(0.0f);
     }
 
     public void RunOptimalAction()
@@ -21,14 +22,13 @@ public class UtilityAI
         foreach (UtilityBucket bucket in utilityBuckets)
         {
             float score = bucket.EvaluatePriority(utilityMemory);
-            if (score < bestScore)
+            if (score > bestScore)
             {
                 bestScore = score;
                 optimalBucket = bucket;
             }
         }
-
-        currentAction = optimalBucket.OptimalAction(utilityMemory);
+        currentAction = optimalBucket.OptimalAction(currentAction, utilityMemory);
         currentAction.Run();
     }
 

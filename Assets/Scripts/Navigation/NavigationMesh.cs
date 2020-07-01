@@ -96,15 +96,15 @@ public class NavigationMesh : MonoBehaviour
         edgePortals.Add(targetPos);
         edgePortals.Add(targetPos);
 
-        
+        /*
         for(int i = 0; i < edgePortals.Count; i+=2)
         {
             //Debug.DrawLine(startPos, transform.TransformPoint(edgePortals[i]), Color.cyan, 0.0f, false);
             Debug.DrawLine(transform.TransformPoint(edgePortals[i]),
                 transform.TransformPoint(edgePortals[i + 1]), Color.magenta, 0.0f, false);
         }
+        */
         
-
         //Run Simple Stupid Funnel Algorithm.
         List<Vector2> breadCrumbs = new List<Vector2> { startPos };
         Vector2 funnelL = edgePortals[0] - breadCrumbs[breadCrumbs.Count - 1];
