@@ -22,8 +22,8 @@ public class NavigateToStaticTarget : UtilityAction
         Mathf.Min(dist - 0.1f, 1.0f);
 
         float t = Time.time - t0;
-        float maxT = 10.0f;
-        float U = 1 / (1 + Mathf.Exp(20 * (t/maxT - 0.85f)));
+        float maxT = dist / me.speed;
+        float U = 2 / (1 + Mathf.Exp(20 * (t/maxT - 0.85f)));
         return U;
     }
 

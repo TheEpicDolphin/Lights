@@ -62,7 +62,7 @@ public class ChangeCover : UtilityDecision
         return U;
     }
 
-    public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         float maxLandmarkDist = 15.0f;
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
@@ -81,7 +81,7 @@ public class ChangeCover : UtilityDecision
         if (validLandmarks.Count == 0)
         {
             /* There is no cover nearby. Decide again later */
-            return new Wait(0.0f);
+            return;
         }
 
         Landmark currentCover = memory.ContainsKey("cover") ? (Landmark)memory["cover"] :
@@ -119,6 +119,6 @@ public class ChangeCover : UtilityDecision
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         memory["cover"] = optimalCoverSpot;
-        return new NavigateToStaticTarget(me, optimalCoverSpot.p);
+        me.NavigateTo(optimalCoverSpot.p);
     }
 }

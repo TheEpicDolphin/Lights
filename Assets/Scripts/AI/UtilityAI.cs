@@ -28,8 +28,7 @@ public class UtilityAI
                 optimalBucket = bucket;
             }
         }
-        currentAction = optimalBucket.OptimalAction(currentAction, utilityMemory);
-        currentAction.Run();
+        optimalBucket.Run(utilityMemory);
     }
 
     public void AddMemory(string key, object obj)

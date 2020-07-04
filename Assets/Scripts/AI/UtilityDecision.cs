@@ -4,21 +4,44 @@ using UnityEngine;
 
 public class UtilityDecision
 {
-    protected string name;
+    public string name;
+    protected List<UtilityConsideration> considerations;
 
     public UtilityDecision(string name)
     {
         this.name = name;
     }
 
-    public virtual float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public bool Score(Dictionary<string, object> memory, out int rank, out float weight)
     {
-        return 0.0f;
+        if(considerations.Count == 0)
+        {
+            rank = 0;
+            weight = 1.0f;
+            return true;
+        }
+
+        rank = -10000;
+        weight = 0.0f;
+        foreach (UtilityConsideration consideration in considerations)
+        {
+            float considerationWeight;
+            if (consideration.Score(memory, out considerationWeight))
+            {
+                weight += considerationWeight;
+                rank = Mathf.Max(rank, consideration.Rank());
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    //Returns cooldown time until next decision can run. "Inertia"
-    public virtual UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public virtual void Execute(Dictionary<string, object> memory)
     {
-        return new Wait(0.0f);
+        
     }
 }

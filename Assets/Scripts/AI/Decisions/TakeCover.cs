@@ -8,11 +8,10 @@ public class TakeCover : UtilityDecision
 {
     Player player;
     Enemy me;
-    float maxExposureTime = 4.0f;
 
     public TakeCover(string name) : base(name)
     {
-
+        
     }
 
     private bool CheckPrerequisites(Dictionary<string, object> memory)
@@ -59,11 +58,15 @@ public class TakeCover : UtilityDecision
         float dist = Vector2.Distance(player.transform.position, me.transform.position);
         float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
 
-        float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
+        //Enemy more likely to take cover during first few seconds
+        float t = Mathf.Min(me.ExposedTime() / 4.0f, 1);
+        t = 0;
+        float U = (1 - t) * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
+        
         return U;
     }
 
-    public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         float maxLandmarkDist = 15.0f;
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
@@ -82,7 +85,7 @@ public class TakeCover : UtilityDecision
         if (validLandmarks.Count == 0)
         {
             /* There is no cover nearby. Decide again later */
-            return new Wait(0.0f);
+            return;
         }
 
         Landmark currentCover = memory.ContainsKey("cover") ? (Landmark) memory["cover"] : 
@@ -120,6 +123,6 @@ public class TakeCover : UtilityDecision
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         memory["cover"] = optimalCoverSpot;
-        return new NavigateToStaticTarget(me, optimalCoverSpot.p);
+        me.NavigateTo(optimalCoverSpot.p);
     }
 }

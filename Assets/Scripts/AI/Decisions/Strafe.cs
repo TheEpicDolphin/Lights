@@ -75,13 +75,13 @@ public class Strafe : UtilityDecision
         }
 
         memory["strafe_target"] = myPos + strafeDist * strafeDir;
-
         float U = 0.5f * Mathf.Min(strafeDist / maxStrafeDistance, 1);
         return U;
     }
 
-    public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        return new MoveTo(me, (Vector2) memory["strafe_target"]);
+        //return new MoveTo(me, (Vector2) memory["strafe_target"]);
+        me.MoveTo((Vector2) memory["strafe_target"]);
     }
 }

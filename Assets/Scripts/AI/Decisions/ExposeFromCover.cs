@@ -62,7 +62,7 @@ public class ExposeFromCover : UtilityDecision
         return U;
     }
 
-    public override UtilityAction Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
         float maxLandmarkDist = 15.0f;
 
@@ -81,7 +81,7 @@ public class ExposeFromCover : UtilityDecision
         if (validLandmarks.Count == 0)
         {
             /* There is no where for AI to expose itself nearby. Decide again later */
-            return new Wait(0.0f);
+            return;
         }
 
         Vector2 playerDir = player.transform.position - me.transform.position;
@@ -108,9 +108,9 @@ public class ExposeFromCover : UtilityDecision
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
-        Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
+        Landmark optimalSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         /* We found one. Don't try looking again anytime soon */
-        return new NavigateToStaticTarget(me, optimalCoverSpot.p);
+        me.NavigateTo(optimalSpot.p);
     }
 }

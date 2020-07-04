@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class InCombatBucket : UtilityBucket
 {
-    Player player;
-    Enemy me;
 
     public InCombatBucket(string name) : base(name)
     {
@@ -19,38 +17,22 @@ public class InCombatBucket : UtilityBucket
         };
     }
 
-    private bool CheckPrerequisites(Dictionary<string, object> memory)
-    {
-        if (memory.ContainsKey("player"))
-        {
-            player = (Player)memory["player"];
-        }
-        else
-        {
-            return false;
-        }
-
-        if (memory.ContainsKey("me"))
-        {
-            me = (Enemy)memory["me"];
-        }
-        else
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public override float EvaluatePriority(Dictionary<string, object> memory)
     {
-        if (!CheckPrerequisites(memory))
-        {
-            return 0.0f;
-        }
-
+        Enemy me = (Enemy)memory["me"];
         //utility goes up with more exposure
         float U = me.exposure;
         return U;
+    }
+
+    public override void Run(Dictionary<string, object> memory)
+    {
+        Player player = (Player)memory["player"];
+        Enemy me = (Enemy)memory["me"];
+
+        memory["shooting_target"] = player.transform.position;
+        memory["target_radius"] = player.radius;
+
+        
     }
 }
