@@ -10,38 +10,15 @@ public class Strafe : UtilityDecision
 
     public Strafe(string name) : base(name)
     {
-
-    }
-
-    private bool CheckPrerequisites(Dictionary<string, object> memory)
-    {
-        if (memory.ContainsKey("player"))
+        considerations = new List<UtilityConsideration>()
         {
-            player = (Player)memory["player"];
-        }
-        else
-        {
-            return false;
-        }
-
-        if (memory.ContainsKey("me"))
-        {
-            me = (Enemy)memory["me"];
-        }
-        else
-        {
-            return false;
-        }
-
-        return true;
+            new ExposureConsideration(4),
+            new IdlenessConsideration(1),
+        };
     }
 
     public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
     {
-        if (!CheckPrerequisites(memory))
-        {
-            return 0.0f;
-        }
 
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm == null)
@@ -79,9 +56,9 @@ public class Strafe : UtilityDecision
         return U;
     }
 
-    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory)
     {
-        //return new MoveTo(me, (Vector2) memory["strafe_target"]);
-        me.MoveTo((Vector2) memory["strafe_target"]);
+
+        
     }
 }

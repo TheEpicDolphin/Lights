@@ -11,62 +11,14 @@ public class TakeCover : UtilityDecision
 
     public TakeCover(string name) : base(name)
     {
-        
+        considerations = new List<UtilityConsideration>()
+        {
+            new WeaponRangeConsideration(2),
+            new ExposureConsideration(4)
+        };
     }
 
-    private bool CheckPrerequisites(Dictionary<string, object> memory)
-    {
-        if (memory.ContainsKey("player"))
-        {
-            player = (Player)memory["player"];
-        }
-        else
-        {
-            return false;
-        }
-
-        if (memory.ContainsKey("me"))
-        {
-            me = (Enemy)memory["me"];
-        }
-        else
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
-    {
-        if(!CheckPrerequisites(memory))
-        {
-            return 0.0f;
-        }
-
-        //TODO: Desire to hide based on ammo remaining
-
-
-        //Desire to hide based on player's gun range
-        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if (firearm == null)
-        {
-            //If player does not have firearm, do not take cover
-            return 0.0f;
-        }
-        float equippedFirearmRange = firearm.GetRange();
-        float dist = Vector2.Distance(player.transform.position, me.transform.position);
-        float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
-
-        //Enemy more likely to take cover during first few seconds
-        float t = Mathf.Min(me.ExposedTime() / 4.0f, 1);
-        t = 0;
-        float U = (1 - t) * 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
-        
-        return U;
-    }
-
-    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Dictionary<string, object> memory)
     {
         float maxLandmarkDist = 15.0f;
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
@@ -123,6 +75,6 @@ public class TakeCover : UtilityDecision
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         memory["cover"] = optimalCoverSpot;
-        me.NavigateTo(optimalCoverSpot.p);
+        memory["destination"] = optimalCoverSpot.p;
     }
 }
