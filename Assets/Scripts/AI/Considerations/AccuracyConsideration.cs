@@ -5,7 +5,7 @@ using GeometryUtils;
 
 public class AccuracyConsideration : UtilityConsideration
 {
-    public AccuracyConsideration(int rank) : base(rank)
+    public AccuracyConsideration(UtilityRank baseRank) : base(baseRank)
     {
 
     }

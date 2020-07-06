@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class UtilityConsideration
 {
-    int rank;
-    public UtilityConsideration(int rank)
+    protected UtilityRank baseRank;
+    public UtilityConsideration(UtilityRank baseRank)
     {
-        this.rank = rank;
+        this.baseRank = baseRank;
     }
 
     public virtual bool Score(Dictionary<string, object> memory, out float weight)
@@ -16,9 +16,9 @@ public class UtilityConsideration
         return true;
     }
 
-    public virtual int Rank()
+    public virtual UtilityRank Rank()
     {
-        return rank;
+        return baseRank;
     }
 
 }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExposureConsideration : UtilityConsideration
+public class IdlenessConsideration : UtilityConsideration
 {
-    public ExposureConsideration(UtilityRank baseRank) : base(baseRank)
+    public IdlenessConsideration(UtilityRank baseRank) : base(baseRank)
     {
 
     }
@@ -14,12 +14,8 @@ public class ExposureConsideration : UtilityConsideration
         if (memory.ContainsKey("me"))
         {
             Enemy me = (Enemy)memory["me"];
-            IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-            if (firearm != null)
-            {
-                weight = me.exposure;
-                return true;
-            }
+            float t = me.IdleTime();
+
 
         }
         weight = 0.0f;

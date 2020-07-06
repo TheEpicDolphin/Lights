@@ -8,9 +8,7 @@ public class NavigateToStaticDestination : UtilityDecision
     {
         considerations = new List<UtilityConsideration>()
         {
-            new NavigationImportanceConsideration(1),
-            new DestinationProximityConsideration(4),
-            new DestinationExistsConsideration(1)
+            new DestinationConsideration(UtilityRank.High),
         };
     }
 

@@ -12,8 +12,8 @@ public class Strafe : UtilityDecision
     {
         considerations = new List<UtilityConsideration>()
         {
-            new ExposureConsideration(4),
-            new IdlenessConsideration(1),
+            new ExposureConsideration(UtilityRank.Medium),
+            new IdlenessConsideration(UtilityRank.Medium),
         };
     }
 

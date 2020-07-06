@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class CanShootConsideration : UtilityConsideration
 {
-    public CanShootConsideration(int rank) : base(rank)
+    public CanShootConsideration(UtilityRank rank) : base(rank)
     {
 
     }
 
-    public override Vector2 Score(Dictionary<string, object> memory)
+    public override bool Score(Dictionary<string, object> memory, out float weight)
     {
         if (memory.ContainsKey("shooting_target") && memory.ContainsKey("me"))
         {
@@ -20,23 +20,18 @@ public class CanShootConsideration : UtilityConsideration
             if (firearm != null)
             {
                 //Check if there is anything blocking line of sight from AI to player
+                //and if gun is ready to fire another round
                 RaycastHit2D hit = Physics2D.Linecast(me.transform.position, target);
-                if (hit.collider.GetComponent<Player>() != null)
+                if (hit.collider.GetComponent<Player>() == null && !firearm.ReadyToFire())
                 {
-                    return Vector2.zero;
+                    weight = 1.0f;
+                    return true;
                 }
-
-                //Check if gun is ready to fire another round
-                if (!firearm.ReadyToFire())
-                {
-                    return Vector2.zero;
-                }
-
-                return new Vector2(1.0f, 1.0f);
             }
         }
 
-        return Vector2.zero;
+        weight = 0.0f;
+        return false;
 
     }
 }

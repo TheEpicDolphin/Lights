@@ -9,9 +9,9 @@ public class ShootAtPlayer : UtilityDecision
     {
         considerations = new List<UtilityConsideration>()
         {
-            new CanShootConsideration(4),
-            new AccuracyConsideration(2),
-            new WeaponRangeConsideration(2)
+            new CanShootConsideration(UtilityRank.High),
+            new AccuracyConsideration(UtilityRank.Medium),
+            new WeaponRangeConsideration(UtilityRank.Medium)
         };
     }
 

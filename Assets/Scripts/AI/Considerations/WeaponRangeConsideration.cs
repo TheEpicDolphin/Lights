@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WeaponRangeConsideration : UtilityConsideration
 {
-    public WeaponRangeConsideration(int rank) : base(rank)
+    public WeaponRangeConsideration(UtilityRank baseRank) : base(baseRank)
     {
 
     }

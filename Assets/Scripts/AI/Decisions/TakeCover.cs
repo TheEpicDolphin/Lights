@@ -13,8 +13,8 @@ public class TakeCover : UtilityDecision
     {
         considerations = new List<UtilityConsideration>()
         {
-            new WeaponRangeConsideration(2),
-            new ExposureConsideration(4)
+            new WeaponRangeConsideration(UtilityRank.Medium),
+            new ExposureConsideration(UtilityRank.High)
         };
     }
 

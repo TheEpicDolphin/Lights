@@ -2,6 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum UtilityRank
+{
+    Low = 0,
+    Medium = 1,
+    High = 2
+}
+
 public class UtilityDecision
 {
     public string name;

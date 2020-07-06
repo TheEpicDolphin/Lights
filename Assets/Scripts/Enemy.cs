@@ -15,6 +15,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     //(less exposed) 0 --> 1 (more exposed)
     public float exposure = 0.0f;
     float exposedStartTime;
+    float idleStartTime;
     WeightedMovingAverage wma = new WeightedMovingAverage(10);
 
     Vector2 vDesired = Vector2.zero;
@@ -28,6 +29,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
         this.radius = GetComponent<CircleCollider2D>().radius;
 
+        idleStartTime = Time.time;
         exposedStartTime = Time.time;
 
         hand = GetComponentInChildren<Hand>();
@@ -38,8 +40,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         utilAI = new UtilityAI(new List<UtilityBucket>()
         {
             new InCombatBucket("combat"),
-            new InCoverBucket("cover")
         });
+
         utilAI.AddMemory("player", player);
         utilAI.AddMemory("me", this);
     }
@@ -106,7 +108,10 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public void Sense()
     {
-
+        if(rb.velocity.sqrMagnitude > 1e-5f)
+        {
+            idleStartTime = Time.time;
+        }
 
         bool visibleToPlayer = player.FOVContains(transform.position);
         this.exposure = wma.Update(visibleToPlayer ? 1.0f : 0.0f);
@@ -119,6 +124,11 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public float ExposedTime()
     {
         return Time.time - exposedStartTime;
+    }
+
+    public float IdleTime()
+    {
+        return Time.time - idleStartTime;
     }
     
 }
