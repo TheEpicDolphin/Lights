@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class Idle : UtilityAction
 {
-    public Idle(string name) : base(name)
+    public Idle()
     {
 
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
-        //return new Wait(Random.Range(1.5f, 4.0f));
+        //do nothing
     }
 }

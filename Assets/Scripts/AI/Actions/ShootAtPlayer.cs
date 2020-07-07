@@ -5,7 +5,7 @@ using GeometryUtils;
 
 public class ShootAtPlayer : UtilityAction
 {
-    public ShootAtPlayer(string name) : base(name)
+    public ShootAtPlayer()
     {
         considerations = new List<UtilityConsideration>()
         {
@@ -15,9 +15,8 @@ public class ShootAtPlayer : UtilityAction
         };
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
-        Enemy me = (Enemy)memory["me"];
         me.Attack();
     }
 }

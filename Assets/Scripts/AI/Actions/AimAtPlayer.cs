@@ -5,19 +5,18 @@ using GeometryUtils;
 
 public class AimAtPlayer : UtilityAction
 {
-    public AimAtPlayer(string name) : base(name)
+    public AimAtPlayer()
     {
         considerations = new List<UtilityConsideration>()
         {
-            new AccuracyConsideration(2),
-            new WeaponRangeConsideration(2)
+            new AccuracyConsideration(UtilityRank.High),
+            new WeaponRangeConsideration(UtilityRank.Medium)
         };
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
-        Vector2 target = (Vector2)memory["shooting_target"];
-        Enemy me = (Enemy)memory["me"];
+        Vector2 target = me.GetShootingTarget();
         Vector3 newAimingTarget = Vector3.Lerp(me.hand.AimTarget(), target, 5.0f * Time.deltaTime);
         me.hand.AimWeaponAtTarget(newAimingTarget);
     }
