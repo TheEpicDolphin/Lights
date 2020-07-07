@@ -10,12 +10,12 @@ public enum UtilityRank
     High = 2
 }
 
-public class UtilityDecision
+public class UtilityAction
 {
     public string name;
     protected List<UtilityConsideration> considerations;
 
-    public UtilityDecision(string name)
+    public UtilityAction(string name)
     {
         this.name = name;
     }

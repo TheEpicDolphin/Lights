@@ -4,7 +4,7 @@ using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
 
-public class ExposeFromCover : UtilityDecision
+public class ExposeFromCover : UtilityAction
 {
     Player player;
     Enemy me;
@@ -15,35 +15,8 @@ public class ExposeFromCover : UtilityDecision
 
     }
 
-    private bool CheckPrerequisites(Dictionary<string, object> memory)
+    public override float Score(Dictionary<string, object> memory)
     {
-        if (memory.ContainsKey("player"))
-        {
-            player = (Player)memory["player"];
-        }
-        else
-        {
-            return false;
-        }
-
-        if (memory.ContainsKey("me"))
-        {
-            me = (Enemy)memory["me"];
-        }
-        else
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
-    {
-        if (!CheckPrerequisites(memory))
-        {
-            return 0.0f;
-        }
 
         //TODO: Desire to hide based on ammo remaining
 

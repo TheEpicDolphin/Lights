@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IdleDecision : UtilityDecision
+public class Idle : UtilityAction
 {
-    public IdleDecision(string name) : base(name)
+    public Idle(string name) : base(name)
     {
 
     }

@@ -7,7 +7,7 @@ public class InCombatBucket : UtilityBucket
 
     public InCombatBucket(string name) : base(name)
     {
-        this.utilityDecisions = new List<UtilityDecision>()
+        this.utilityDecisions = new List<UtilityAction>()
         {
             new Strafe("strafe"),
             new TakeCover("take_cover"),

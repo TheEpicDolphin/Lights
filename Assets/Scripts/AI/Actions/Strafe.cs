@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Strafe : UtilityDecision
+public class Strafe : UtilityAction
 {
     Player player;
     Enemy me;

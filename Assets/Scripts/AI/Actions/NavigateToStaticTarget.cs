@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NavigateToStaticDestination : UtilityDecision
+public class NavigateToStaticDestination : UtilityAction
 {
     public NavigateToStaticDestination(string name) : base(name)
     {

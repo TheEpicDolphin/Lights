@@ -15,7 +15,8 @@ public class IdlenessConsideration : UtilityConsideration
         {
             Enemy me = (Enemy)memory["me"];
             float t = me.IdleTime();
-
+            weight = t;
+            return true;
 
         }
         weight = 0.0f;

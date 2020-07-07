@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * Consider having multiple layers such as (Navigation layer, LookAt layer, Attack layer, etc)
+ * In each layer, actions are selected based on utility and each layer is independent from the rest.
+ * There is also possibly a Script layer that takes over all of them
+ * 
+ */
+
 public class UtilityAI
 {
     public Dictionary<string, object> utilityMemory;

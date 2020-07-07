@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GeometryUtils;
 
-public class ShootAtPlayer : UtilityDecision
+public class ShootAtPlayer : UtilityAction
 {
     public ShootAtPlayer(string name) : base(name)
     {

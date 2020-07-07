@@ -4,7 +4,7 @@ using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
 
-public class TakeCover : UtilityDecision
+public class TakeCover : UtilityAction
 {
     Player player;
     Enemy me;
