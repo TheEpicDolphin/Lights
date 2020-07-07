@@ -59,17 +59,16 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public void NavigateTo(Vector2 destination)
     {
-        Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination);
+        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
+        if(curPos == destination)
+        {
+            //If destination is current position, do nothing
+            return;
+        }
 
+        Vector2[] shortestPath = navMesh.GetShortestPathFromTo(curPos, destination);
         Vector2 nextPoint = shortestPath[0];
-        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
         vDesired = (nextPoint - curPos).normalized * speed;        
-    }
-
-    public void MoveTo(Vector2 destination)
-    {
-        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        vDesired = (destination - curPos).normalized * speed;
     }
 
     public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
