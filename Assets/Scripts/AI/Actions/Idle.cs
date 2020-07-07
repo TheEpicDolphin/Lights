@@ -12,5 +12,6 @@ public class Idle : UtilityAction
     public override void Execute(Enemy me)
     {
         //do nothing
+        me.SetDestination(me.transform.position);
     }
 }

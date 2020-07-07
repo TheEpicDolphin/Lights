@@ -10,7 +10,7 @@ public class TakeCover : UtilityAction
     {
         considerations = new List<UtilityConsideration>()
         {
-            new WeaponRangeConsideration(UtilityRank.Medium),
+            new PlayerWeaponRangeConsideration(UtilityRank.Medium),
             new ExposureConsideration(UtilityRank.High)
         };
     }

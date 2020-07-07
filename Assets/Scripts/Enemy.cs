@@ -62,7 +62,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public void NavigateTo(Vector2 destination)
     {
         Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        if(curPos == destination)
+        if(Vector2.Distance(curPos, destination) <= 1e-2f)
         {
             //If destination is current position, do nothing
             return;
@@ -183,6 +183,12 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
                 }
             }
 
+        }
+
+        //Run until there are no more actions that don't conflict
+        while ()
+        {
+            
         }
 
         scoredDecisions = scoredDecisions.OrderByDescending(action => action.Key).ToList();

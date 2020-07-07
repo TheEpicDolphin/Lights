@@ -9,18 +9,14 @@ public class DestinationConsideration : UtilityConsideration
 
     }
 
-    public override bool Score(Dictionary<string, object> memory, out float weight)
+    public override bool Score(Enemy me, out float weight)
     {
-        if (memory.ContainsKey("me") && memory.ContainsKey("destination"))
+        Vector2 dest = me.GetDestination();
+        Vector2 curPos = me.transform.position;
+        if (Vector2.Distance(curPos, dest) > 1e-2f)
         {
-            Enemy me = (Enemy)memory["me"];
-            Vector2 dest = (Vector2)memory["destination"];
-            Vector2 curPos = me.transform.position;
-            if(Vector2.Distance(curPos, dest) > 0.1f)
-            {
-                weight = 1.0f;
-                return true;
-            }
+            weight = 1.0f;
+            return true;
         }
         weight = 0.0f;
         return false;

@@ -9,7 +9,7 @@ public class AimAtPlayer : UtilityAction
     {
         considerations = new List<UtilityConsideration>()
         {
-            new AccuracyConsideration(UtilityRank.High),
+            new AimingErrorConsideration(UtilityRank.High),
             new WeaponRangeConsideration(UtilityRank.Medium)
         };
     }

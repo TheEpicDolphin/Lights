@@ -70,6 +70,6 @@ public class Strafe : UtilityAction
             strafeDir = -2.0f * Vector2.Perpendicular(playerDir) +
                             Random.Range(-0.5f, 0.5f) * playerDir;
         }
-        me.MoveInDirection(strafeDir.normalized, Random.Range(0.5f, 1.0f) * me.speed);
+        //me.MoveInDirection(strafeDir.normalized, Random.Range(0.5f, 1.0f) * me.speed);
     }
 }

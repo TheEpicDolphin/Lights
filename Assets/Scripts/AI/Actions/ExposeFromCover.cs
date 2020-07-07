@@ -6,13 +6,15 @@ using AlgorithmUtils;
 
 public class ExposeFromCover : UtilityAction
 {
-    Player player;
-    Enemy me;
     float maxHideTime = 10.0f;
 
-    public ExposeFromCover(string name) : base(name)
+    public ExposeFromCover()
     {
-
+        considerations = new List<UtilityConsideration>()
+        {
+            new PlayerWeaponRangeConsideration(UtilityRank.Medium),
+            new ExposureConsideration(UtilityRank.High)
+        };
     }
 
     public override float Score(Dictionary<string, object> memory)
@@ -35,10 +37,11 @@ public class ExposeFromCover : UtilityAction
         return U;
     }
 
-    public override void Execute(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override void Execute(Enemy me)
     {
-        float maxLandmarkDist = 15.0f;
+        Player player = me.player;
 
+        float maxLandmarkDist = 15.0f;
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
                                         maxLandmarkDist);
         List<Landmark> validLandmarks = new List<Landmark>();
@@ -84,6 +87,6 @@ public class ExposeFromCover : UtilityAction
         Landmark optimalSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         /* We found one. Don't try looking again anytime soon */
-        me.NavigateTo(optimalSpot.p);
+        me.SetDestination(optimalSpot.p);
     }
 }
