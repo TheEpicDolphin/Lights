@@ -10,17 +10,16 @@ public enum UtilityRank
     High = 2
 }
 
-public class UtilityAction
+public class UtilityAction : MonoBehaviour
 {
-    public string name;
-    protected List<UtilityConsideration> considerations;
+    protected List<UtilityConsideration> considerations = new List<UtilityConsideration>();
 
-    public UtilityAction(string name)
+    private void Start()
     {
-        this.name = name;
+        
     }
 
-    public bool Score(Dictionary<string, object> memory, out int rank, out float weight)
+    public bool Score(out int rank, out float weight)
     {
         if(considerations.Count == 0)
         {

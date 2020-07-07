@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MathUtils;
+using AlgorithmUtils;
+using System.Linq;
 
 public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
@@ -21,6 +23,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     Vector2 vDesired = Vector2.zero;
 
     UtilityAI utilAI;
+    List<UtilityAction> utilityActions = new List<UtilityAction>();
 
     // Start is called before the first frame update
     void Start()
@@ -128,6 +131,37 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public float IdleTime()
     {
         return Time.time - idleStartTime;
+    }
+
+    public void OptimalAction()
+    {
+        List<KeyValuePair<float, UtilityAction>> scoredDecisions = new List<KeyValuePair<float, UtilityAction>>();
+        int highestRank = -10000;
+        foreach (UtilityAction action in utilityActions)
+        {
+            int rank;
+            float weight;
+            if (action.Score(memory, out rank, out weight))
+            {
+                if (rank > highestRank)
+                {
+                    scoredDecisions = new List<KeyValuePair<float, UtilityAction>>();
+                    highestRank = rank;
+                }
+                if (rank == highestRank)
+                {
+                    scoredDecisions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
+                    Debug.Log(action.name + ": " + rank + ", " + weight);
+                }
+            }
+
+        }
+
+        scoredDecisions = scoredDecisions.OrderByDescending(action => action.Key).ToList();
+        List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
+        UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory);
+
+        optimalAction.Run(memory);
     }
     
 }
