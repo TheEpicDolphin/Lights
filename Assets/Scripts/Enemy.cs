@@ -14,11 +14,10 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public Hand hand;
     public float radius;
 
-    //(less exposed) 0 --> 1 (more exposed)
-    public float exposure = 0.0f;
     float exposedStartTime;
     float idleStartTime;
-    WeightedMovingAverage wma = new WeightedMovingAverage(10);
+    Vector2 destination = Vector2.zero;
+    Landmark claimedCover = null;
 
     Vector2 vDesired = Vector2.zero;
 
@@ -74,6 +73,11 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = (nextPoint - curPos).normalized * speed;        
     }
 
+    public void MoveInDirection(Vector2 dir, float speed)
+    {
+        vDesired = dir * speed;
+    }
+
     public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
     {
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination,
@@ -116,7 +120,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         }
 
         bool visibleToPlayer = player.FOVContains(transform.position);
-        this.exposure = wma.Update(visibleToPlayer ? 1.0f : 0.0f);
         if (!visibleToPlayer)
         {
             exposedStartTime = Time.time;
@@ -133,6 +136,31 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return Time.time - idleStartTime;
     }
 
+    public Vector2 GetShootingTarget()
+    {
+        return player.transform.position;
+    }
+
+    public void SetDestination(Vector2 newDestination)
+    {
+        destination = newDestination;
+    }
+
+    public Vector2 GetDestination()
+    {
+        return destination;
+    }
+
+    public void ClaimCover(Landmark cover)
+    {
+        claimedCover = cover;
+    }
+
+    public Landmark GetClaimedCover()
+    {
+        return claimedCover;
+    }
+
     public void OptimalAction()
     {
         List<KeyValuePair<float, UtilityAction>> scoredDecisions = new List<KeyValuePair<float, UtilityAction>>();
@@ -141,7 +169,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         {
             int rank;
             float weight;
-            if (action.Score(memory, out rank, out weight))
+            if (action.Score(this, out rank, out weight))
             {
                 if (rank > highestRank)
                 {
@@ -161,7 +189,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
         UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory);
 
-        optimalAction.Run(memory);
+        optimalAction.Execute(this);
     }
     
 }

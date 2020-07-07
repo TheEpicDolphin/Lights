@@ -9,22 +9,17 @@ public class WeaponRangeConsideration : UtilityConsideration
 
     }
 
-    public override bool Score(Dictionary<string, object> memory, out float weight)
+    public override bool Score(Enemy me, out float weight)
     {
-        if (memory.ContainsKey("shooting_target") && memory.ContainsKey("me"))
+        Vector2 target = me.GetShootingTarget();
+        IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
+        if (firearm != null)
         {
-            Vector2 target = (Vector2)memory["shooting_target"];
-            Enemy me = (Enemy)memory["me"];
-            IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-            if (firearm != null)
-            {
-                float dist = Vector2.Distance(target, me.transform.position);
-                float proximity = Mathf.Min(dist / firearm.GetRange(), 1.0f);
+            float dist = Vector2.Distance(target, me.transform.position);
+            float proximity = Mathf.Min(dist / firearm.GetRange(), 1.0f);
 
-                weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
-                return true;
-            }
-
+            weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
+            return true;
         }
         weight = 0.0f;
         return false;

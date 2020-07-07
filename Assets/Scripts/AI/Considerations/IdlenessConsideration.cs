@@ -9,18 +9,10 @@ public class IdlenessConsideration : UtilityConsideration
 
     }
 
-    public override bool Score(Dictionary<string, object> memory, out float weight)
+    public override bool Score(Enemy me, out float weight)
     {
-        if (memory.ContainsKey("me"))
-        {
-            Enemy me = (Enemy)memory["me"];
-            float t = me.IdleTime();
-            weight = t;
-            return true;
-
-        }
-        weight = 0.0f;
-        return false;
-
+        float t = me.IdleTime();
+        weight = t;
+        return true;
     }
 }

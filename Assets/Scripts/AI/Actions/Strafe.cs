@@ -4,11 +4,9 @@ using UnityEngine;
 
 public class Strafe : UtilityAction
 {
-    Player player;
-    Enemy me;
     float maxStrafeDistance = 3.0f;
 
-    public Strafe(string name) : base(name)
+    public Strafe()
     {
         considerations = new List<UtilityConsideration>()
         {
@@ -56,9 +54,22 @@ public class Strafe : UtilityAction
         return U;
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
-
-        
+        Player player = me.player;
+        bool right = Random.Range(0.0f, 1.0f) > 0.5f;
+        Vector2 playerDir = (player.transform.position - me.transform.position).normalized;
+        Vector2 strafeDir;
+        if (right)
+        {
+            strafeDir = 2.0f * Vector2.Perpendicular(playerDir) +
+                            Random.Range(-0.5f, 0.5f) * playerDir;
+        }
+        else
+        {
+            strafeDir = -2.0f * Vector2.Perpendicular(playerDir) +
+                            Random.Range(-0.5f, 0.5f) * playerDir;
+        }
+        me.MoveInDirection(strafeDir.normalized, Random.Range(0.5f, 1.0f) * me.speed);
     }
 }

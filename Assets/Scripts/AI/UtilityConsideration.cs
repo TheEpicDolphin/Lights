@@ -10,7 +10,7 @@ public class UtilityConsideration
         this.baseRank = baseRank;
     }
 
-    public virtual bool Score(Dictionary<string, object> memory, out float weight)
+    public virtual bool Score(Enemy me, out float weight)
     {
         weight = 1.0f;
         return true;

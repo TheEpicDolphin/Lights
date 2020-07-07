@@ -6,10 +6,7 @@ using AlgorithmUtils;
 
 public class TakeCover : UtilityAction
 {
-    Player player;
-    Enemy me;
-
-    public TakeCover(string name) : base(name)
+    public TakeCover()
     {
         considerations = new List<UtilityConsideration>()
         {
@@ -18,8 +15,10 @@ public class TakeCover : UtilityAction
         };
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
+        Player player = me.player;
+
         float maxLandmarkDist = 15.0f;
         List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
                                         maxLandmarkDist);
@@ -40,8 +39,7 @@ public class TakeCover : UtilityAction
             return;
         }
 
-        Landmark currentCover = memory.ContainsKey("cover") ? (Landmark) memory["cover"] : 
-                                me.navMesh.GetLandmarkAt(me.transform.position);
+        Landmark currentCover = me.GetClaimedCover();
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
@@ -66,7 +64,7 @@ public class TakeCover : UtilityAction
             {
                 //AI prefers to stay in place but may change cover if other options are
                 //significantly better
-                score += 3.0f;
+                score += 2.0f;
             }
 
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
@@ -74,7 +72,8 @@ public class TakeCover : UtilityAction
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
-        memory["cover"] = optimalCoverSpot;
-        memory["destination"] = optimalCoverSpot.p;
+        me.ClaimCover(optimalCoverSpot);
+        me.SetDestination(optimalCoverSpot.p);
+        
     }
 }

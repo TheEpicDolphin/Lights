@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NavigateToStaticDestination : UtilityAction
 {
-    public NavigateToStaticDestination(string name) : base(name)
+    public NavigateToStaticDestination()
     {
         considerations = new List<UtilityConsideration>()
         {
@@ -12,10 +12,9 @@ public class NavigateToStaticDestination : UtilityAction
         };
     }
 
-    public override void Execute(Dictionary<string, object> memory)
+    public override void Execute(Enemy me)
     {
-        Enemy me = (Enemy)memory["me"];
-        Vector2 dest = (Vector2)memory["destination"];
+        Vector2 dest = me.GetDestination();
         me.NavigateTo(dest);
     }
 }

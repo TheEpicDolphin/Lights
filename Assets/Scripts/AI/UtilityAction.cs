@@ -19,7 +19,7 @@ public class UtilityAction : MonoBehaviour
         
     }
 
-    public bool Score(out int rank, out float weight)
+    public bool Score(Enemy me, out int rank, out float weight)
     {
         if(considerations.Count == 0)
         {
@@ -33,7 +33,7 @@ public class UtilityAction : MonoBehaviour
         foreach (UtilityConsideration consideration in considerations)
         {
             float considerationWeight;
-            if (consideration.Score(memory, out considerationWeight))
+            if (consideration.Score(me, out considerationWeight))
             {
                 weight += considerationWeight;
                 rank = Mathf.Max(rank, consideration.Rank());
@@ -47,7 +47,7 @@ public class UtilityAction : MonoBehaviour
         return true;
     }
 
-    public virtual void Execute(Dictionary<string, object> memory)
+    public virtual void Execute(Enemy me)
     {
         
     }
