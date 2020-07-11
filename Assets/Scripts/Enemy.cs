@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     float exposedStartTime;
     float idleStartTime;
-    Vector2 destination = Vector2.zero;
+    INavTarget navTarget = null;
     Landmark claimedCover = null;
 
     Vector2 vDesired = Vector2.zero;
@@ -141,14 +141,14 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return player.transform.position;
     }
 
-    public void SetDestination(Vector2 newDestination)
+    public void SetNavTarget(INavTarget newNavTarget)
     {
-        destination = newDestination;
+        navTarget = newNavTarget;
     }
 
-    public Vector2 GetDestination()
+    public INavTarget GetNavTarget()
     {
-        return destination;
+        return navTarget;
     }
 
     public void ClaimCover(Landmark cover)
@@ -193,7 +193,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         scoredDecisions = scoredDecisions.OrderByDescending(action => action.Key).ToList();
         List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
-        UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset).Execute(memory);
+        UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
 
         optimalAction.Execute(this);
     }

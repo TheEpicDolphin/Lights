@@ -13,7 +13,7 @@ public class DestinationConsideration : UtilityConsideration
     {
         Vector2 dest = me.GetDestination();
         Vector2 curPos = me.transform.position;
-        if (Vector2.Distance(curPos, dest) > 1e-2f)
+        if (Vector2.Distance(curPos, dest) > 1e-2f && me.GetNavTarget().IsValid())
         {
             weight = 1.0f;
             return true;
