@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Xml.Serialization;
 
 
 public enum UtilityRank
@@ -12,6 +13,9 @@ public enum UtilityRank
 
 public class UtilityAction : MonoBehaviour
 {
+    [XmlElement()]
+    public UtilityAction[] coActions;
+
     protected List<UtilityConsideration> considerations = new List<UtilityConsideration>();
 
     private void Start()

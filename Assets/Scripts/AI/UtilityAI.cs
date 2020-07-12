@@ -2,19 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Xml.Serialization;
+using System.IO;
 
 
-
+[XmlRoot("UtilityAI")]
 public class UtilityAI
 {
-    public Dictionary<string, UtilityBucket> utilityMemory;
-    [XmlElement("actions")]
-    public List<UtilityAction> actions;
+    private Dictionary<string, UtilityAction> map;
 
-    public UtilityAI CreateFromXLM()
+    [XmlElement("Nav", typeof(NavigateToStaticDestination))]
+    [XmlElement("Aim", typeof(AimAtPlayer))]
+    [XmlElement("Shoot", typeof(ShootAtPlayer))]
+    [XmlElement("ExposeFromCover", typeof(ExposeFromCover))]
+    [XmlElement("TakeCover", typeof(TakeCover))]
+    [XmlElement("Strafe", typeof(Strafe))]
+    public UtilityAction[] actions;
+
+    public static UtilityAI CreateFromXML()
     {
-        Hero hero = XMLOp.Deserialize<Hero>("hero.xml");
-        Debug.Log(hero.name);
+        ;
+        UtilityAI uai = XMLOp.Deserialize<UtilityAI>(
+            Path.Combine(Application.dataPath, "uai.xml"));
+        Debug.Log(uai.actions.Length);
+        return uai;
     }
     
 }
