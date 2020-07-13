@@ -10,8 +10,6 @@ using AlgorithmUtils;
 [XmlRoot("AI")]
 public class UtilityAI
 {
-
-
     public const string NAV = "Navigate";
     public const string AIM = "Aim";
     public const string SHOOT = "Shoot";
@@ -32,14 +30,15 @@ public class UtilityAI
     {
         ;
         UtilityAI uai = XMLOp.Deserialize<UtilityAI>(
-            Path.Combine(Application.dataPath, "ai.xml"));
+            Path.Combine(Application.dataPath, "XML", "ai.xml"));
+        Debug.Log(Path.Combine(Application.dataPath, "XML", "ai.xml"));
         Debug.Log(uai.actions.Length);
         return uai;
     }
 
     public void OptimalAction()
     {
-        Dictionary<UtilityAction, Tuple<int, float>> actionScoreMap = new Dictionary<UtilityAction, Tuple<int, float>>();
+        Dictionary<UtilityAction, KeyValuePair<int, float>> actionScoreMap = new Dictionary<UtilityAction, KeyValuePair<int, float>>();
 
         List<UtilityAction> possibleActions = new List<UtilityAction>();
         foreach (UtilityAction action in actions)
@@ -49,7 +48,7 @@ public class UtilityAI
             if (action.Score(this, out rank, out weight))
             {
                 possibleActions.Add(action);
-                actionScoreMap[action] = new Tuple<int, float>(rank, weight);
+                actionScoreMap[action] = new KeyValuePair<int, float>(rank, weight);
             }
         }
 
@@ -61,9 +60,9 @@ public class UtilityAI
             int highestRank = int.MinValue;
             foreach (UtilityAction action in possibleActions)
             {
-                Tuple<int, float> rankWeight = actionScoreMap[action];
-                int rank = rankWeight.el1;
-                float weight = rankWeight.el2;
+                KeyValuePair<int, float> rankWeight = actionScoreMap[action];
+                int rank = rankWeight.Key;
+                float weight = rankWeight.Value;
                 if (rank > highestRank)
                 {
                     scoredActions = new List<KeyValuePair<float, UtilityAction>>();
