@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Xml.Serialization;
 using System.IO;
-using System.Data;
+using System.Linq;
+using AlgorithmUtils;
 
 
 [XmlRoot("AI")]
 public class UtilityAI
 {
+
+
     public const string NAV = "Navigate";
     public const string AIM = "Aim";
     public const string SHOOT = "Shoot";
     public const string EXPOSE_FROM_COVER = "ExposeFromCover";
     public const string TAKE_COVER = "TakeCover";
     public const string STRAFE = "Strafe";
-
-    private Dictionary<string, UtilityAction> map;
 
     [XmlElement(NAV, typeof(NavigateToStaticDestination))]
     [XmlElement(AIM, typeof(AimAtPlayer))]
@@ -38,16 +39,31 @@ public class UtilityAI
 
     public void OptimalAction()
     {
-        //TODO: rank scoredActions by rank, and then randomly pick by weight. Eliminate 0 weight actions
+        Dictionary<UtilityAction, Tuple<int, float>> actionScoreMap = new Dictionary<UtilityAction, Tuple<int, float>>();
 
-        List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
-        int highestRank = -10000;
-        foreach (UtilityAction action in utilityActions)
+        List<UtilityAction> possibleActions = new List<UtilityAction>();
+        foreach (UtilityAction action in actions)
         {
             int rank;
             float weight;
             if (action.Score(this, out rank, out weight))
             {
+                possibleActions.Add(action);
+                actionScoreMap[action] = new Tuple<int, float>(rank, weight);
+            }
+        }
+
+        //Run until there are no more actions that don't conflict
+        while (possibleActions.Count > 0)
+        {
+            /* First, get actions with highest rank */
+            List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
+            int highestRank = int.MinValue;
+            foreach (UtilityAction action in possibleActions)
+            {
+                Tuple<int, float> rankWeight = actionScoreMap[action];
+                int rank = rankWeight.el1;
+                float weight = rankWeight.el2;
                 if (rank > highestRank)
                 {
                     scoredActions = new List<KeyValuePair<float, UtilityAction>>();
@@ -56,20 +72,16 @@ public class UtilityAI
                 if (rank == highestRank)
                 {
                     scoredActions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
-                    Debug.Log(action.name + ": " + rank + ", " + weight);
                 }
             }
-        }
 
-        List<UtilityAction> possibleActions = new List<UtilityAction>(actions);
-        //Run until there are no more actions that don't conflict
-        while (possibleActions.Count > 0)
-        {
+            /* Among actions with highest rank, do a weighted random selection based on weight */
             scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
-            List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
+            List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
             optimalAction.Execute(this);
 
+            /* Intersect possibleActions and co-actions of the optimal action */
             List<UtilityAction> newPossibleActions = new List<UtilityAction>();
             foreach (UtilityAction possibleAction in possibleActions)
             {
@@ -78,7 +90,6 @@ public class UtilityAI
                     newPossibleActions.Add(possibleAction);
                 }
             }
-
             possibleActions = newPossibleActions;
         }
 
