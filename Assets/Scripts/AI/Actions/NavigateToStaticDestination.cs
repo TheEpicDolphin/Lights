@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class NavigateToStaticDestination : UtilityAction
 {
+    
     public NavigateToStaticDestination()
     {
         considerations = new List<UtilityConsideration>()
@@ -16,5 +17,10 @@ public class NavigateToStaticDestination : UtilityAction
     {
         Vector2 dest = me.GetDestination();
         me.NavigateTo(dest);
+    }
+
+    public override string Name()
+    {
+        return UtilityAI.NAV;
     }
 }

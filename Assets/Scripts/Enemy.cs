@@ -39,13 +39,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
 
-        utilAI = new UtilityAI(new List<UtilityBucket>()
-        {
-            new InCombatBucket("combat"),
-        });
+        utilAI = UtilityAI.CreateFromXML();
 
-        utilAI.AddMemory("player", player);
-        utilAI.AddMemory("me", this);
     }
 
     void Update()
@@ -161,41 +156,4 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return claimedCover;
     }
 
-    public void OptimalAction()
-    {
-        List<KeyValuePair<float, UtilityAction>> scoredDecisions = new List<KeyValuePair<float, UtilityAction>>();
-        int highestRank = -10000;
-        foreach (UtilityAction action in utilityActions)
-        {
-            int rank;
-            float weight;
-            if (action.Score(this, out rank, out weight))
-            {
-                if (rank > highestRank)
-                {
-                    scoredDecisions = new List<KeyValuePair<float, UtilityAction>>();
-                    highestRank = rank;
-                }
-                if (rank == highestRank)
-                {
-                    scoredDecisions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
-                    Debug.Log(action.name + ": " + rank + ", " + weight);
-                }
-            }
-
-        }
-
-        //Run until there are no more actions that don't conflict
-        while ()
-        {
-            
-        }
-
-        scoredDecisions = scoredDecisions.OrderByDescending(action => action.Key).ToList();
-        List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredDecisions.GetRange(0, Mathf.Min(3, scoredDecisions.Count));
-        UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
-
-        optimalAction.Execute(this);
-    }
-    
 }

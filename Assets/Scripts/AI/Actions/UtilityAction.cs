@@ -11,17 +11,14 @@ public enum UtilityRank
     High = 2
 }
 
-public class UtilityAction : MonoBehaviour
+public class UtilityAction
 {
-    [XmlElement()]
-    public UtilityAction[] coActions;
+    [XmlElement("coaction")]
+    public HashSet<string> coActions;
 
+    //Add considerations for XML later
     protected List<UtilityConsideration> considerations = new List<UtilityConsideration>();
 
-    private void Start()
-    {
-        
-    }
 
     public bool Score(Enemy me, out int rank, out float weight)
     {
@@ -55,4 +52,10 @@ public class UtilityAction : MonoBehaviour
     {
         
     }
+
+    public virtual string Name()
+    {
+        return "";
+    }
+
 }
