@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Idle : UtilityAction
+public class IdleNavigation : UtilityAction
 {
     Enemy me;
-    public Idle()
+    public IdleNavigation()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");
@@ -14,6 +14,13 @@ public class Idle : UtilityAction
         {
             new ExposureConsideration(me, UtilityRank.Medium),
             new IdlenessConsideration(me, UtilityRank.Medium),
+        };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(AimAtPlayer),
+            typeof(ShootAtPlayer)
+            
         };
     }
 

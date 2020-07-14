@@ -17,6 +17,14 @@ public class ShootAtPlayer : UtilityAction
             new AccuracyConsideration(me, UtilityRank.Medium),
             new WeaponRangeConsideration(me, UtilityRank.Medium)
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(NavigateToStaticDestination),
+            typeof(AimAtPlayer),
+            typeof(TakeCover),
+            typeof(Strafe)
+        };
     }
 
     public override void Execute()

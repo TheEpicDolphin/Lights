@@ -17,6 +17,14 @@ public class AimAtPlayer : UtilityAction
             new AimingErrorConsideration(me, UtilityRank.High),
             new WeaponRangeConsideration(me, UtilityRank.Medium)
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(ShootAtPlayer),
+            typeof(NavigateToStaticDestination),
+            typeof(Strafe),
+            typeof(TakeCover)
+        };
     }
 
     public override void Execute()

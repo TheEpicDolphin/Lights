@@ -16,6 +16,12 @@ public class TakeCover : UtilityAction
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
             new ExposureConsideration(me, UtilityRank.High)
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(AimAtPlayer),
+            typeof(ShootAtPlayer)
+        };
     }
 
     public override void Execute()

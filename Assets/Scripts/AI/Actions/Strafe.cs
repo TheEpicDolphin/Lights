@@ -17,6 +17,12 @@ public class Strafe : UtilityAction
             new ExposureConsideration(me, UtilityRank.Medium),
             new IdlenessConsideration(me, UtilityRank.Medium),
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(AimAtPlayer),
+            typeof(ShootAtPlayer)
+        };
     }
 
     public override float Score()

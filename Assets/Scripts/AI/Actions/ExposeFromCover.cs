@@ -18,6 +18,11 @@ public class ExposeFromCover : UtilityAction
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
             new ExposureConsideration(me, UtilityRank.High)
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(AimAtPlayer)
+        };
     }
 
     public override float Score()

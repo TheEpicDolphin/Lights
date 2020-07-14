@@ -14,6 +14,12 @@ public class NavigateToStaticDestination : UtilityAction
         {
             new DestinationConsideration(me, UtilityRank.High),
         };
+
+        coActions = new HashSet<System.Type>()
+        {
+            typeof(AimAtPlayer),
+            typeof(ShootAtPlayer)
+        };
     }
 
     public override void Execute()
