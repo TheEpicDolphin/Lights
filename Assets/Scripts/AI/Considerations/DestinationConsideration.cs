@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class DestinationConsideration : UtilityConsideration
 {
-    public DestinationConsideration(UtilityRank baseRank) : base(baseRank)
+    Enemy me;
+    public DestinationConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
     {
-
+        this.me = me;
     }
 
-    public override bool Score(Enemy me, out float weight)
+    public override bool Score(out float weight)
     {
         Vector2 dest = me.GetDestination();
         Vector2 curPos = me.transform.position;

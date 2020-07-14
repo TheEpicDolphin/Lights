@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class CanShootConsideration : UtilityConsideration
 {
-    public CanShootConsideration(UtilityRank rank) : base(rank)
+    Enemy me;
+    public CanShootConsideration(Enemy me, UtilityRank rank) : base(rank)
     {
-
+        this.me = me;
     }
 
-    public override bool Score(Dictionary<string, object> memory, out float weight)
+    public override bool Score(out float weight)
     {
         if (memory.ContainsKey("shooting_target") && memory.ContainsKey("me"))
         {

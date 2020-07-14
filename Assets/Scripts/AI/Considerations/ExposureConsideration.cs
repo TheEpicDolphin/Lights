@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class ExposureConsideration : UtilityConsideration
 {
-    public ExposureConsideration(UtilityRank baseRank) : base(baseRank)
+    Enemy me;
+    public ExposureConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
     {
-
+        this.me = me;
     }
 
-    public override bool Score(Enemy me, out float weight)
+    public override bool Score(out float weight)
     {
         Player player = me.player;
         IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();

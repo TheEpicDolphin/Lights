@@ -4,18 +4,22 @@ using UnityEngine;
 
 public class Strafe : UtilityAction
 {
+    Enemy me;
     float maxStrafeDistance = 3.0f;
 
     public Strafe()
     {
+        me = GetComponent<Enemy>();
+        Debug.Assert(me != null, "Fail");
+
         considerations = new List<UtilityConsideration>()
         {
-            new ExposureConsideration(UtilityRank.Medium),
-            new IdlenessConsideration(UtilityRank.Medium),
+            new ExposureConsideration(me, UtilityRank.Medium),
+            new IdlenessConsideration(me, UtilityRank.Medium),
         };
     }
 
-    public override float Score(Dictionary<string, object> memory, Dictionary<string, object> calculated)
+    public override float Score()
     {
 
         IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
@@ -54,7 +58,7 @@ public class Strafe : UtilityAction
         return U;
     }
 
-    public override void Execute(Enemy me)
+    public override void Execute()
     {
         Player player = me.player;
         bool right = Random.Range(0.0f, 1.0f) > 0.5f;

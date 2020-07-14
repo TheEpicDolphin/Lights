@@ -4,7 +4,14 @@ using UnityEngine;
 using MathUtils;
 using AlgorithmUtils;
 using System.Linq;
+using System.Xml.Serialization;
+using System.IO;
 
+//[XmlRoot("EnemyAI")]
+
+[RequireComponent(typeof(AimAtPlayer))]
+[RequireComponent(typeof(NavigateToStaticDestination))]
+[RequireComponent(typeof(ExposeFromCover))]
 public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
     public NavigationMesh navMesh;
@@ -22,7 +29,14 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     Vector2 vDesired = Vector2.zero;
 
     UtilityAI utilAI;
-    List<UtilityAction> utilityActions = new List<UtilityAction>();
+
+    //[XmlElement("nav", typeof(NavigateToStaticDestination))]
+    //[XmlElement("aim", typeof(AimAtPlayer))]
+    //[XmlElement("shoot", typeof(ShootAtPlayer))]
+    //[XmlElement("expose_from_cover", typeof(ExposeFromCover))]
+    //[XmlElement("take_cover", typeof(TakeCover))]
+    //[XmlElement("strafe", typeof(Strafe))]
+    public UtilityAction[] utilityActions;
 
     // Start is called before the first frame update
     void Start()
@@ -39,8 +53,18 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
 
-        utilAI = UtilityAI.CreateFromXML();
+        utilityActions = GetComponents<UtilityAction>();
+        utilAI = new UtilityAI(utilityActions);
 
+    }
+
+    public static UtilityAI CreateFromXML()
+    {
+        UtilityAI uai = XMLOp.Deserialize<UtilityAI>(
+            Path.Combine(Application.dataPath, "XML", "ai.xml"));
+        Debug.Log(Path.Combine(Application.dataPath, "XML", "ai.xml"));
+        Debug.Log(uai.actions.Length);
+        return uai;
     }
 
     void Update()
@@ -48,9 +72,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        utilAI.RunOptimalAction();
+        utilAI.RunOptimalActions();
         //NavigateTo(player.transform.position);
-
         DampMovement();
     }
 

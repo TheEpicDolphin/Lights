@@ -6,18 +6,21 @@ using AlgorithmUtils;
 
 public class ExposeFromCover : UtilityAction
 {
+    Enemy me;
     float maxHideTime = 10.0f;
 
     public ExposeFromCover()
     {
+        me = GetComponent<Enemy>();
+        Debug.Assert(me != null, "Fail");
         considerations = new List<UtilityConsideration>()
         {
-            new PlayerWeaponRangeConsideration(UtilityRank.Medium),
-            new ExposureConsideration(UtilityRank.High)
+            new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
+            new ExposureConsideration(me, UtilityRank.High)
         };
     }
 
-    public override float Score(Dictionary<string, object> memory)
+    public override float Score()
     {
 
         //TODO: Desire to hide based on ammo remaining
@@ -37,7 +40,7 @@ public class ExposeFromCover : UtilityAction
         return U;
     }
 
-    public override void Execute(Enemy me)
+    public override void Execute()
     {
         Player player = me.player;
 

@@ -5,16 +5,21 @@ using GeometryUtils;
 
 public class AimAtPlayer : UtilityAction
 {
-    public AimAtPlayer()
+    Enemy me;
+
+    private void Start()
     {
+        me = GetComponent<Enemy>();
+        Debug.Assert(me != null, "Fail");
+        
         considerations = new List<UtilityConsideration>()
         {
-            new AimingErrorConsideration(UtilityRank.High),
-            new WeaponRangeConsideration(UtilityRank.Medium)
+            new AimingErrorConsideration(me, UtilityRank.High),
+            new WeaponRangeConsideration(me, UtilityRank.Medium)
         };
     }
 
-    public override void Execute(Enemy me)
+    public override void Execute()
     {
         Vector2 target = me.GetShootingTarget();
         Vector3 newAimingTarget = Vector3.Lerp(me.hand.AimTarget(), target, 5.0f * Time.deltaTime);

@@ -6,16 +6,19 @@ using AlgorithmUtils;
 
 public class TakeCover : UtilityAction
 {
+    Enemy me;
     public TakeCover()
     {
+        me = GetComponent<Enemy>();
+        Debug.Assert(me != null, "Fail");
         considerations = new List<UtilityConsideration>()
         {
-            new PlayerWeaponRangeConsideration(UtilityRank.Medium),
-            new ExposureConsideration(UtilityRank.High)
+            new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
+            new ExposureConsideration(me, UtilityRank.High)
         };
     }
 
-    public override void Execute(Enemy me)
+    public override void Execute()
     {
         Player player = me.player;
 

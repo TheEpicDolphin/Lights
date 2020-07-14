@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Xml.Serialization;
-
 
 public enum UtilityRank
 {
@@ -11,16 +9,14 @@ public enum UtilityRank
     High = 2
 }
 
-public class UtilityAction
+public class UtilityAction : MonoBehaviour
 {
-    [XmlElement("coaction")]
-    public HashSet<string> coActions;
+    public HashSet<System.Type> coActions;
 
-    //Add considerations for XML later
     protected List<UtilityConsideration> considerations = new List<UtilityConsideration>();
 
 
-    public bool Score(Enemy me, out int rank, out float weight)
+    public bool Score(out int rank, out float weight)
     {
         if(considerations.Count == 0)
         {
@@ -34,7 +30,7 @@ public class UtilityAction
         foreach (UtilityConsideration consideration in considerations)
         {
             float considerationWeight;
-            if (consideration.Score(me, out considerationWeight))
+            if (consideration.Score(out considerationWeight))
             {
                 weight += considerationWeight;
                 rank = Mathf.Max(rank, consideration.Rank());
@@ -48,14 +44,10 @@ public class UtilityAction
         return true;
     }
 
-    public virtual void Execute(Enemy me)
+    public virtual void Execute()
     {
         
     }
 
-    public virtual string Name()
-    {
-        return "";
-    }
 
 }

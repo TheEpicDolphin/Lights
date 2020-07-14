@@ -5,12 +5,14 @@ using GeometryUtils;
 
 public class AccuracyConsideration : UtilityConsideration
 {
-    public AccuracyConsideration(UtilityRank baseRank) : base(baseRank)
-    {
+    Enemy me;
 
+    public AccuracyConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
+    {
+        this.me = me;
     }
 
-    public override bool Score(Enemy me, out float weight)
+    public override bool Score(out float weight)
     {
         Vector2 target = me.GetShootingTarget();
         //Check if AI has gun equipped

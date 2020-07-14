@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class PlayerWeaponRangeConsideration : UtilityConsideration
 {
-    public PlayerWeaponRangeConsideration(UtilityRank baseRank) : base(baseRank)
+    Enemy me;
+    public PlayerWeaponRangeConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
     {
-
+        this.me = me;
     }
 
-    public override bool Score(Enemy me, out float weight)
+    public override bool Score(out float weight)
     {
         Player player = me.player;
         IFirearm playerFirearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();

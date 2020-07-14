@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class IdlenessConsideration : UtilityConsideration
 {
-    public IdlenessConsideration(UtilityRank baseRank) : base(baseRank)
+    Enemy me;
+    public IdlenessConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
     {
-
+        this.me = me;
     }
 
-    public override bool Score(Enemy me, out float weight)
+    public override bool Score(out float weight)
     {
         float t = me.IdleTime();
         weight = t;

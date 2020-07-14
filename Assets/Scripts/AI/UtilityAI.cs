@@ -1,42 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Xml.Serialization;
-using System.IO;
 using System.Linq;
 using AlgorithmUtils;
 
-
-[XmlRoot("AI")]
 public class UtilityAI
 {
-    public const string NAV = "Navigate";
-    public const string AIM = "Aim";
-    public const string SHOOT = "Shoot";
-    public const string EXPOSE_FROM_COVER = "ExposeFromCover";
-    public const string TAKE_COVER = "TakeCover";
-    public const string STRAFE = "Strafe";
-
-    [XmlElement(NAV, typeof(NavigateToStaticDestination))]
-    [XmlElement(AIM, typeof(AimAtPlayer))]
-    [XmlElement(SHOOT, typeof(ShootAtPlayer))]
-    [XmlElement(EXPOSE_FROM_COVER, typeof(ExposeFromCover))]
-    [XmlElement(TAKE_COVER, typeof(TakeCover))]
-    [XmlElement(STRAFE, typeof(Strafe))]
     public UtilityAction[] actions;
-    
 
-    public static UtilityAI CreateFromXML()
+    public UtilityAI(UtilityAction[] actions)
     {
-        ;
-        UtilityAI uai = XMLOp.Deserialize<UtilityAI>(
-            Path.Combine(Application.dataPath, "XML", "ai.xml"));
-        Debug.Log(Path.Combine(Application.dataPath, "XML", "ai.xml"));
-        Debug.Log(uai.actions.Length);
-        return uai;
+        this.actions = actions;
     }
 
-    public void OptimalAction()
+    public void RunOptimalActions()
     {
         Dictionary<UtilityAction, KeyValuePair<int, float>> actionScoreMap = new Dictionary<UtilityAction, KeyValuePair<int, float>>();
 
@@ -45,7 +22,7 @@ public class UtilityAI
         {
             int rank;
             float weight;
-            if (action.Score(this, out rank, out weight))
+            if (action.Score(out rank, out weight))
             {
                 possibleActions.Add(action);
                 actionScoreMap[action] = new KeyValuePair<int, float>(rank, weight);
@@ -78,13 +55,13 @@ public class UtilityAI
             scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
             List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
-            optimalAction.Execute(this);
+            optimalAction.Execute();
 
             /* Intersect possibleActions and co-actions of the optimal action */
             List<UtilityAction> newPossibleActions = new List<UtilityAction>();
             foreach (UtilityAction possibleAction in possibleActions)
             {
-                if (optimalAction.coActions.Contains(possibleAction.Name()))
+                if (optimalAction.coActions.Contains(possibleAction.GetType()))
                 {
                     newPossibleActions.Add(possibleAction);
                 }
