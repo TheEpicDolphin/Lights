@@ -48,7 +48,6 @@ public class TakeCover : UtilityAction
             return;
         }
 
-        Landmark currentCover = me.GetClaimedCover();
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
@@ -69,19 +68,11 @@ public class TakeCover : UtilityAction
             /* Score landmark */
             float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
 
-            if (landmark == currentCover)
-            {
-                //AI prefers to stay in place but may change cover if other options are
-                //significantly better
-                score += 2.0f;
-            }
-
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
-        me.ClaimCover(optimalCoverSpot);
         me.SetNavTarget(optimalCoverSpot);
         
     }

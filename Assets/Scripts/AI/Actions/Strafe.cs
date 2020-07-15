@@ -59,9 +59,14 @@ public class Strafe : UtilityAction
             strafeDist = (hit.centroid - myPos).magnitude;
         }
 
+        me.SetNavTarget();
+
         memory["strafe_target"] = myPos + strafeDist * strafeDir;
         float U = 0.5f * Mathf.Min(strafeDist / maxStrafeDistance, 1);
         return U;
+
+        
+
     }
 
     public override void Execute()

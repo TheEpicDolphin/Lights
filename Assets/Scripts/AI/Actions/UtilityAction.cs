@@ -33,7 +33,7 @@ public class UtilityAction : MonoBehaviour
             if (consideration.Score(out considerationWeight))
             {
                 weight += considerationWeight;
-                rank = Mathf.Max(rank, consideration.Rank());
+                rank = Mathf.Max(rank, (int) consideration.Rank());
             }
             else
             {

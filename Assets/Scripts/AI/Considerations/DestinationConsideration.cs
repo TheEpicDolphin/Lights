@@ -12,7 +12,7 @@ public class DestinationConsideration : UtilityConsideration
 
     public override bool Score(out float weight)
     {
-        Vector2 dest = me.GetDestination();
+        Vector2 dest = me.GetNavTarget().Position();
         Vector2 curPos = me.transform.position;
         if (Vector2.Distance(curPos, dest) > 1e-2f && me.GetNavTarget().IsValid())
         {

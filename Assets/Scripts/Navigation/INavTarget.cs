@@ -5,4 +5,6 @@ using UnityEngine;
 public interface INavTarget
 {
     bool IsValid();
+
+    Vector2 Position();
 }

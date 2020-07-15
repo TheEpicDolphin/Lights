@@ -169,6 +169,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return navTarget;
     }
 
+    /*
     public void ClaimCover(Landmark cover)
     {
         claimedCover = cover;
@@ -178,5 +179,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     {
         return claimedCover;
     }
+    */
 
 }

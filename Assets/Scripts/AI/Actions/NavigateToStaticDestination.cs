@@ -24,7 +24,7 @@ public class NavigateToStaticDestination : UtilityAction
 
     public override void Execute()
     {
-        Vector2 dest = me.GetDestination();
+        Vector2 dest = me.GetNavTarget().Position();
         me.NavigateTo(dest);
     }
 
