@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public float radius;
 
     float exposedStartTime;
+    float hiddenStartTime;
     float idleStartTime;
     INavTarget navTarget = null;
     Landmark claimedCover = null;
@@ -47,6 +48,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         idleStartTime = Time.time;
         exposedStartTime = Time.time;
+        hiddenStartTime = Time.time;
 
         hand = GetComponentInChildren<Hand>();
         
@@ -142,11 +144,20 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         {
             exposedStartTime = Time.time;
         }
+        else
+        {
+            hiddenStartTime = Time.time;
+        }
     }    
 
     public float ExposedTime()
     {
         return Time.time - exposedStartTime;
+    }
+
+    public float HiddenTime()
+    {
+        return Time.time - hiddenStartTime;
     }
 
     public float IdleTime()
@@ -168,17 +179,5 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     {
         return navTarget;
     }
-
-    /*
-    public void ClaimCover(Landmark cover)
-    {
-        claimedCover = cover;
-    }
-
-    public Landmark GetClaimedCover()
-    {
-        return claimedCover;
-    }
-    */
 
 }

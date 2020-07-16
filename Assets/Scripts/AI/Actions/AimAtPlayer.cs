@@ -14,7 +14,7 @@ public class AimAtPlayer : UtilityAction
         
         considerations = new List<UtilityConsideration>()
         {
-            new AimingErrorConsideration(me, UtilityRank.High),
+            new InaccuracyConsideration(me, UtilityRank.High),
             new WeaponRangeConsideration(me, UtilityRank.Medium)
         };
 

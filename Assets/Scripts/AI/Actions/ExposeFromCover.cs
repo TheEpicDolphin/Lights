@@ -15,34 +15,13 @@ public class ExposeFromCover : UtilityAction
         Debug.Assert(me != null, "Fail");
         considerations = new List<UtilityConsideration>()
         {
-            new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
-            new ExposureConsideration(me, UtilityRank.High)
+            new HiddenConsideration(me, UtilityRank.High)
         };
 
         coActions = new HashSet<System.Type>()
         {
             typeof(AimAtPlayer)
         };
-    }
-
-    public override float Score()
-    {
-
-        //TODO: Desire to hide based on ammo remaining
-
-        //Desire to hide based on proximity to target
-        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
-        if(firearm == null)
-        {
-            //Expose to attack player
-            return 1.0f;
-        }
-        float equippedFirearmRange = firearm.GetRange();
-        float dist = Vector2.Distance(player.transform.position, me.transform.position);
-        float proximity = Mathf.Min(dist / equippedFirearmRange, 1);
-
-        float U = 1 / (1 + Mathf.Exp(20 * (proximity - 0.85f)));
-        return U;
     }
 
     public override void Execute()

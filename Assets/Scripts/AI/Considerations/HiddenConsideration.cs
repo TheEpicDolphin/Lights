@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExposureConsideration : UtilityConsideration
+public class HiddenConsideration : UtilityConsideration
 {
     Enemy me;
-    const float MAX_EXPOSURE_TIME = 5.0f;
-    public ExposureConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
+    const float MAX_HIDDEN_TIME = 10.0f;
+    public HiddenConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
     {
         this.me = me;
     }
@@ -17,8 +17,8 @@ public class ExposureConsideration : UtilityConsideration
         IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm != null)
         {
-            float t = me.ExposedTime();
-            weight = Mathf.Min(t / MAX_EXPOSURE_TIME, 1.0f);
+            float t = me.HiddenTime();
+            weight = Mathf.Min(t / MAX_HIDDEN_TIME, 1.0f);
             return true;
         }
         weight = 0.0f;
