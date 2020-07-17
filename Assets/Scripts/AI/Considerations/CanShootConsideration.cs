@@ -10,7 +10,7 @@ public class CanShootConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
 
         Vector2 target = me.GetShootingTarget();
@@ -23,13 +23,11 @@ public class CanShootConsideration : UtilityConsideration
             RaycastHit2D hit = Physics2D.Linecast(me.transform.position, target);
             if (hit.collider.GetComponent<Player>() == null && !firearm.ReadyToFire())
             {
-                weight = 1.0f;
-                return true;
+                return 1.0f;
             }
         }
 
-        weight = 0.0f;
-        return false;
+        return 0.0f;
 
     }
 }

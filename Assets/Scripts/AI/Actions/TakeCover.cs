@@ -7,7 +7,7 @@ using AlgorithmUtils;
 public class TakeCover : UtilityAction
 {
     Enemy me;
-    public TakeCover()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");

@@ -9,13 +9,13 @@ using System.IO;
 
 //[XmlRoot("EnemyAI")]
 
-[RequireComponent(typeof(AimAtPlayer))]
-[RequireComponent(typeof(ShootAtPlayer))]
-[RequireComponent(typeof(NavigateToStaticDestination))]
-[RequireComponent(typeof(TakeCover))]
-[RequireComponent(typeof(ExposeFromCover))]
-[RequireComponent(typeof(Strafe))]
-[RequireComponent(typeof(IdleNavigation))]
+//[RequireComponent(typeof(AimAtPlayer))]
+//[RequireComponent(typeof(ShootAtPlayer))]
+//[RequireComponent(typeof(NavigateToStaticDestination))]
+//[RequireComponent(typeof(TakeCover))]
+//[RequireComponent(typeof(ExposeFromCover))]
+//[RequireComponent(typeof(Strafe))]
+//[RequireComponent(typeof(IdleNavigation))]
 public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
     public NavigationMesh navMesh;
@@ -28,7 +28,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     float exposedStartTime;
     float hiddenStartTime;
     float idleStartTime;
-    INavTarget navTarget = null;
+    INavTarget navTarget;
     Landmark claimedCover = null;
 
     Vector2 vDesired = Vector2.zero;
@@ -58,6 +58,16 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
+
+        navTarget = new StrafeTarget(transform.position);
+
+        gameObject.AddComponent<AimAtPlayer>();
+        gameObject.AddComponent<ShootAtPlayer>();
+        gameObject.AddComponent<NavigateToStaticDestination>();
+        gameObject.AddComponent<TakeCover>();
+        gameObject.AddComponent<ExposeFromCover>();
+        gameObject.AddComponent<Strafe>();
+        gameObject.AddComponent<IdleNavigation>();
 
         utilityActions = GetComponents<UtilityAction>();
         utilAI = new UtilityAI(utilityActions);

@@ -5,7 +5,7 @@ using UnityEngine;
 public class IdleNavigation : UtilityAction
 {
     Enemy me;
-    public IdleNavigation()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");

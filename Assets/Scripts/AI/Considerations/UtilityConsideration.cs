@@ -10,10 +10,9 @@ public class UtilityConsideration
         this.baseRank = baseRank;
     }
 
-    public virtual bool Score(out float weight)
+    public virtual float Score()
     {
-        weight = 1.0f;
-        return true;
+        return 1.0f;
     }
 
     public virtual UtilityRank Rank()

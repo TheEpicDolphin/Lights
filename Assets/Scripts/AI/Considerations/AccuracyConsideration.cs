@@ -12,7 +12,7 @@ public class AccuracyConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         Vector2 target = me.GetShootingTarget();
         //Check if AI has gun equipped
@@ -23,12 +23,10 @@ public class AccuracyConsideration : UtilityConsideration
             Transform barrelExit = firearm.GetBarrelExit();
             Plane2D los = new Plane2D(Vector2.Perpendicular(barrelExit.up), barrelExit.position);
             float aimError = Mathf.Min(los.DistanceToPoint(target) / 0.5f, 1.0f);
-            weight = 1.0f - aimError;
-            return true;
+            return 1.0f - aimError;
         }
 
-        weight = 0.0f;
-        return false;
+        return 0.0f;
 
     }
 

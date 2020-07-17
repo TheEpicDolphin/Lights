@@ -11,10 +11,10 @@ public class IdlenessConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         float t = me.IdleTime();
-        weight = 1.0f - Mathf.Min(t / MAX_IDLE_TIME, 1.0f);
-        return true;
+        float weight = 1.0f - Mathf.Min(t / MAX_IDLE_TIME, 1.0f);
+        return weight;
     }
 }

@@ -11,17 +11,16 @@ public class ExposureConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         Player player = me.player;
         IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm != null)
         {
             float t = me.ExposedTime();
-            weight = Mathf.Min(t / MAX_EXPOSURE_TIME, 1.0f);
-            return true;
+            float weight = Mathf.Min(t / MAX_EXPOSURE_TIME, 1.0f);
+            return weight;
         }
-        weight = 0.0f;
-        return false;
+        return 0.0f;
     }
 }

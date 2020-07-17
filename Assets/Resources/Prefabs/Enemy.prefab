@@ -151,9 +151,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8656938106796802457}
-  - component: {fileID: 8656938106796802462}
   - component: {fileID: 1472143787609314778}
   - component: {fileID: 8559577527015138785}
+  - component: {fileID: 4095110927409518001}
   m_Layer: 11
   m_Name: Enemy
   m_TagString: Untagged
@@ -177,21 +177,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8656938106796802462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8656938106796802456}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3a3183d728752c4db21b55d105ea3ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  navMesh: {fileID: 0}
-  player: {fileID: 0}
-  hand: {fileID: 0}
 --- !u!50 &1472143787609314778
 Rigidbody2D:
   serializedVersion: 4
@@ -229,3 +214,21 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0.3}
   serializedVersion: 2
   m_Radius: 0.6
+--- !u!114 &4095110927409518001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8656938106796802456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3a3183d728752c4db21b55d105ea3ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  navMesh: {fileID: 0}
+  player: {fileID: 0}
+  speed: 2
+  hand: {fileID: 0}
+  radius: 0
+  utilityActions: []

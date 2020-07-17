@@ -5,7 +5,7 @@ using UnityEngine;
 public class NavigateToStaticDestination : UtilityAction
 {
     Enemy me;
-    public NavigateToStaticDestination()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");

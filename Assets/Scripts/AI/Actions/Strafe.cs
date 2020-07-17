@@ -7,7 +7,7 @@ public class Strafe : UtilityAction
     Enemy me;
     float maxStrafeDistance = 3.0f;
 
-    public Strafe()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");

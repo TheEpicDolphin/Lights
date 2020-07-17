@@ -10,7 +10,7 @@ public class WeaponRangeConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         Vector2 target = me.GetShootingTarget();
         IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
@@ -19,11 +19,10 @@ public class WeaponRangeConsideration : UtilityConsideration
             float dist = Vector2.Distance(target, me.transform.position);
             float proximity = Mathf.Min(dist / firearm.GetRange(), 1.0f);
 
-            weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
-            return true;
+            float weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
+            return weight;
         }
-        weight = 0.0f;
-        return false;
+        return 0.0f;
 
     }
 }

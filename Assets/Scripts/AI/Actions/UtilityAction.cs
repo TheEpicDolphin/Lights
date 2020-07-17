@@ -29,11 +29,11 @@ public class UtilityAction : MonoBehaviour
         weight = 0.0f;
         foreach (UtilityConsideration consideration in considerations)
         {
-            float considerationWeight;
-            if (consideration.Score(out considerationWeight))
+            float considerationWeight = consideration.Score();
+            if(Mathf.Approximately(considerationWeight, 0.0f))
             {
                 weight += considerationWeight;
-                rank = Mathf.Max(rank, (int) consideration.Rank());
+                rank = Mathf.Max(rank, (int)consideration.Rank());
             }
             else
             {

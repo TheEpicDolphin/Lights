@@ -9,7 +9,7 @@ public class ExposeFromCover : UtilityAction
     Enemy me;
     float maxHideTime = 10.0f;
 
-    public ExposeFromCover()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");

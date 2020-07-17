@@ -10,17 +10,15 @@ public class DestinationConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         Vector2 dest = me.GetNavTarget().Position();
         Vector2 curPos = me.transform.position;
         if (Vector2.Distance(curPos, dest) > 1e-2f && me.GetNavTarget().IsValid())
         {
-            weight = 1.0f;
-            return true;
+            return 1.0f;
         }
-        weight = 0.0f;
-        return false;
+        return 0.0f;
 
     }
 }

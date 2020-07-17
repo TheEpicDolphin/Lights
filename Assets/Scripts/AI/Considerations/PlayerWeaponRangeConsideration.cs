@@ -10,7 +10,7 @@ public class PlayerWeaponRangeConsideration : UtilityConsideration
         this.me = me;
     }
 
-    public override bool Score(out float weight)
+    public override float Score()
     {
         Player player = me.player;
         IFirearm playerFirearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
@@ -19,11 +19,10 @@ public class PlayerWeaponRangeConsideration : UtilityConsideration
             float dist = Vector2.Distance(player.transform.position, me.transform.position);
             float proximity = Mathf.Min(dist / playerFirearm.GetRange(), 1.0f);
 
-            weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
-            return true;
+            float weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
+            return weight;
         }
-        weight = 0.0f;
-        return false;
+        return 0.0f;
 
     }
 }

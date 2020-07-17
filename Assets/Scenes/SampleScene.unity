@@ -738,13 +738,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8656938106796802462, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
-        type: 3}
+    - target: {fileID: 0}
       propertyPath: navMesh
       value: 
       objectReference: {fileID: 2067000144}
-    - target: {fileID: 8656938106796802462, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
-        type: 3}
+    - target: {fileID: 0}
       propertyPath: player
       value: 
       objectReference: {fileID: 1638297938}
@@ -753,5 +751,15 @@ PrefabInstance:
       propertyPath: m_Constraints
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 4095110927409518001, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
+        type: 3}
+      propertyPath: navMesh
+      value: 
+      objectReference: {fileID: 2067000144}
+    - target: {fileID: 4095110927409518001, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
+        type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1638297938}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 907d2d38bba10f14bb97cd7e9e186ffe, type: 3}

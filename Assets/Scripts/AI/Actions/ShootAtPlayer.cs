@@ -6,7 +6,7 @@ using GeometryUtils;
 public class ShootAtPlayer : UtilityAction
 {
     Enemy me;
-    public ShootAtPlayer()
+    private void Start()
     {
         me = GetComponent<Enemy>();
         Debug.Assert(me != null, "Fail");
