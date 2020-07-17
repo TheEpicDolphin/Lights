@@ -42,11 +42,12 @@ public class Strafe : UtilityAction
         strafeDir.Normalize();
         Vector2 myPos = me.transform.position;
         RaycastHit2D hit = Physics2D.CircleCast(myPos, me.radius, strafeDir, maxStrafeDistance, (1 << 12));
-        Vector2 strafeTarget = maxStrafeDistance * strafeDir;
+        Vector2 strafeTargetPos = maxStrafeDistance * strafeDir;
         if (hit)
         {
-            strafeTarget = hit.centroid;
+            strafeTargetPos = hit.centroid;
         }
-        me.NavigateTo(strafeTarget);
+
+        me.SetNavTarget(new StrafeTarget(strafeTargetPos));
     }
 }

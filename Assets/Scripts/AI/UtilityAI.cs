@@ -7,6 +7,7 @@ using AlgorithmUtils;
 public class UtilityAI
 {
     public UtilityAction[] actions;
+    const int MAX_CONCURRENT_ACTIONS = 5;
 
     public UtilityAI(UtilityAction[] actions)
     {
@@ -29,8 +30,9 @@ public class UtilityAI
             }
         }
 
+        int t = 0;
         //Run until there are no more actions that don't conflict
-        while (possibleActions.Count > 0)
+        while (possibleActions.Count > 0 && t < MAX_CONCURRENT_ACTIONS)
         {
             /* First, get actions with highest rank */
             List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
@@ -67,6 +69,8 @@ public class UtilityAI
                 }
             }
             possibleActions = newPossibleActions;
+
+            t += 1;
         }
 
         

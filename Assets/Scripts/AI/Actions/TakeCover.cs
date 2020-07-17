@@ -73,7 +73,7 @@ public class TakeCover : UtilityAction
 
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
-        me.SetNavTarget(optimalCoverSpot);
+        me.SetNavTarget(new CoverTarget(player, optimalCoverSpot.p));
         
     }
 }
