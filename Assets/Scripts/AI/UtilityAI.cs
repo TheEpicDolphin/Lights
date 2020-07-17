@@ -56,6 +56,11 @@ public class UtilityAI
             /* Among actions with highest rank, do a weighted random selection based on weight */
             scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
             List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
+            foreach(KeyValuePair<float, UtilityAction> pair in highestScoringSubset)
+            {
+                Debug.Log(pair.Value.GetType());
+                Debug.Log(pair.Key == 0.0f);
+            }
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
             optimalAction.Execute();
 
