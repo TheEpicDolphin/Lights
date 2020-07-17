@@ -10,8 +10,12 @@ using System.IO;
 //[XmlRoot("EnemyAI")]
 
 [RequireComponent(typeof(AimAtPlayer))]
+[RequireComponent(typeof(ShootAtPlayer))]
 [RequireComponent(typeof(NavigateToStaticDestination))]
+[RequireComponent(typeof(TakeCover))]
 [RequireComponent(typeof(ExposeFromCover))]
+[RequireComponent(typeof(Strafe))]
+[RequireComponent(typeof(IdleNavigation))]
 public class Enemy : MonoBehaviour, INavAgent, IHitable
 {
     public NavigationMesh navMesh;

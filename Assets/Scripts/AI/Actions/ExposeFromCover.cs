@@ -74,6 +74,6 @@ public class ExposeFromCover : UtilityAction
         Landmark optimalSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         /* We found one. Don't try looking again anytime soon */
-        me.SetNavTarget(optimalSpot);
+        me.SetNavTarget(new ExposedTarget(player, optimalSpot.p));
     }
 }

@@ -13,20 +13,18 @@ public class IdleNavigation : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             new ExposureConsideration(me, UtilityRank.Medium),
-            new IdlenessConsideration(me, UtilityRank.Medium),
+            new IdlenessConsideration(me, UtilityRank.High),
         };
 
         coActions = new HashSet<System.Type>()
         {
             typeof(AimAtPlayer),
             typeof(ShootAtPlayer)
-            
         };
     }
 
     public override void Execute()
     {
-        //do nothing
-        me.SetDestination(me.transform.position);
+        //Don't move anywhere
     }
 }

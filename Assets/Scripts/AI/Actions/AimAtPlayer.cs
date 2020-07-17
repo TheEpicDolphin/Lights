@@ -22,6 +22,7 @@ public class AimAtPlayer : UtilityAction
         {
             typeof(ShootAtPlayer),
             typeof(NavigateToStaticDestination),
+            typeof(IdleNavigation),
             typeof(Strafe),
             typeof(TakeCover)
         };

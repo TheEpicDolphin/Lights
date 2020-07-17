@@ -21,6 +21,7 @@ public class ShootAtPlayer : UtilityAction
         coActions = new HashSet<System.Type>()
         {
             typeof(NavigateToStaticDestination),
+            typeof(IdleNavigation),
             typeof(AimAtPlayer),
             typeof(TakeCover),
             typeof(Strafe)
