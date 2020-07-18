@@ -57,16 +57,9 @@ public class UtilityAI
             scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
             List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
 
-            /*
-            foreach (KeyValuePair<float, UtilityAction> pair in highestScoringSubset)
-            {
-                Debug.Log(pair.Value.GetType());
-                Debug.Log(pair.Key == 0.0f);
-            }
-            */
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
             optimalAction.Execute();
-            Debug.Log(optimalAction.GetType());
+            //Debug.Log(optimalAction.GetType());
 
             /* Intersect possibleActions and co-actions of the optimal action */
             List<UtilityAction> newPossibleActions = new List<UtilityAction>();
@@ -81,7 +74,7 @@ public class UtilityAI
 
             t += 1;
         }
-        Debug.Log("====================");
+        //Debug.Log("====================");
 
         
     }

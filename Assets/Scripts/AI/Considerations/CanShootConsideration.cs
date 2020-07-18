@@ -20,8 +20,8 @@ public class CanShootConsideration : UtilityConsideration
         {
             //Check if there is anything blocking line of sight from AI to player
             //and if gun is ready to fire another round
-            RaycastHit2D hit = Physics2D.Linecast(me.transform.position, target);
-            if (hit.collider.GetComponent<Player>() == null && firearm.ReadyToFire())
+            RaycastHit2D hit = Physics2D.Linecast(me.transform.position, target, ~((1 << 11) | (1 << 16) | (1 << 15)));
+            if (hit.collider == null && firearm.ReadyToFire())
             {
                 return 1.0f;
             }

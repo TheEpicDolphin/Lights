@@ -21,7 +21,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    public float speed = 4.0f;
+    public float speed = 5.0f;
     public Hand hand;
     public float radius;
 

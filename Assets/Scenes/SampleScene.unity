@@ -406,11 +406,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 5075401876883390777, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
-        type: 3}
-      propertyPath: m_Layer
-      value: 12
-      objectReference: {fileID: 0}
     - target: {fileID: 5075401876883390757, guid: b1d4431b11cb6a84e9b01ad04c0468c3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -678,6 +673,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: navMesh
+      value: 
+      objectReference: {fileID: 2067000144}
+    - target: {fileID: 0}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1638297938}
     - target: {fileID: 8656938106796802456, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
         type: 3}
       propertyPath: m_Name
@@ -738,14 +741,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: navMesh
-      value: 
-      objectReference: {fileID: 2067000144}
-    - target: {fileID: 0}
-      propertyPath: player
-      value: 
-      objectReference: {fileID: 1638297938}
     - target: {fileID: 1472143787609314778, guid: 907d2d38bba10f14bb97cd7e9e186ffe,
         type: 3}
       propertyPath: m_Constraints
