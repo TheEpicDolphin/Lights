@@ -6,7 +6,8 @@ public enum UtilityRank
 {
     Low = 0,
     Medium = 1,
-    High = 2
+    High = 2,
+    VeryHigh = 3
 }
 
 public class UtilityAction : MonoBehaviour
@@ -15,9 +16,13 @@ public class UtilityAction : MonoBehaviour
 
     protected List<UtilityConsideration> considerations = new List<UtilityConsideration>();
 
+    /* Measured in frames */
+    protected int lastExecutionFrame = 0;
+
 
     public bool Score(out int rank, out float weight)
     {
+
         if(considerations.Count == 0)
         {
             rank = 0;
@@ -41,7 +46,20 @@ public class UtilityAction : MonoBehaviour
             }
         }
 
+        RepeatConsideration(ref rank);
+        CommitConsideration(ref rank);
+
         return true;
+    }
+
+    public virtual void RepeatConsideration(ref int rank)
+    {
+        
+    }
+
+    public virtual void CommitConsideration(ref int rank)
+    {
+
     }
 
     public virtual void Execute()

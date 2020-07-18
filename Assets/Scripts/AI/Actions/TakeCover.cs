@@ -14,8 +14,7 @@ public class TakeCover : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
-            new ExposureConsideration(me, UtilityRank.High),
-            new RepeatConsideration()
+            new ExposureConsideration(me, UtilityRank.High)
         };
 
         coActions = new HashSet<System.Type>()
@@ -76,5 +75,10 @@ public class TakeCover : UtilityAction
 
         me.SetNavTarget(new CoverTarget(player, optimalCoverSpot.p));
         
+    }
+
+    public override void RepeatConsideration(ref int rank)
+    {
+        rank -= 1;
     }
 }

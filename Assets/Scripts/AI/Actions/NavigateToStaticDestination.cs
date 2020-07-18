@@ -12,8 +12,7 @@ public class NavigateToStaticDestination : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            new DestinationConsideration(me, UtilityRank.High),
-            new CommitConsideration(),
+            new DestinationConsideration(me, UtilityRank.High)
         };
 
         coActions = new HashSet<System.Type>()
@@ -25,8 +24,17 @@ public class NavigateToStaticDestination : UtilityAction
 
     public override void Execute()
     {
+        lastExecutionFrame = Time.frameCount;
         Vector2 dest = me.GetNavTarget().Position();
         me.NavigateTo(dest);
+    }
+
+    public override void CommitConsideration(ref int rank)
+    {
+        if(lastExecutionFrame + 1 == Time.frameCount)
+        {
+            rank += 1;
+        }
     }
 
 }
