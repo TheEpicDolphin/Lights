@@ -13,6 +13,7 @@ public class NavigateToStaticDestination : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             new DestinationConsideration(me, UtilityRank.High),
+            new CommitConsideration(),
         };
 
         coActions = new HashSet<System.Type>()

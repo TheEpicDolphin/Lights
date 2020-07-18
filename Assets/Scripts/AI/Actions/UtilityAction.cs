@@ -30,7 +30,7 @@ public class UtilityAction : MonoBehaviour
         foreach (UtilityConsideration consideration in considerations)
         {
             float considerationWeight = consideration.Score();
-            if(Mathf.Approximately(considerationWeight, 0.0f))
+            if(!Mathf.Approximately(considerationWeight, 0.0f))
             {
                 weight += considerationWeight;
                 rank = Mathf.Max(rank, (int)consideration.Rank());

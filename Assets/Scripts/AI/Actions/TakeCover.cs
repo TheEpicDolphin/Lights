@@ -14,7 +14,8 @@ public class TakeCover : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
-            new ExposureConsideration(me, UtilityRank.High)
+            new ExposureConsideration(me, UtilityRank.High),
+            new RepeatConsideration()
         };
 
         coActions = new HashSet<System.Type>()
