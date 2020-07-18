@@ -79,6 +79,6 @@ public class TakeCover : UtilityAction
 
     public override void RepeatConsideration(ref int rank)
     {
-        rank -= 1;
+        //rank -= 1;
     }
 }
