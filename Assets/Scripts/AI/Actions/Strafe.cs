@@ -15,7 +15,7 @@ public class Strafe : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             new ExposureConsideration(me, UtilityRank.Medium),
-            new IdlenessConsideration(me, UtilityRank.Medium),
+            new IdlenessConsideration(me, UtilityRank.High),
         };
 
         coActions = new HashSet<System.Type>()
@@ -42,7 +42,7 @@ public class Strafe : UtilityAction
         strafeDir.Normalize();
         Vector2 myPos = me.transform.position;
         RaycastHit2D hit = Physics2D.CircleCast(myPos, me.radius, strafeDir, maxStrafeDistance, (1 << 12));
-        Vector2 strafeTargetPos = maxStrafeDistance * strafeDir;
+        Vector2 strafeTargetPos = maxStrafeDistance * strafeDir + myPos;
         if (hit)
         {
             strafeTargetPos = hit.centroid;

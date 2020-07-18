@@ -71,6 +71,7 @@ public class TakeCover : UtilityAction
             scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
         }
 
+        //TODO: fix case when all of the scored landmarks have score of 0
         Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
 
         me.SetNavTarget(new CoverTarget(player, optimalCoverSpot.p));
