@@ -29,7 +29,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     float hiddenStartTime;
     float idleStartTime;
     INavTarget navTarget;
-    Landmark claimedCover = null;
+    Landmark claimedCover;
+
+    public float maxCoverDistance = 15.0f;
 
     Vector2 vDesired = Vector2.zero;
 
@@ -189,4 +191,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return navTarget;
     }
 
+    public void ClaimCover(Landmark cover)
+    {
+        this.claimedCover = cover;
+    }
+
+    public Landmark GetClaimedCover()
+    {
+        return claimedCover;
+    }
 }

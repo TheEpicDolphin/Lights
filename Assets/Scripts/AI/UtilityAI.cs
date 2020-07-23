@@ -21,6 +21,7 @@ public class UtilityAI
         List<UtilityAction> possibleActions = new List<UtilityAction>();
         foreach (UtilityAction action in actions)
         {
+            action.Tick();
             int rank;
             float weight;
             if (action.Score(out rank, out weight))

@@ -19,8 +19,13 @@ public class UtilityAction : MonoBehaviour
     /* Measured in frames */
     protected int lastExecutionFrame = 0;
 
+    //Useful for actions to do necessary calculations beforehand
+    public virtual void Tick()
+    {
 
-    public bool Score(out int rank, out float weight)
+    }
+
+    public virtual bool Score(out int rank, out float weight)
     {
 
         if(considerations.Count == 0)

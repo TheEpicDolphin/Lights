@@ -4,7 +4,7 @@ using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
 
-public class TakeCover : UtilityAction
+public class TakeCover : UtilityActionGroup
 {
     Enemy me;
     private void Start()
@@ -13,6 +13,7 @@ public class TakeCover : UtilityAction
         Debug.Assert(me != null, "Fail");
         considerations = new List<UtilityConsideration>()
         {
+            //new CoverConsideration(me, UtilityRank.High),
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
             new ExposureConsideration(me, UtilityRank.High)
         };
@@ -24,62 +25,30 @@ public class TakeCover : UtilityAction
         };
     }
 
-    public override void Execute()
+    public override void Tick()
     {
-        Player player = me.player;
+        Landmark currentClaimedCover = me.GetClaimedCover();
 
-        float maxLandmarkDist = 15.0f;
-        List<Landmark> nearbyLandmarks = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
-                                        maxLandmarkDist);
-        List<Landmark> validLandmarks = new List<Landmark>();
-        foreach (Landmark landmark in nearbyLandmarks)
+        Player player = me.player;
+        List<Landmark> nearbyCoverSpots = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
+                                        me.maxCoverDistance);
+        if(currentClaimedCover != null && !nearbyCoverSpots.Contains(currentClaimedCover))
         {
-            /* if landmark is NOT in player's visibility cone, it is valid */
-            if (!player.FOVContains(landmark.p))
+            nearbyCoverSpots.Add(currentClaimedCover);
+        }
+        subActions = new List<UtilityAction>();
+        foreach (Landmark coverSpot in nearbyCoverSpots)
+        {
+            /* if landmark is NOT in player's visibility cone, it is a valid cover spot */
+            if (!player.FOVContains(coverSpot.p))
             {
-                validLandmarks.Add(landmark);
+                subActions.Add(new FleeToCoverSpot(me, coverSpot));
             }
         }
-
-        
-        if (validLandmarks.Count == 0)
-        {
-            /* There is no cover nearby. Decide again later */
-            return;
-        }
-
-
-        Vector2 playerDir = player.transform.position - me.transform.position;
-        Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
-        Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
-
-        List<KeyValuePair<float, Landmark>> scoredLandmarks = new List<KeyValuePair<float, Landmark>>();
-        foreach (Landmark landmark in validLandmarks)
-        {
-            /* Check if landmark is closer to AI than to player */
-            float c = sepBoundary.SignedDistanceToPoint(landmark.p);
-
-            /* Take into account distance from AI to landmark */
-            float dist = Vector2.Distance(landmark.p, me.transform.position);
-            float proximity = Mathf.Min(dist / maxLandmarkDist, 1);
-
-            /* TODO: Take into account AI's weapon range */
-
-            /* Score landmark */
-            float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
-
-            scoredLandmarks.Add(new KeyValuePair<float, Landmark>(score, landmark));
-        }
-
-        //TODO: fix case when all of the scored landmarks have score of 0
-        Landmark optimalCoverSpot = Algorithm.WeightedRandomSelection(scoredLandmarks);
-
-        me.SetNavTarget(new CoverTarget(player, optimalCoverSpot.p));
-        
     }
 
-    public override void RepeatConsideration(ref int rank)
+    public override void Execute()
     {
-        //rank -= 1;
+        bestAction?.Execute();
     }
 }
