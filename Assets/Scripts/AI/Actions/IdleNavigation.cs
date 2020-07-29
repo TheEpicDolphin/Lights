@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO: Change name
 public class IdleNavigation : UtilityAction
 {
     Enemy me;
-    private void Start()
+    
+    public IdleNavigation(Enemy me)
     {
-        me = GetComponent<Enemy>();
-        Debug.Assert(me != null, "Fail");
+        this.me = me;
 
         considerations = new List<UtilityConsideration>()
         {

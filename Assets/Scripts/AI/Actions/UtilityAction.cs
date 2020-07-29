@@ -10,7 +10,7 @@ public enum UtilityRank
     VeryHigh = 3
 }
 
-public class UtilityAction : MonoBehaviour
+public class UtilityAction
 {
     public HashSet<System.Type> coActions;
 

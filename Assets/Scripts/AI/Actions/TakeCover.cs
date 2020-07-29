@@ -7,13 +7,12 @@ using AlgorithmUtils;
 public class TakeCover : UtilityActionGroup
 {
     Enemy me;
-    private void Start()
+
+    public TakeCover(Enemy me)
     {
-        me = GetComponent<Enemy>();
-        Debug.Assert(me != null, "Fail");
+        this.me = me;
         considerations = new List<UtilityConsideration>()
         {
-            //new CoverConsideration(me, UtilityRank.High),
             new PlayerWeaponRangeConsideration(me, UtilityRank.Medium),
             new ExposureConsideration(me, UtilityRank.High)
         };

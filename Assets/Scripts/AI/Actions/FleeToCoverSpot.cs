@@ -7,10 +7,11 @@ public class FleeToCoverSpot : UtilityAction
     Enemy me;
     Landmark cover;
 
-    private void Start()
+    public FleeToCoverSpot(Enemy me, Landmark cover)
     {
-        me = GetComponent<Enemy>();
-        Debug.Assert(me != null, "Fail");
+        this.me = me;
+        this.cover = cover;
+
         considerations = new List<UtilityConsideration>()
         {
             new CoverConsideration(me, cover, UtilityRank.High)
@@ -27,4 +28,14 @@ public class FleeToCoverSpot : UtilityAction
     {
         me.NavigateTo(cover.p);
     }
+
+    /*
+    public override void CommitConsideration(ref int rank)
+    {
+        if (lastExecutionFrame + 1 == Time.frameCount)
+        {
+            rank += 1;
+        }
+    }
+    */
 }

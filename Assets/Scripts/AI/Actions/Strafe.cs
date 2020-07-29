@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO: Consider making this UtilityActionGroup with multiple directions for strafing
 public class Strafe : UtilityAction
 {
     Enemy me;
     float maxStrafeDistance = 3.0f;
 
-    private void Start()
+    public Strafe(Enemy me)
     {
-        me = GetComponent<Enemy>();
-        Debug.Assert(me != null, "Fail");
+        this.me = me;
 
         considerations = new List<UtilityConsideration>()
         {

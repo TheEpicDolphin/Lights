@@ -7,11 +7,10 @@ public class AimAtPlayer : UtilityAction
 {
     Enemy me;
 
-    private void Start()
+    public AimAtPlayer(Enemy me)
     {
-        me = GetComponent<Enemy>();
-        Debug.Assert(me != null, "Fail");
-        
+        this.me = me;
+
         considerations = new List<UtilityConsideration>()
         {
             new InaccuracyConsideration(me, UtilityRank.High),
@@ -21,7 +20,7 @@ public class AimAtPlayer : UtilityAction
         coActions = new HashSet<System.Type>()
         {
             typeof(ShootAtPlayer),
-            typeof(NavigateToStaticDestination),
+            typeof(FleeToCoverSpot),
             typeof(IdleNavigation),
             typeof(Strafe),
             typeof(TakeCover)

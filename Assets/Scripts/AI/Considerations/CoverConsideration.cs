@@ -30,6 +30,7 @@ public class CoverConsideration : UtilityConsideration
 
         /* TODO: Take into account AI's weapon range */
 
+
         /* Score landmark */
         float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
 
