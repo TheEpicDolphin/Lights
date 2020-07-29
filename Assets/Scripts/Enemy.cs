@@ -26,10 +26,10 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public float radius;
 
     float exposedStartTime;
-    float hiddenStartTime;
     float idleStartTime;
-    INavTarget navTarget;
-    Landmark claimedCover;
+
+    float exposure = 0.0f;
+    float MAX_EXPOSURE = 5.0f;
 
     public float maxCoverDistance = 15.0f;
 
@@ -54,7 +54,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         idleStartTime = Time.time;
         exposedStartTime = Time.time;
-        hiddenStartTime = Time.time;
 
         hand = GetComponentInChildren<Hand>();
         
@@ -151,13 +150,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         }
 
         bool visibleToPlayer = player.FOVContains(transform.position);
-        if (!visibleToPlayer)
+        if (visibleToPlayer)
         {
-            exposedStartTime = Time.time;
+            exposure = Mathf.Max(MAX_EXPOSURE, exposure + Time.deltaTime);
         }
         else
         {
-            hiddenStartTime = Time.time;
+            exposedStartTime = Time.time;
         }
     }    
 
@@ -166,9 +165,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return Time.time - exposedStartTime;
     }
 
-    public float HiddenTime()
+    public float Exposure()
     {
-        return Time.time - hiddenStartTime;
+        return this.exposure / MAX_EXPOSURE;
     }
 
     public float IdleTime()
@@ -179,25 +178,5 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public Vector2 GetShootingTarget()
     {
         return player.transform.position;
-    }
-
-    public void SetNavTarget(INavTarget newNavTarget)
-    {
-        navTarget = newNavTarget;
-    }
-
-    public INavTarget GetNavTarget()
-    {
-        return navTarget;
-    }
-
-    public void ClaimCover(Landmark cover)
-    {
-        this.claimedCover = cover;
-    }
-
-    public Landmark GetClaimedCover()
-    {
-        return claimedCover;
     }
 }

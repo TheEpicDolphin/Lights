@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FleeToCoverSpot : UtilityAction
+public class MoveToTacticalSpot : UtilityAction
 {
     Enemy me;
-    Landmark cover;
+    Landmark tacticalSpot;
 
-    public FleeToCoverSpot(Enemy me, Landmark cover)
+    public MoveToTacticalSpot(Enemy me, Landmark tacticalSpot)
     {
         this.me = me;
-        this.cover = cover;
+        this.tacticalSpot = tacticalSpot;
 
         considerations = new List<UtilityConsideration>()
         {
-            new CoverConsideration(me, cover, UtilityRank.High)
+            new TacticalConsideration(me, tacticalSpot),
+            new ExposureConsideration(me, tacticalSpot),
+            new OccupiedConsideration(me, tacticalSpot),
+            new PlayerWeaponRangeConsideration(me, tacticalSpot),
         };
 
         coActions = new HashSet<System.Type>()
@@ -26,7 +29,7 @@ public class FleeToCoverSpot : UtilityAction
 
     public override void Execute()
     {
-        me.NavigateTo(cover.p);
+        me.NavigateTo(tacticalSpot.p);
     }
 
     /*
@@ -38,4 +41,5 @@ public class FleeToCoverSpot : UtilityAction
         }
     }
     */
+
 }
