@@ -4,11 +4,11 @@ using UnityEngine;
 using GeometryUtils;
 using AlgorithmUtils;
 
-public class TacticalConsideration : UtilityConsideration
+public class TacticConsideration : UtilityConsideration
 {
     Enemy me;
     Landmark tacticalSpot;
-    public TacticalConsideration(Enemy me, Landmark tacticalSpot, UtilityRank rank) : base(rank)
+    public TacticConsideration(Enemy me, Landmark tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;

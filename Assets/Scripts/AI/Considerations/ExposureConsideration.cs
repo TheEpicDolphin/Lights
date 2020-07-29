@@ -6,7 +6,7 @@ public class ExposureConsideration : UtilityConsideration
 {
     Enemy me;
     Landmark tacticalSpot;
-    public ExposureConsideration(Enemy me, Landmark tacticalSpot, UtilityRank baseRank) : base(baseRank)
+    public ExposureConsideration(Enemy me, Landmark tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;

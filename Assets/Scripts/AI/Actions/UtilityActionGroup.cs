@@ -9,57 +9,31 @@ public class UtilityActionGroup : UtilityAction
     protected UtilityAction bestAction;
 
 
-    public override bool Score(out int rank, out float weight)
+    public override float Score()
     {
-        rank = -10000;
-        weight = 0.0f;
+        float weight = 1.0f;
         if (subActions.Count == 0)
         {
-            return false;
+            return 0.0f;
         }
 
-        if (considerations.Count == 0)
-        {
-            rank = 0;
-            weight = 1.0f;
-            return true;
-        }
-        
         foreach (UtilityConsideration consideration in considerations)
         {
-            float considerationWeight = consideration.Score();
-            if (!Mathf.Approximately(considerationWeight, 0.0f))
-            {
-                weight += considerationWeight;
-                rank = Mathf.Max(rank, (int)consideration.Rank());
-            }
-            else
-            {
-                return false;
-            }
+            weight *= consideration.Score();
         }
 
-        
-
         bestAction = subActions[0];
+        float maxSubActionWeight = 0.0f;
         foreach (UtilityAction subAction in subActions)
         {
             subAction.Tick();
-            int subActionRank;
-            float subActionWeight;
-            if (subAction.Score(out subActionRank, out subActionWeight))
+            float subActionWeight = subAction.Score();
+            if(subActionWeight > maxSubActionWeight)
             {
-                if (subActionRank > rank)
-                {
-                    bestAction = subAction;
-                    rank = subActionRank;
-                }
+                bestAction = subAction;
+                maxSubActionWeight = subActionWeight;
             }
         }
-
-        bestAction.RepeatConsideration(ref rank);
-        bestAction.CommitConsideration(ref rank);
-
-        return true;
+        return weight * maxSubActionWeight;
     }
 }

@@ -14,7 +14,7 @@ public class MoveToTacticalSpot : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            new TacticalConsideration(me, tacticalSpot),
+            new TacticConsideration(me, tacticalSpot),
             new ExposureConsideration(me, tacticalSpot),
             new OccupiedConsideration(me, tacticalSpot),
             new PlayerWeaponRangeConsideration(me, tacticalSpot),
