@@ -19,10 +19,9 @@ public class PlayerWeaponRangeConsideration : UtilityConsideration
         if (playerFirearm != null)
         {
             float dist = Vector2.Distance(player.transform.position, tacticalSpot);
-            float proximity = Mathf.Min(dist / playerFirearm.GetRange(), 1.0f);
+            float proximity = 1.0f - Mathf.Min(dist / playerFirearm.GetRange(), 1.0f);
 
-            float weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));
-            return weight;
+            return 1.0f;
         }
         return 0.0f;
 

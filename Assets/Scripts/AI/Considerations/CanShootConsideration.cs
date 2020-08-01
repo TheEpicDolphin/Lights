@@ -5,7 +5,7 @@ using UnityEngine;
 public class CanShootConsideration : UtilityConsideration
 {
     Enemy me;
-    public CanShootConsideration(Enemy me, UtilityRank rank) : base(rank)
+    public CanShootConsideration(Enemy me)
     {
         this.me = me;
     }

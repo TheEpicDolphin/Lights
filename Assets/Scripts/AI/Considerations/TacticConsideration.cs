@@ -16,6 +16,7 @@ public class TacticConsideration : UtilityConsideration
 
     public override float Score()
     {
+        //TODO: Split up below into two different considerations
         Player player = me.player;
 
         Vector2 playerDir = player.transform.position - me.transform.position;
@@ -26,13 +27,13 @@ public class TacticConsideration : UtilityConsideration
 
         /* Take into account distance from AI to landmark */
         float dist = Vector2.Distance(tacticalSpot, me.transform.position);
-        float proximity = Mathf.Min(dist / (2 * me.maxTacticalPositionRange), 1);
+        /* higher proximity = tactical spot is closer to AI  */
+        float proximity = 1.0f - Mathf.Clamp(dist / me.maxTacticalPositionRange, 0.0f, 0.5f);
 
         /* TODO: Take into account AI's weapon range */
 
-
         /* Score landmark */
-        float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) + (1.0f - proximity));
+        float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) * proximity);
 
         return score;
 

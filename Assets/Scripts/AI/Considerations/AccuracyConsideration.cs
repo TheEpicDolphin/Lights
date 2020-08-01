@@ -7,7 +7,7 @@ public class AccuracyConsideration : UtilityConsideration
 {
     Enemy me;
 
-    public AccuracyConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
+    public AccuracyConsideration(Enemy me)
     {
         this.me = me;
     }

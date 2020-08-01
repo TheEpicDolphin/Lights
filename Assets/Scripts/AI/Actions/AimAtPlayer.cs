@@ -13,17 +13,16 @@ public class AimAtPlayer : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            new InaccuracyConsideration(me, UtilityRank.High),
-            new WeaponRangeConsideration(me, UtilityRank.Medium)
+            //TODO: Make inverse UtilityConsideration for this
+            new InaccuracyConsideration(me),
+            new WeaponRangeConsideration(me)
         };
 
         coActions = new HashSet<System.Type>()
         {
+            typeof(TacticalPositioning),
             typeof(ShootAtPlayer),
-            typeof(FleeToCoverSpot),
-            typeof(IdleNavigation),
             typeof(Strafe),
-            typeof(TakeCover)
         };
     }
 

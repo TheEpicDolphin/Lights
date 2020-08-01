@@ -5,7 +5,7 @@ using UnityEngine;
 public class WeaponRangeConsideration : UtilityConsideration
 {
     Enemy me;
-    public WeaponRangeConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
+    public WeaponRangeConsideration(Enemy me)
     {
         this.me = me;
     }

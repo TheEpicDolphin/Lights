@@ -43,7 +43,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     //[XmlElement("expose_from_cover", typeof(ExposeFromCover))]
     //[XmlElement("take_cover", typeof(TakeCover))]
     //[XmlElement("strafe", typeof(Strafe))]
-    public UtilityAction[] utilityActions;
 
     // Start is called before the first frame update
     void Start()
@@ -60,16 +59,13 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
 
-        gameObject.AddComponent<AimAtPlayer>();
-        gameObject.AddComponent<ShootAtPlayer>();
-        gameObject.AddComponent<NavigateToStaticDestination>();
-        gameObject.AddComponent<TakeCover>();
-        gameObject.AddComponent<ExposeFromCover>();
-        gameObject.AddComponent<Strafe>();
-        gameObject.AddComponent<IdleNavigation>();
+        utilAI = new UtilityAI(new UtilityAction[]
+        {
+            new AimAtPlayer(this),
+            new ShootAtPlayer(this),
+            new TacticalPositioning(this),
+        });
 
-        utilityActions = GetComponents<UtilityAction>();
-        utilAI = new UtilityAI(utilityActions);
 
     }
 

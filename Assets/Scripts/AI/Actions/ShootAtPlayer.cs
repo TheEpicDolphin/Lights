@@ -12,17 +12,15 @@ public class ShootAtPlayer : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            new CanShootConsideration(me, UtilityRank.High),
-            new AccuracyConsideration(me, UtilityRank.Medium),
-            new WeaponRangeConsideration(me, UtilityRank.Medium)
+            new CanShootConsideration(me),
+            new AccuracyConsideration(me),
+            new WeaponRangeConsideration(me)
         };
 
         coActions = new HashSet<System.Type>()
         {
-            typeof(NavigateToStaticDestination),
-            typeof(IdleNavigation),
+            typeof(TacticalPositioning),
             typeof(AimAtPlayer),
-            typeof(TakeCover),
             typeof(Strafe)
         };
     }

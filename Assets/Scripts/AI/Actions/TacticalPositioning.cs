@@ -24,7 +24,7 @@ public class TacticalPositioning : UtilityActionGroup
     public override void Tick()
     {
         Player player = me.player;
-        List<Vector2> nearbyTacticalSpots = me.GetTacticalPositioningCandidates(20.0f);
+        List<Vector2> nearbyTacticalSpots = me.GetTacticalPositioningCandidates();
         subActions = new List<UtilityAction>();
         foreach (Vector2 tacticalSpot in nearbyTacticalSpots)
         {
