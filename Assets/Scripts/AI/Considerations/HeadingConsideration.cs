@@ -14,6 +14,7 @@ public class HeadingConsideration : UtilityConsideration
 
     public override float Score()
     {
+        //TODO: Fix this when AI velocity has zero magnitude
         Vector2 curPos = me.transform.position;
         Vector2 curHeading = me.GetVelocity().normalized;
         Vector2 spotDirection = (tacticalSpot - curPos).normalized;

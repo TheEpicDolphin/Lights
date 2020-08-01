@@ -12,10 +12,6 @@ public class UtilityActionGroup : UtilityAction
     public override float Score()
     {
         float weight = 1.0f;
-        if (subActions.Count == 0)
-        {
-            return 0.0f;
-        }
 
         foreach (UtilityConsideration consideration in considerations)
         {
@@ -34,6 +30,7 @@ public class UtilityActionGroup : UtilityAction
                 maxSubActionWeight = subActionWeight;
             }
         }
+
         return weight * maxSubActionWeight;
     }
 }

@@ -14,7 +14,8 @@ public class OccupiedConsideration : UtilityConsideration
 
     public override float Score()
     {
-        if (Physics2D.OverlapCircle(tacticalSpot, 0.75f * me.radius, 1 << 11))
+        Collider2D col = Physics2D.OverlapCircle(tacticalSpot, 0.75f * me.radius, 1 << 11);
+        if (col != null && col.GetComponent<Enemy>() != me)
         {
             return 0.0f;
         }

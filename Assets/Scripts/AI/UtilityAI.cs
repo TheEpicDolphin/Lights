@@ -21,6 +21,8 @@ public class UtilityAI
         {
             action.Tick();
             float weight = action.Score();
+            //Debug.Log(action.GetType());
+            //Debug.Log(weight);
             if(weight > 0)
             {
                 scoredActions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
@@ -38,7 +40,7 @@ public class UtilityAI
             highestScoringSubset.Add(scoredActions.First());
             foreach (KeyValuePair<float, UtilityAction> scoredAction in scoredActions.Skip(1))
             {
-                if(scoredAction.Key > 0.7f * highestScore)
+                if (scoredAction.Key > 0.7f * highestScore)
                 {
                     highestScoringSubset.Add(scoredAction);
                 }

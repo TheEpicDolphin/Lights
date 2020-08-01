@@ -14,8 +14,8 @@ public class Strafe : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            new ExposureConsideration(me, UtilityRank.Medium),
-            new IdlenessConsideration(me, UtilityRank.High),
+            //new ExposureConsideration(me),
+            new IdlenessConsideration(me),
         };
 
         coActions = new HashSet<System.Type>()
@@ -48,6 +48,6 @@ public class Strafe : UtilityAction
             strafeTargetPos = hit.centroid;
         }
 
-        me.SetNavTarget(new StrafeTarget(strafeTargetPos));
+        me.AddKnockback(10.0f, strafeDir);
     }
 }
