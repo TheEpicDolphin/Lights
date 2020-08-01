@@ -6,7 +6,7 @@ public class IdlenessConsideration : UtilityConsideration
 {
     Enemy me;
     const float MAX_IDLE_TIME = 5.0f;
-    public IdlenessConsideration(Enemy me, UtilityRank baseRank) : base(baseRank)
+    public IdlenessConsideration(Enemy me)
     {
         this.me = me;
     }
