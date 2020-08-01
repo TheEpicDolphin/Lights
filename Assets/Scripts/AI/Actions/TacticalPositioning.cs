@@ -24,10 +24,9 @@ public class TacticalPositioning : UtilityActionGroup
     public override void Tick()
     {
         Player player = me.player;
-        List<Landmark> nearbyTacticalSpots = me.navMesh.GetLandmarksWithinRadius(me.transform.position,
-                                        me.maxCoverDistance);
+        List<Vector2> nearbyTacticalSpots = me.GetTacticalPositioningCandidates(20.0f);
         subActions = new List<UtilityAction>();
-        foreach (Landmark tacticalSpot in nearbyTacticalSpots)
+        foreach (Vector2 tacticalSpot in nearbyTacticalSpots)
         {
             subActions.Add(new MoveToTacticalSpot(me, tacticalSpot));
         }

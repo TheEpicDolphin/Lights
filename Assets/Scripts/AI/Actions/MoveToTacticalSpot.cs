@@ -5,9 +5,9 @@ using UnityEngine;
 public class MoveToTacticalSpot : UtilityAction
 {
     Enemy me;
-    Landmark tacticalSpot;
+    Vector2 tacticalSpot;
 
-    public MoveToTacticalSpot(Enemy me, Landmark tacticalSpot)
+    public MoveToTacticalSpot(Enemy me, Vector2 tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;

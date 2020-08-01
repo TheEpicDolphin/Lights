@@ -60,8 +60,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
         hand.EquipObject(firearm);
 
-        navTarget = new StrafeTarget(transform.position);
-
         gameObject.AddComponent<AimAtPlayer>();
         gameObject.AddComponent<ShootAtPlayer>();
         gameObject.AddComponent<NavigateToStaticDestination>();
@@ -178,5 +176,29 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public Vector2 GetShootingTarget()
     {
         return player.transform.position;
+    }
+
+    public List<Vector2> GetTacticalPositioningCandidates(float s)
+    {
+        List<Vector2> spots = new List<Vector2>();
+        Vector2 pos2d = transform.position;
+
+        int C = 5;
+        int R = 5;
+        Vector2 center = transform.position;
+        for (int i = -R/2; i <= R/2; i++)
+        {
+            float y = center.y + i * s / R;
+            for (int j = -C/2; j <= C/2; j++)
+            {
+                float x = center.x + j * s / C;
+                Vector2 p = new Vector2(x, y);
+                if ()
+                {
+                    spots.Add(p);
+                }
+            }
+        }
+        return spots;
     }
 }

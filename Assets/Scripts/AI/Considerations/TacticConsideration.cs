@@ -7,8 +7,8 @@ using AlgorithmUtils;
 public class TacticConsideration : UtilityConsideration
 {
     Enemy me;
-    Landmark tacticalSpot;
-    public TacticConsideration(Enemy me, Landmark tacticalSpot)
+    Vector2 tacticalSpot;
+    public TacticConsideration(Enemy me, Vector2 tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;
@@ -26,7 +26,7 @@ public class TacticConsideration : UtilityConsideration
         float c = sepBoundary.SignedDistanceToPoint(tacticalSpot.p);
 
         /* Take into account distance from AI to landmark */
-        float dist = Vector2.Distance(tacticalSpot.p, me.transform.position);
+        float dist = Vector2.Distance(tacticalSpot, me.transform.position);
         float proximity = Mathf.Min(dist / maxCoverDistance, 1);
 
         /* TODO: Take into account AI's weapon range */

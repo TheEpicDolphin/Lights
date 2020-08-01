@@ -12,7 +12,6 @@ public class NavigationMesh : MonoBehaviour
     Graph<Triangle> navMeshGraph;
     DelaunayMesh mesh;
     Material mat;
-    LandmarkSystem landmarkSystem;
     public float aiRadius = 0.6f;
 
     private void Awake()
@@ -49,11 +48,6 @@ public class NavigationMesh : MonoBehaviour
         navMeshGraph = new Graph<Triangle>(mesh.tris);
 
         float s = 2 * aiRadius / Mathf.Sqrt(2);
-        landmarkSystem = new LandmarkSystem(s, this);
-        foreach (Obstacle obstacle in obstacles)
-        {
-            landmarkSystem.AddLandmarksAroundObstacle(obstacle);
-        }
     }
 
     List<Vector2> CentroidPath(List<Triangle> triPath, Vector2 startPos, Vector2 targetPos)
@@ -225,16 +219,6 @@ public class NavigationMesh : MonoBehaviour
         return !tri.isIntersectingHole;
     }
 
-    public List<Landmark> GetLandmarksWithinRadius(Vector2 p, float radius)
-    {
-        return landmarkSystem.GetLandmarksWithinRadius(p, radius);
-    }
-
-    public Landmark GetLandmarkAt(Vector2 p)
-    {
-        return landmarkSystem.GetLandmarkAt(p);
-    }
-
     public void Draw()
     {
         if (!mat)
@@ -256,13 +240,6 @@ public class NavigationMesh : MonoBehaviour
         GL.End();
 
         GL.PopMatrix();
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        // Draw a yellow sphere at the transform's position
-        landmarkSystem.DrawLandmarks(aiRadius);
-        
     }
 
 }
