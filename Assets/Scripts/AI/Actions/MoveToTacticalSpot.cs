@@ -29,7 +29,7 @@ public class MoveToTacticalSpot : UtilityAction
 
     public override void Execute()
     {
-        me.NavigateTo(tacticalSpot.p);
+        me.NavigateTo(tacticalSpot);
     }
 
     /*

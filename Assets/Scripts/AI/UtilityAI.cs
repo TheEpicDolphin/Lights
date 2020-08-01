@@ -16,62 +16,47 @@ public class UtilityAI
 
     public void RunOptimalActions()
     {
-        Dictionary<UtilityAction, KeyValuePair<int, float>> actionScoreMap = new Dictionary<UtilityAction, KeyValuePair<int, float>>();
-
-        List<UtilityAction> possibleActions = new List<UtilityAction>();
+        List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
         foreach (UtilityAction action in actions)
         {
             action.Tick();
-            int rank;
-            float weight;
-            if (action.Score(out rank, out weight))
+            float weight = action.Score();
+            if(weight > 0)
             {
-                possibleActions.Add(action);
-                actionScoreMap[action] = new KeyValuePair<int, float>(rank, weight);
+                scoredActions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
             }
         }
+        scoredActions = scoredActions.OrderByDescending(s => s.Key).ToList();
 
         int t = 0;
         //Run until there are no more actions that don't conflict
-        while (possibleActions.Count > 0 && t < MAX_CONCURRENT_ACTIONS)
+        while (scoredActions.Count > 0 && t < MAX_CONCURRENT_ACTIONS)
         {
             /* First, get actions with highest rank */
-            List<KeyValuePair<float, UtilityAction>> scoredActions = new List<KeyValuePair<float, UtilityAction>>();
-            int highestRank = int.MinValue;
-            foreach (UtilityAction action in possibleActions)
+            List<KeyValuePair<float, UtilityAction>> highestScoringSubset = new List<KeyValuePair<float, UtilityAction>>();
+            float highestScore = scoredActions.First().Key;
+            highestScoringSubset.Add(scoredActions.First());
+            foreach (KeyValuePair<float, UtilityAction> scoredAction in scoredActions.Skip(1))
             {
-                KeyValuePair<int, float> rankWeight = actionScoreMap[action];
-                int rank = rankWeight.Key;
-                float weight = rankWeight.Value;
-                if (rank > highestRank)
+                if(scoredAction.Key > 0.7f * highestScore)
                 {
-                    scoredActions = new List<KeyValuePair<float, UtilityAction>>();
-                    highestRank = rank;
-                }
-                if (rank == highestRank)
-                {
-                    scoredActions.Add(new KeyValuePair<float, UtilityAction>(weight, action));
+                    highestScoringSubset.Add(scoredAction);
                 }
             }
-
-            /* Among actions with highest rank, do a weighted random selection based on weight */
-            scoredActions = scoredActions.OrderByDescending(action => action.Key).ToList();
-            List<KeyValuePair<float, UtilityAction>> highestScoringSubset = scoredActions.GetRange(0, Mathf.Min(3, scoredActions.Count));
-
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
             optimalAction.Execute();
             //Debug.Log(optimalAction.GetType());
 
-            /* Intersect possibleActions and co-actions of the optimal action */
-            List<UtilityAction> newPossibleActions = new List<UtilityAction>();
-            foreach (UtilityAction possibleAction in possibleActions)
+            /* Intersect scoredActions and co-actions of the optimal action */
+            List<KeyValuePair<float, UtilityAction>> newScoredActions = new List<KeyValuePair<float, UtilityAction>>();
+            foreach (KeyValuePair<float, UtilityAction> scoredAction in scoredActions)
             {
-                if (optimalAction.coActions.Contains(possibleAction.GetType()))
+                if (optimalAction.coActions.Contains(scoredAction.Value.GetType()))
                 {
-                    newPossibleActions.Add(possibleAction);
+                    newScoredActions.Add(scoredAction);
                 }
             }
-            possibleActions = newPossibleActions;
+            scoredActions = newScoredActions;
 
             t += 1;
         }

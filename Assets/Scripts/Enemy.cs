@@ -183,17 +183,17 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         List<Vector2> spots = new List<Vector2>();
         Vector2 pos2d = transform.position;
 
-        int C = 5;
-        int R = 5;
+        int Ny = 5;
+        int Nx = 5;
         Vector2 center = transform.position;
-        for (int i = -R/2; i <= R/2; i++)
+        for (int i = -Ny / 2; i <= Ny / 2; i++)
         {
-            float y = center.y + i * s / R;
-            for (int j = -C/2; j <= C/2; j++)
+            float y = center.y + i * s / Ny;
+            for (int j = -Nx / 2; j <= Nx / 2; j++)
             {
-                float x = center.x + j * s / C;
+                float x = center.x + j * s / Nx;
                 Vector2 p = new Vector2(x, y);
-                if ()
+                if (navMesh.IsLocationValid(p))
                 {
                     spots.Add(p);
                 }
