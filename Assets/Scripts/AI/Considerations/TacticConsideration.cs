@@ -16,18 +16,17 @@ public class TacticConsideration : UtilityConsideration
 
     public override float Score()
     {
-        float maxCoverDistance = me.maxCoverDistance;
         Player player = me.player;
 
         Vector2 playerDir = player.transform.position - me.transform.position;
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
         /* Check if landmark is closer to AI than to player */
-        float c = sepBoundary.SignedDistanceToPoint(tacticalSpot.p);
+        float c = sepBoundary.SignedDistanceToPoint(tacticalSpot);
 
         /* Take into account distance from AI to landmark */
         float dist = Vector2.Distance(tacticalSpot, me.transform.position);
-        float proximity = Mathf.Min(dist / maxCoverDistance, 1);
+        float proximity = Mathf.Min(dist / (2 * me.maxTacticalPositionRange), 1);
 
         /* TODO: Take into account AI's weapon range */
 

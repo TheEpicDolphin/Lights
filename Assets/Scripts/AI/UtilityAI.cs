@@ -42,6 +42,10 @@ public class UtilityAI
                 {
                     highestScoringSubset.Add(scoredAction);
                 }
+                else
+                {
+                    break;
+                }
             }
             UtilityAction optimalAction = Algorithm.WeightedRandomSelection(highestScoringSubset);
             optimalAction.Execute();

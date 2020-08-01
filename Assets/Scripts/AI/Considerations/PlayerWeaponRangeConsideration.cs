@@ -5,9 +5,11 @@ using UnityEngine;
 public class PlayerWeaponRangeConsideration : UtilityConsideration
 {
     Enemy me;
-    public PlayerWeaponRangeConsideration(Enemy me)
+    Vector2 tacticalSpot;
+    public PlayerWeaponRangeConsideration(Enemy me, Vector2 tacticalSpot)
     {
         this.me = me;
+        this.tacticalSpot = tacticalSpot;
     }
 
     public override float Score()
@@ -16,7 +18,7 @@ public class PlayerWeaponRangeConsideration : UtilityConsideration
         IFirearm playerFirearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (playerFirearm != null)
         {
-            float dist = Vector2.Distance(player.transform.position, me.transform.position);
+            float dist = Vector2.Distance(player.transform.position, tacticalSpot);
             float proximity = Mathf.Min(dist / playerFirearm.GetRange(), 1.0f);
 
             float weight = (1 / (1 + Mathf.Exp(50 * (proximity - 0.9f))));

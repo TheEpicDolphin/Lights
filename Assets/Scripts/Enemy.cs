@@ -31,7 +31,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     float exposure = 0.0f;
     float MAX_EXPOSURE = 5.0f;
 
-    public float maxCoverDistance = 15.0f;
+    public float maxTacticalPositionRange = 10.0f;
 
     Vector2 vDesired = Vector2.zero;
 
@@ -178,8 +178,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return player.transform.position;
     }
 
-    public List<Vector2> GetTacticalPositioningCandidates(float s)
+    public List<Vector2> GetTacticalPositioningCandidates()
     {
+        float s = maxTacticalPositionRange / Mathf.Sqrt(2);
         List<Vector2> spots = new List<Vector2>();
         Vector2 pos2d = transform.position;
 
