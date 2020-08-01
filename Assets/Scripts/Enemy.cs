@@ -146,10 +146,11 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         bool visibleToPlayer = player.FOVContains(transform.position);
         if (visibleToPlayer)
         {
-            exposure = Mathf.Max(MAX_EXPOSURE, exposure + Time.deltaTime);
+            exposure = Mathf.Min(MAX_EXPOSURE, exposure + Time.deltaTime);
         }
         else
         {
+            exposure = Mathf.Max(0.0f, exposure - Time.deltaTime);
             exposedStartTime = Time.time;
         }
     }    
@@ -197,5 +198,10 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
             }
         }
         return spots;
+    }
+
+    public Vector2 GetVelocity()
+    {
+        return rb.velocity;
     }
 }

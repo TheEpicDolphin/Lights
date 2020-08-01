@@ -17,6 +17,7 @@ public class MoveToTacticalSpot : UtilityAction
             new TacticConsideration(me, tacticalSpot),
             new ExposureConsideration(me, tacticalSpot),
             new OccupiedConsideration(me, tacticalSpot),
+            new HeadingConsideration(me, tacticalSpot),
         };
 
         coActions = new HashSet<System.Type>()

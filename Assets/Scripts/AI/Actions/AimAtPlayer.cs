@@ -13,8 +13,7 @@ public class AimAtPlayer : UtilityAction
 
         considerations = new List<UtilityConsideration>()
         {
-            //TODO: Make inverse UtilityConsideration for this
-            new InaccuracyConsideration(me),
+            new InvertConsideration(new AccuracyConsideration(me)),
             new WeaponRangeConsideration(me)
         };
 
