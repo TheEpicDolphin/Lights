@@ -21,7 +21,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public NavigationMesh navMesh;
     public Player player;
     Rigidbody2D rb;
-    public float speed = 7.0f;
+    
     public Hand hand;
     public float radius;
 
@@ -29,7 +29,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     float idleStartTime;
 
     float exposure = 0.0f;
-    float MAX_EXPOSURE = 5.0f;
+
+    const float MAX_SPEED = 7.0f;
+    const float MAX_EXPOSURE = 5.0f;
 
     public float maxTacticalPositionRange = 10.0f;
 
@@ -99,22 +101,11 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(curPos, destination);
         Vector2 nextPoint = shortestPath[0];
-        vDesired = (nextPoint - curPos).normalized * speed;        
-    }
 
-    public void NavigateToWhileAvoiding(Vector2 destination, Vector2 avoid)
-    {
-        Vector2[] shortestPath = navMesh.GetShortestPathFromTo(transform.position, destination,
-        (e) =>
-        {
-            Triangle tri = (Triangle)e.GetNode();
-            float dist = Vector2.Distance(tri.Centroid(), avoid);
-            return 1.0f + Mathf.Max(5.0f - dist, 0.0f);
-        });
-
-        Vector2 nextPoint = shortestPath[0];
-        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
-        vDesired = (nextPoint - curPos).normalized * speed;
+        Vector2 dir = (nextPoint - curPos).normalized;
+        float mag = Mathf.Min(MAX_SPEED, Vector2.Distance(curPos, nextPoint));
+        vDesired = mag * dir;
+        //vDesired = (nextPoint - curPos).normalized * MAX_SPEED;
     }
 
     private void DampMovement()
