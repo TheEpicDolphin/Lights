@@ -85,8 +85,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        utilAI.RunOptimalActions();
-        //NavigateTo(player.transform.position);
+        //utilAI.RunOptimalActions();
+        NavigateTo(new Vector2(-3, 0));
         DampMovement();
     }
 
@@ -103,9 +103,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         Vector2 nextPoint = shortestPath[0];
 
         Vector2 dir = (nextPoint - curPos).normalized;
-        float mag = Mathf.Min(MAX_SPEED, Vector2.Distance(curPos, nextPoint));
+        float mag = Mathf.Min(1.0f, Vector2.Distance(curPos, nextPoint) / 0.5f) * MAX_SPEED;
         vDesired = mag * dir;
-        //vDesired = (nextPoint - curPos).normalized * MAX_SPEED;
     }
 
     private void DampMovement()
