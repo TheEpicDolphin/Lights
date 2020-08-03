@@ -1,9 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
-using GeometryUtils;
 using VecUtils;
+using System.Linq;
 
 //Assumes navmesh is perpendicular to z axis
 public class NavigationMesh : MonoBehaviour
@@ -161,10 +160,6 @@ public class NavigationMesh : MonoBehaviour
 
         if (t == 100)
         {
-            foreach(Vector2 v in breadCrumbs)
-            {
-                Debug.Log(v.ToString("F4"));
-            }
             Debug.LogError("FUNNEL ALG FAILED");
         }
 
@@ -190,22 +185,22 @@ public class NavigationMesh : MonoBehaviour
         return shortestPath;
     }
 
-    public Vector2[] GetShortestPathFromTo(Vector2 start, Vector2 destination, Func<INodeEdge, float> edgeMultiplier)
+    public List<Vector2[]> GetShortestPathsFromTo(Vector2 start, List<Vector2> destinations)
     {
         Triangle startTri = FindContainingTriangle(start);
-        Triangle endTri = FindContainingTriangle(destination);
-
-        List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri, edgeMultiplier);
-        List<Vector2> shortestPathList = StringPullingAlgorithm(triPath, start, destination);
-
-        Vector2[] shortestPath = new Vector2[shortestPathList.Count - 1];
-        for (int i = 1; i < shortestPathList.Count; i++)
+        List<Triangle> endTris = new List<Triangle>();
+        foreach (Vector2 destination in destinations)
         {
-            shortestPath[i - 1] = shortestPathList[i];
-            Debug.DrawLine(shortestPathList[i - 1], shortestPathList[i], Color.green, 0.0f, false);
+            endTris.Add(FindContainingTriangle(destination));
         }
-
-        return shortestPath;
+        List<List<Triangle>> triPaths = navMeshGraph.DijkstrasAlgorithm(startTri, endTris);
+        List<Vector2[]> shortestPaths = new List<Vector2[]>();
+        for (int i = 0; i < triPaths.Count; i++)
+        {
+            List<Vector2> shortestPath = StringPullingAlgorithm(triPaths[i], start, destinations[i]);
+            shortestPaths.Add(shortestPath.Skip(1).ToArray());
+        }
+        return shortestPaths;
     }
 
     private Triangle FindContainingTriangle(Vector2 p)
