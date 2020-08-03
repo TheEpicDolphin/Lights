@@ -28,6 +28,7 @@ public class TacticalPositioning : UtilityActionGroup
         subActions = new List<UtilityAction>();
         foreach (Vector2 tacticalSpot in nearbyTacticalSpots)
         {
+            //TODO: tacticalSpot is type TacticalSpot instead of Vector2
             subActions.Add(new MoveToTacticalSpot(me, tacticalSpot));
         }
     }

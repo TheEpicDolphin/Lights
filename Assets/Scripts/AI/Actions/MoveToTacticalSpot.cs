@@ -5,6 +5,8 @@ using UnityEngine;
 public class MoveToTacticalSpot : UtilityAction
 {
     Enemy me;
+
+    //TODO: Change this to TacticalSpot
     Vector2 tacticalSpot;
 
     public MoveToTacticalSpot(Enemy me, Vector2 tacticalSpot)
