@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
-public class TacticalPositioning : UtilityActionGroup
+public class TacticalPositioning : UtilityAction
 {
     Enemy me;
 
@@ -11,7 +12,7 @@ public class TacticalPositioning : UtilityActionGroup
         this.me = me;
         considerations = new List<UtilityConsideration>()
         {
-            
+
         };
 
         coActions = new HashSet<System.Type>()
@@ -21,21 +22,31 @@ public class TacticalPositioning : UtilityActionGroup
         };
     }
 
-    public override void Tick()
-    {
-        Player player = me.player;
-        List<Vector2[]> pathsToNearbyTacticalPositions = me.navMesh.GetShortestPathsFromTo(me.transform.position,
-                                                            me.GetTacticalPositioningCandidates());
-        subActions = new List<UtilityAction>();
-        foreach (Vector2[] path in pathsToNearbyTacticalPositions)
-        {
-            //TODO: tacticalSpot is type TacticalSpot instead of Vector2
-            subActions.Add(new MoveToTacticalSpot(me, new TacticalSpot(me.transform.position, path)));
-        }
-    }
-
     public override void Execute()
     {
-        bestAction?.Execute();
+        TacticalSpot[] tacticalSpots = me.GetTacticalSpots();
+        List<Vector2> tacticalSpotPositions = new List<Vector2>();
+        foreach(TacticalSpot ts in tacticalSpots)
+        {
+            tacticalSpotPositions.Add(ts.transform.position);
+        }
+
+        Player player = me.player;
+        List<Vector2[]> paths = me.navMesh.GetShortestPathsFromTo(me.transform.position,
+                                                            tacticalSpotPositions);
+        float bestScore = 0.0f;
+        int best_i = 0;
+        for(int i = 0; i < tacticalSpots.Length; i++)
+        {
+            float score = tacticalSpots[i].Score(paths[i]);
+            if(score > bestScore)
+            {
+                bestScore = score;
+                best_i = i;
+            }
+        }
+        me.MoveTo(paths[best_i].Skip(1).First());
     }
 }
+
+

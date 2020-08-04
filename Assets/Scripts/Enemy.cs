@@ -36,6 +36,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public float maxTacticalPositionRange = 10.0f;
 
     private Vector2 vDesired = Vector2.zero;
+
+    private TacticalSpot[] tacticalSpots;
+
     UtilityAI utilAI;
 
     //[XmlElement("nav", typeof(NavigateToStaticDestination))]
@@ -66,6 +69,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
             new ShootAtPlayer(this),
             new TacticalPositioning(this),
         });
+
+        tacticalSpots = GetComponentsInChildren<TacticalSpot>();
     }
 
     void Update()
@@ -88,7 +93,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         }
 
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(curPos, destination);
-        Vector2 nextPoint = shortestPath[0];
+        Vector2 nextPoint = shortestPath.Skip(1).First();
         vDesired = VelocityToReachPosition(nextPoint);
     }
 
@@ -163,7 +168,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return player.transform.position;
     }
 
-    public List<Vector2> GetTacticalPositioningCandidates()
+    /*
+    public List<Vector2> GetTacticalSpots()
     {
         float s = maxTacticalPositionRange / Mathf.Sqrt(2);
         List<Vector2> spots = new List<Vector2>();
@@ -187,9 +193,18 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         }
         return spots;
     }
+    */
+
+    public TacticalSpot[] GetTacticalSpots()
+    {
+        return tacticalSpots;
+    }
 
     public Vector2 GetVelocity()
     {
         return rb.velocity;
     }
+
+    
+
 }

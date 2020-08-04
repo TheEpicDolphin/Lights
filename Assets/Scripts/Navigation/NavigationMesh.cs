@@ -174,15 +174,8 @@ public class NavigationMesh : MonoBehaviour
         Triangle endTri = FindContainingTriangle(destination);
 
         List<Triangle> triPath = navMeshGraph.DijkstrasAlgorithm(startTri, endTri);
-        List<Vector2> shortestPathList = StringPullingAlgorithm(triPath, start, destination);
-
-        Vector2[] shortestPath = new Vector2[shortestPathList.Count - 1];
-        for (int i = 1; i < shortestPathList.Count; i++)
-        {
-            shortestPath[i - 1] = shortestPathList[i];
-            Debug.DrawLine(shortestPathList[i - 1], shortestPathList[i], Color.green, 0.0f, false);
-        }
-        return shortestPath;
+        List<Vector2> shortestPath = StringPullingAlgorithm(triPath, start, destination);
+        return shortestPath.ToArray();
     }
 
     public List<Vector2[]> GetShortestPathsFromTo(Vector2 start, List<Vector2> destinations)
@@ -198,7 +191,7 @@ public class NavigationMesh : MonoBehaviour
         for (int i = 0; i < triPaths.Count; i++)
         {
             List<Vector2> shortestPath = StringPullingAlgorithm(triPaths[i], start, destinations[i]);
-            shortestPaths.Add(shortestPath.Skip(1).ToArray());
+            shortestPaths.Add(shortestPath.ToArray());
         }
         return shortestPaths;
     }
