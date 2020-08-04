@@ -26,9 +26,9 @@ public class TacticConsideration : UtilityConsideration
         float c = sepBoundary.SignedDistanceToPoint(tacticalSpot.Position());
 
         /* Take into account distance from AI to landmark */
-        float dist = Vector2.Distance(tacticalSpot.Position(), me.transform.position);
+        float dist = tacticalSpot.Distance();
         /* higher proximity = tactical spot is closer to AI  */
-        float proximity = 1.0f - Mathf.Clamp(dist / me.maxTacticalPositionRange, 0.0f, 0.5f);
+        float proximity = 1.0f - Mathf.Clamp(dist / (1.5f * me.maxTacticalPositionRange), 0.0f, 0.5f);
 
         /* TODO: Take into account AI's weapon range */
 

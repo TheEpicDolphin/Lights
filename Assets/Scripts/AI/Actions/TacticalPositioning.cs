@@ -30,7 +30,7 @@ public class TacticalPositioning : UtilityActionGroup
         foreach (Vector2[] path in pathsToNearbyTacticalPositions)
         {
             //TODO: tacticalSpot is type TacticalSpot instead of Vector2
-            subActions.Add(new MoveToTacticalSpot(me, new TacticalSpot(path)));
+            subActions.Add(new MoveToTacticalSpot(me, new TacticalSpot(me.transform.position, path)));
         }
     }
 
