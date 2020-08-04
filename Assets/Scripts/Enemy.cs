@@ -66,17 +66,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
             new ShootAtPlayer(this),
             new TacticalPositioning(this),
         });
-
-
-    }
-
-    public static UtilityAI CreateFromXML()
-    {
-        UtilityAI uai = XMLOp.Deserialize<UtilityAI>(
-            Path.Combine(Application.dataPath, "XML", "ai.xml"));
-        Debug.Log(Path.Combine(Application.dataPath, "XML", "ai.xml"));
-        Debug.Log(uai.actions.Length);
-        return uai;
     }
 
     void Update()
@@ -84,8 +73,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         vDesired = Vector2.zero;
         Sense();
         hand.Animate();
-        //utilAI.RunOptimalActions();
-        NavigateTo(new Vector2(-3, 0));
+        utilAI.RunOptimalActions();
+        //NavigateTo(new Vector2(-3, 0));
         DampMovement();
     }
 
@@ -183,10 +172,10 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         int Ny = 5;
         int Nx = 5;
         Vector2 center = transform.position;
-        for (int i = -Ny / 2; i <= Ny / 2; i++)
+        for (int i = -(Ny - 1) / 2; i <= (Ny - 1) / 2; i++)
         {
             float y = center.y + i * s / Ny;
-            for (int j = -Nx / 2; j <= Nx / 2; j++)
+            for (int j = -(Nx - 1) / 2; j <= (Nx - 1) / 2; j++)
             {
                 float x = center.x + j * s / Nx;
                 Vector2 p = new Vector2(x, y);

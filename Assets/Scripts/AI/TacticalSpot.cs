@@ -27,7 +27,7 @@ public struct TacticalSpot
     public float Distance()
     {
         float d = Vector2.Distance(origin, FirstPathPoint());
-        for(int i = 0; i < path.Length; i++)
+        for(int i = 0; i < path.Length - 1; i++)
         {
             d += Vector2.Distance(path[i], path[i + 1]);
         }
