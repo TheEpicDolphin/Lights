@@ -15,8 +15,8 @@ TagManager:
   - 
   - PostProcessing
   - 
-  - 
-  - 
+  - Stage
+  - Enemy
   - Obstacle
   - LightTarget
   - Beam

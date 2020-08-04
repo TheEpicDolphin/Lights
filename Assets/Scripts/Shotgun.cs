@@ -5,7 +5,6 @@ using UnityEngine;
 public class Shotgun : MonoBehaviour, IItem, IFirearm
 {
     Animator anim;
-    ParticleSystem blast;
     Transform barrelExit;
     float firerate = 0.8f;
     float range = 20.0f;
@@ -18,7 +17,6 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
     void Start()
     {
         anim = GetComponentInChildren<Animator>();
-        blast = GetComponentInChildren<ParticleSystem>();
         barrelExit = transform.GetChild(1);
     }
 
@@ -39,7 +37,14 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
         float t = Time.time;
         if(t - lastT > 1 / firerate)
         {
-            blast.Play();
+            //Instantiate shotgun blast particle system
+            GameObject shotgunBlast = (GameObject) Instantiate(Resources.Load("Prefabs/ShotgunBlast"));
+            shotgunBlast.transform.position = barrelExit.position;
+            shotgunBlast.transform.rotation = barrelExit.rotation;
+            ParticleSystem shotgunBlastPS = shotgunBlast.GetComponent<ParticleSystem>();
+            shotgunBlastPS.Play();
+            Destroy(shotgunBlast, shotgunBlastPS.main.duration);
+
             lastT = t;
 
             //TODO: fix to work with enemies
@@ -47,7 +52,7 @@ public class Shotgun : MonoBehaviour, IItem, IFirearm
             shooter.AddKnockback(knockbackStrength, -dir);
 
             Vector2 start = barrelExit.position;
-            float angle = blast.shape.angle;
+            float angle = shotgunBlastPS.shape.angle;
             //Do multiple raycasts to hit targets
             for (int i = 0; i < numPellets; i++)
             {
