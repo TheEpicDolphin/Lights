@@ -107,7 +107,7 @@ public class TacticalSpot : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = new Color(1, 1, 1, weight);
-        Gizmos.DrawSphere(transform.position, 0.25f);
+        Gizmos.DrawWireSphere(transform.position, 0.25f);
     }
 
 }
