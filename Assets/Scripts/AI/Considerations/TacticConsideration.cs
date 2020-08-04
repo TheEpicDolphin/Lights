@@ -7,8 +7,8 @@ using AlgorithmUtils;
 public class TacticConsideration : UtilityConsideration
 {
     Enemy me;
-    Vector2 tacticalSpot;
-    public TacticConsideration(Enemy me, Vector2 tacticalSpot)
+    TacticalSpot tacticalSpot;
+    public TacticConsideration(Enemy me, TacticalSpot tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;
@@ -23,10 +23,10 @@ public class TacticConsideration : UtilityConsideration
         Vector2 midPoint = (player.transform.position + me.transform.position) / 2;
         Plane2D sepBoundary = new Plane2D(-playerDir.normalized, midPoint);
         /* Check if landmark is closer to AI than to player */
-        float c = sepBoundary.SignedDistanceToPoint(tacticalSpot);
+        float c = sepBoundary.SignedDistanceToPoint(tacticalSpot.Position());
 
         /* Take into account distance from AI to landmark */
-        float dist = Vector2.Distance(tacticalSpot, me.transform.position);
+        float dist = Vector2.Distance(tacticalSpot.Position(), me.transform.position);
         /* higher proximity = tactical spot is closer to AI  */
         float proximity = 1.0f - Mathf.Clamp(dist / me.maxTacticalPositionRange, 0.0f, 0.5f);
 

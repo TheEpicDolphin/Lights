@@ -7,9 +7,9 @@ public class MoveToTacticalSpot : UtilityAction
     Enemy me;
 
     //TODO: Change this to TacticalSpot
-    Vector2 tacticalSpot;
+    TacticalSpot tacticalSpot;
 
-    public MoveToTacticalSpot(Enemy me, Vector2 tacticalSpot)
+    public MoveToTacticalSpot(Enemy me, TacticalSpot tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;
@@ -31,7 +31,7 @@ public class MoveToTacticalSpot : UtilityAction
 
     public override void Execute()
     {
-        me.NavigateTo(tacticalSpot);
+        me.MoveTo(tacticalSpot.path[0]);
     }
 
     /*

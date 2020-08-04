@@ -5,8 +5,8 @@ using UnityEngine;
 public class OccupiedConsideration : UtilityConsideration
 {
     Enemy me;
-    Vector2 tacticalSpot;
-    public OccupiedConsideration(Enemy me, Vector2 tacticalSpot)
+    TacticalSpot tacticalSpot;
+    public OccupiedConsideration(Enemy me, TacticalSpot tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;
@@ -14,7 +14,7 @@ public class OccupiedConsideration : UtilityConsideration
 
     public override float Score()
     {
-        Collider2D col = Physics2D.OverlapCircle(tacticalSpot, 0.75f * me.radius, 1 << 11);
+        Collider2D col = Physics2D.OverlapCircle(tacticalSpot.Position(), 0.75f * me.radius, 1 << 11);
         if (col != null && col.GetComponent<Enemy>() != me)
         {
             return 0.0f;

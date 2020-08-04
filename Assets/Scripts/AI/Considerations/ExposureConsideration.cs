@@ -5,8 +5,8 @@ using UnityEngine;
 public class ExposureConsideration : UtilityConsideration
 {
     Enemy me;
-    Vector2 tacticalSpot;
-    public ExposureConsideration(Enemy me, Vector2 tacticalSpot)
+    TacticalSpot tacticalSpot;
+    public ExposureConsideration(Enemy me, TacticalSpot tacticalSpot)
     {
         this.me = me;
         this.tacticalSpot = tacticalSpot;
@@ -18,7 +18,7 @@ public class ExposureConsideration : UtilityConsideration
         IFirearm firearm = me.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm != null)
         {
-            float tacticalSpotExposure = player.FOVContains(tacticalSpot) ? 1.0f : 0.0f;
+            float tacticalSpotExposure = player.FOVContains(tacticalSpot.Position()) ? 1.0f : 0.0f;
             //AI seeks a change in exposure
             return Mathf.Abs(me.Exposure() - tacticalSpotExposure);
         }

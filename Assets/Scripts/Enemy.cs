@@ -30,13 +30,12 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     float exposure = 0.0f;
 
-    const float MAX_SPEED = 7.0f;
-    const float MAX_EXPOSURE = 5.0f;
+    public float maxSpeed = 7.0f;
+    public float maxExposure = 5.0f;
 
     public float maxTacticalPositionRange = 10.0f;
 
-    Vector2 vDesired = Vector2.zero;
-
+    private Vector2 vDesired = Vector2.zero;
     UtilityAI utilAI;
 
     //[XmlElement("nav", typeof(NavigateToStaticDestination))]
@@ -101,10 +100,20 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
         Vector2[] shortestPath = navMesh.GetShortestPathFromTo(curPos, destination);
         Vector2 nextPoint = shortestPath[0];
+        vDesired = VelocityToReachPosition(nextPoint);
+    }
 
-        Vector2 dir = (nextPoint - curPos).normalized;
-        float mag = Mathf.Min(1.0f, Vector2.Distance(curPos, nextPoint) / 0.5f) * MAX_SPEED;
-        vDesired = mag * dir;
+    public void MoveTo(Vector2 destination)
+    {
+        vDesired = VelocityToReachPosition(destination);
+    }
+
+    public Vector2 VelocityToReachPosition(Vector2 target)
+    {
+        Vector2 curPos = new Vector2(transform.position.x, transform.position.y);
+        Vector2 dir = (target - curPos).normalized;
+        float mag = Mathf.Min(1.0f, Vector2.Distance(curPos, target) / 0.5f) * maxSpeed;
+        return mag * dir;
     }
 
     private void DampMovement()
@@ -136,7 +145,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         bool visibleToPlayer = player.FOVContains(transform.position);
         if (visibleToPlayer)
         {
-            exposure = Mathf.Min(MAX_EXPOSURE, exposure + Time.deltaTime);
+            exposure = Mathf.Min(maxExposure, exposure + Time.deltaTime);
         }
         else
         {
@@ -152,7 +161,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public float Exposure()
     {
-        return this.exposure / MAX_EXPOSURE;
+        return this.exposure / maxExposure;
     }
 
     public float IdleTime()

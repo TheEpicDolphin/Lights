@@ -5,11 +5,16 @@ using System.Linq;
 
 public struct TacticalSpot
 {
-    public List<Vector2> path;
+    public Vector2[] path;
 
-    public TacticalSpot(List<Vector2> path)
+    public TacticalSpot(Vector2[] path)
     {
         this.path = path;
+    }
+
+    public Vector2 FirstPathPoint()
+    {
+        return path.First();
     }
 
     public Vector2 Position()

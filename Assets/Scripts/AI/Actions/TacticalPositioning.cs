@@ -24,12 +24,13 @@ public class TacticalPositioning : UtilityActionGroup
     public override void Tick()
     {
         Player player = me.player;
-        List<Vector2> nearbyTacticalSpots = me.GetTacticalPositioningCandidates();
+        List<Vector2[]> pathsToNearbyTacticalPositions = me.navMesh.GetShortestPathsFromTo(me.transform.position,
+                                                            me.GetTacticalPositioningCandidates());
         subActions = new List<UtilityAction>();
-        foreach (Vector2 tacticalSpot in nearbyTacticalSpots)
+        foreach (Vector2[] path in pathsToNearbyTacticalPositions)
         {
             //TODO: tacticalSpot is type TacticalSpot instead of Vector2
-            subActions.Add(new MoveToTacticalSpot(me, tacticalSpot));
+            subActions.Add(new MoveToTacticalSpot(me, new TacticalSpot(path)));
         }
     }
 
