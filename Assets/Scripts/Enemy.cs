@@ -81,6 +81,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         utilAI.RunOptimalActions();
         //NavigateTo(new Vector2(-3, 0));
         DampMovement();
+        Debug.Log(Exposure());
     }
 
     public void NavigateTo(Vector2 destination)

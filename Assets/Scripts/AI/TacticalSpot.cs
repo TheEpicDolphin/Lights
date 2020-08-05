@@ -7,7 +7,7 @@ using GeometryUtils;
 public class TacticalSpot : MonoBehaviour
 {
     Enemy enemy;
-    private float weight = 0.0f;
+    private float weight = 1.0f;
 
     private void Start()
     {
@@ -72,8 +72,18 @@ public class TacticalSpot : MonoBehaviour
         if (firearm != null)
         {
             float tacticalSpotExposure = player.FOVContains(transform.position) ? 1.0f : 0.0f;
+            float enemyExposure = enemy.Exposure();
+
+            if(Mathf.Abs(enemyExposure - 0.5f) > 0.25f)
+            {
+                return Mathf.Abs(enemyExposure - tacticalSpotExposure);
+            }
+            else
+            {
+                return 1.0f;
+            }
             //AI seeks a change in exposure
-            return Mathf.Abs(enemy.Exposure() - tacticalSpotExposure);
+            //return Mathf.Abs(enemyExposure - tacticalSpotExposure);
         }
         return 0.0f;
     }
