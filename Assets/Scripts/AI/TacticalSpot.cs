@@ -29,11 +29,13 @@ public class TacticalSpot : MonoBehaviour
      */
     public float Score(Vector2[] path)
     {
-        weight = ValidLocationConsideration() * 
+        weight = ValidLocationConsideration() *
                 VelocityChangeConsideration(path) *
                 OccupiedConsideration() *
                 ExposureConsideration() *
-                TacticConsideration(path);
+                PlayerPositionConsideration() *
+                DistanceConsideration(path) *
+                IdlenessConsideration();
         return weight;
     }
 
@@ -68,7 +70,7 @@ public class TacticalSpot : MonoBehaviour
     public float ExposureConsideration()
     {
         Player player = enemy.player;
-        IFirearm firearm = enemy.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
+        IFirearm firearm = player.hand?.GetEquippedObject()?.GetComponent<IFirearm>();
         if (firearm != null)
         {
             float tacticalSpotExposure = player.FOVContains(transform.position) ? 1.0f : 0.0f;
@@ -82,15 +84,12 @@ public class TacticalSpot : MonoBehaviour
             {
                 return 1.0f;
             }
-            //AI seeks a change in exposure
-            //return Mathf.Abs(enemyExposure - tacticalSpotExposure);
         }
         return 0.0f;
     }
 
-    public float TacticConsideration(Vector2[] path)
+    public float PlayerPositionConsideration()
     {
-        //TODO: Split up below into two different considerations
         Player player = enemy.player;
 
         Vector2 playerDir = player.transform.position - enemy.transform.position;
@@ -99,19 +98,32 @@ public class TacticalSpot : MonoBehaviour
         /* Check if landmark is closer to AI than to player */
         float c = sepBoundary.SignedDistanceToPoint(transform.position);
 
-        /* Take into account distance from AI to landmark */
-        float dist = PathDistance(path);
-        /* higher proximity = tactical spot is closer to AI  */
-        float proximity = 1.0f - Mathf.Clamp(dist / (1.5f * enemy.maxTacticalPositionRange), 0.0f, 0.5f);
-
         /* TODO: Take into account AI's weapon range */
 
-        /* Score landmark */
-        float score = Mathf.Max(0, (1 - Mathf.Exp(-10 * c)) * proximity);
-
+        float score = c > 0.0f ? 1.0f : 0.0f;
         return score;
     }
 
+    public float DistanceConsideration(Vector2[] path)
+    {
+        //Takes into account the distance from AI to tactical spot
+        float dist = PathDistance(path);
+        float score = 1.0f - Mathf.Clamp(dist / (1.5f * enemy.maxTacticalPositionRange), 0.0f, 0.5f);
+        return score;
+    }
+
+    public float IdlenessConsideration()
+    {
+        float enemyIdlness = enemy.Idleness();
+        if (enemy.BubbleContainsPoint(transform.position))
+        {
+            return 1.0f - enemyIdlness;
+        }
+        else
+        {
+            return 1.0f;
+        }
+    }
 
 
     private void OnDrawGizmos()

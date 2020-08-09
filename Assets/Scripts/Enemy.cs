@@ -25,13 +25,16 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     public Hand hand;
     public float radius;
 
-    float exposedStartTime;
-    float idleStartTime;
+    Vector2 curBubblePosition;
+    const float bubbleRadius = 1.0f;
+    float idleness = 0.0f;
 
     float exposure = 0.0f;
+    bool wasVisibleLastFrame = false;
 
     public float maxSpeed = 7.0f;
     public float maxExposure = 5.0f;
+    public float maxIdleness = 3.0f;
 
     public float maxTacticalPositionRange = 10.0f;
 
@@ -55,9 +58,6 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         GetComponent<CircleCollider2D>().radius = navMesh.aiRadius;
         this.radius = GetComponent<CircleCollider2D>().radius;
 
-        idleStartTime = Time.time;
-        exposedStartTime = Time.time;
-
         hand = GetComponentInChildren<Hand>();
         
         GameObject firearm = (GameObject)Instantiate(Resources.Load("Prefabs/Shotgun"));
@@ -71,6 +71,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         });
 
         tacticalSpots = GetComponentsInChildren<TacticalSpot>();
+        curBubblePosition = transform.position;
     }
 
     void Update()
@@ -132,26 +133,39 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public void Sense()
     {
-        if(rb.velocity.sqrMagnitude > 1e-5f)
+        if(!BubbleContainsPoint(transform.position))
         {
-            idleStartTime = Time.time;
+            curBubblePosition = transform.position;
+            idleness = 0.0f;
+        }
+        else
+        {
+            idleness = Mathf.Min(maxIdleness, idleness + Time.deltaTime);
         }
 
         bool visibleToPlayer = player.FOVContains(transform.position);
         if (visibleToPlayer)
         {
+            if(visibleToPlayer ^ wasVisibleLastFrame)
+            {
+                exposure = 0.0f;
+            }
             exposure = Mathf.Min(maxExposure, exposure + Time.deltaTime);
         }
         else
         {
+            if (visibleToPlayer ^ wasVisibleLastFrame)
+            {
+                exposure = maxExposure;
+            }
             exposure = Mathf.Max(0.0f, exposure - Time.deltaTime);
-            exposedStartTime = Time.time;
         }
+        wasVisibleLastFrame = visibleToPlayer;
     }    
 
-    public float ExposedTime()
+    public bool BubbleContainsPoint(Vector2 pos)
     {
-        return Time.time - exposedStartTime;
+        return Vector2.Distance(pos, curBubblePosition) <= bubbleRadius;
     }
 
     public float Exposure()
@@ -159,9 +173,9 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         return this.exposure / maxExposure;
     }
 
-    public float IdleTime()
+    public float Idleness()
     {
-        return Time.time - idleStartTime;
+        return this.idleness / maxIdleness;
     }
 
     public Vector2 GetShootingTarget()
@@ -198,6 +212,7 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public TacticalSpot[] GetTacticalSpots()
     {
+        Algorithm.Shuffle(ref tacticalSpots);
         return tacticalSpots;
     }
 

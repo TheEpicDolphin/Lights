@@ -15,7 +15,6 @@ public class Strafe : UtilityAction
         considerations = new List<UtilityConsideration>()
         {
             //new ExposureConsideration(me),
-            new IdlenessConsideration(me),
         };
 
         coActions = new HashSet<System.Type>()
