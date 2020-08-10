@@ -33,8 +33,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
     bool wasVisibleLastFrame = false;
 
     public float maxSpeed = 7.0f;
-    public float maxExposure = 5.0f;
-    public float maxIdleness = 3.0f;
+    private float maxExposure = 5.0f;
+    private float maxIdleness = 6.0f;
 
     public float maxTacticalPositionRange = 10.0f;
 
@@ -82,7 +82,8 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
         utilAI.RunOptimalActions();
         //NavigateTo(new Vector2(-3, 0));
         DampMovement();
-        Debug.Log(Exposure());
+        //Debug.Log(Exposure());
+        Debug.Log(Idleness());
     }
 
     public void NavigateTo(Vector2 destination)
@@ -175,7 +176,15 @@ public class Enemy : MonoBehaviour, INavAgent, IHitable
 
     public float Idleness()
     {
-        return this.idleness / maxIdleness;
+        if(this.idleness > 3.0f)
+        {
+            return this.idleness / maxIdleness;
+        }
+        else
+        {
+            return 0.0f;
+        }
+        
     }
 
     public Vector2 GetShootingTarget()

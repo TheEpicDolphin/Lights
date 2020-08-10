@@ -32,7 +32,7 @@ public class TacticalSpot : MonoBehaviour
         weight = ValidLocationConsideration() *
                 VelocityChangeConsideration(path) *
                 OccupiedConsideration() *
-                ExposureConsideration() *
+                //ExposureConsideration() *
                 PlayerPositionConsideration() *
                 DistanceConsideration(path) *
                 IdlenessConsideration();
@@ -46,11 +46,11 @@ public class TacticalSpot : MonoBehaviour
 
     public float VelocityChangeConsideration(Vector2[] path)
     {
-        Vector2 curPos = enemy.transform.position;
         Vector2 curVelocity = enemy.GetVelocity();
-        Vector2 theoreticalVelocity = enemy.VelocityToReachPosition(path.First());
+        Vector2 theoreticalVelocity = enemy.VelocityToReachPosition(path.Skip(1).First());
         float d = Vector2.Distance(curVelocity, theoreticalVelocity);
-        float weight = 1.0f - Mathf.Max(0.6f, d / (2 * enemy.maxSpeed));
+        //Debug.Log(d);
+        float weight = 1.0f - Mathf.Min(0.6f, d / (2 * enemy.maxSpeed));
         return weight;
     }
 
